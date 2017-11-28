@@ -279,7 +279,7 @@ func (self *Node) String() string {
  * Usage:
  *
  *   var p *Parser = NewParser(StartRule, "my space-delimited statement")
- *   for _, tree := range *p.getTrees() {
+ *   for _, tree := range p.getTrees() {
  *     tree.Print(os.Stdout)
  *   }
  *
