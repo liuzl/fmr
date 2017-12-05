@@ -279,7 +279,7 @@ func (self *Node) String() string {
  * Usage:
  *
  *   var p *Parser = NewParser(StartRule, "my space-delimited statement")
- *   for _, tree := range p.getTrees() {
+ *   for _, tree := range p.GetTrees() {
  *     tree.Print(os.Stdout)
  *   }
  *
@@ -424,7 +424,7 @@ func (self *Parser) handleEpsilons(col *TableColumn) {
  * representing a possible parse tree. a node is contains a value and the node's
  * children, and supports pretty-printing
  */
-func (self *Parser) getTrees() []*Node {
+func (self *Parser) GetTrees() []*Node {
 	if self.finalState != nil {
 		return self.buildTrees(self.finalState)
 	}

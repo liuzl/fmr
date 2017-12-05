@@ -23,7 +23,7 @@ func TestEarleyParse(t *testing.T) {
 	}
 	for _, text := range strs {
 		p := NewParser(EXPR, text)
-		trees := p.getTrees()
+		trees := p.GetTrees()
 		t.Log("tree number:", len(trees))
 		for _, tree := range trees {
 			tree.Print(os.Stdout)
