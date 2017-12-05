@@ -184,7 +184,7 @@ func (self *TableState) String() string {
 	if self.dotIndex == self.production.size() {
 		s += "\u00B7"
 	}
-	return fmt.Sprintf("%s -> %s [%d-%d]",
+	return fmt.Sprintf("%-6s -> %-20s [%d-%d]",
 		self.name, s, self.startCol.index, self.endCol.index)
 }
 
