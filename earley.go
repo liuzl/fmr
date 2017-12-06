@@ -7,6 +7,8 @@ import (
 	"strings"
 )
 
+const debug = false
+
 /*
  * Terminology
  * ==========
@@ -171,7 +173,7 @@ func (self *TableState) String() string {
 	s := ""
 	for i, term := range self.production.terms {
 		if i == self.dotIndex {
-			s += "\u00B7"
+			s += "\u00B7 "
 		}
 		switch term.(type) {
 		case *Terminal:
@@ -346,7 +348,9 @@ func (self *Parser) parse(startRule *Rule) *TableState {
 		}
 		self.handleEpsilons(col)
 		// DEBUG -- uncomment to print the table during parsing, column after column
-		//col.Print(os.Stdout, true)
+		if debug {
+			col.Print(os.Stdout, true)
+		}
 	}
 
 	// find end state (return nil if not found)
