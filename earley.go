@@ -173,7 +173,7 @@ func (self *TableState) String() string {
 	s := ""
 	for i, term := range self.production.terms {
 		if i == self.dotIndex {
-			s += "\u00B7 "
+			s += DOT + " "
 		}
 		switch term.(type) {
 		case *Terminal:
@@ -184,7 +184,7 @@ func (self *TableState) String() string {
 		s += " "
 	}
 	if self.dotIndex == self.production.size() {
-		s += "\u00B7"
+		s += DOT
 	}
 	return fmt.Sprintf("%-6s -> %-20s [%d-%d]",
 		self.name, s, self.startCol.index, self.endCol.index)
@@ -314,6 +314,7 @@ func NewParser(startRule *Rule, text string) *Parser {
 // this is the name of the special "gamma" rule added by the algorithm
 // (this is unicode for 'LATIN SMALL LETTER GAMMA')
 const GAMMA_RULE = "\u0263" // "\u0194"
+const DOT = "\u2022"        // "\u00B7"
 
 /*
  * the Earley algorithm's core: add gamma rule, fill up table, and check if the
