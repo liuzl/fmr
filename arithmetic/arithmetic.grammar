@@ -1,2 +1,4 @@
 $E -> one | two | three | four
-$
+$UnOp -> minus
+$BinOp -> plus | minus | times
+$E -> $UnOp $E | $E $BinOp $E

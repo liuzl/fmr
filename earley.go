@@ -122,7 +122,7 @@ func NewRule(name string, prods ...*Production) *Rule {
 	return &Rule{name: name, productions: prods}
 }
 
-func (self *Rule) add(prods ...*Production) {
+func (self *Rule) Add(prods ...*Production) {
 	self.productions = append(self.productions, prods...)
 }
 

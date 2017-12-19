@@ -3,6 +3,8 @@ package main
 import (
 	"errors"
 	"fmt"
+	"github.com/liuzl/earley"
+	"os"
 )
 
 type SemanticRepresentation struct {
@@ -90,9 +92,42 @@ func execute(sem interface{}) (int, error) {
 	}
 }
 
+func grammar() *earley.Rule {
+	E := earley.NewRule("E",
+		earley.NewProduction("one"),
+		earley.NewProduction("two"),
+		earley.NewProduction("three"),
+		earley.NewProduction("four"),
+	)
+	NEG := earley.NewRule("NEG",
+		earley.NewProduction("minus"),
+	)
+	E.Add(earley.NewProduction(NEG, E))
+	PLUS := earley.NewRule("PLUS",
+		earley.NewProduction("plus"),
+	)
+	MINUS := earley.NewRule("MINUS",
+		earley.NewProduction("minus"),
+	)
+	TIMES := earley.NewRule("TIMES",
+		earley.NewProduction("times"),
+	)
+	E.Add(earley.NewProduction(E, PLUS, E),
+		earley.NewProduction(E, MINUS, E),
+		earley.NewProduction(E, TIMES, E))
+	return E
+}
+
 func main() {
+	root := grammar()
 	for _, input := range inputs {
 		fmt.Println(input)
+		p := earley.NewParser(root, input)
+		trees := p.GetTrees()
+		fmt.Println("tree number:", len(trees))
+		for _, tree := range trees {
+			tree.Print(os.Stdout)
+		}
 	}
 
 	for _, sem := range sems {
