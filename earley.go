@@ -39,10 +39,11 @@ func (self *Terminal) String() string {
 type Production struct {
 	terms []interface{}
 	rules []*Rule
+	sem   string
 }
 
-func NewProduction(terms ...interface{}) *Production {
-	prod := &Production{}
+func NewProductionFn(sem string, terms ...interface{}) *Production {
+	prod := &Production{sem: sem}
 	for _, term := range terms {
 		switch term.(type) {
 		case *Terminal:
@@ -57,6 +58,10 @@ func NewProduction(terms ...interface{}) *Production {
 	}
 	prod.getRules()
 	return prod
+}
+
+func NewProduction(terms ...interface{}) *Production {
+	return NewProductionFn("NULL", terms...)
 }
 
 func (self *Production) size() int {
