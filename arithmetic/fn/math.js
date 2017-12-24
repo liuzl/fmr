@@ -17,3 +17,25 @@ nf.math.neg = function(x) {
 }
 
 //console.log(nf.math.sum(1,1));
+
+var overrideMethod = function() {
+	switch (arguments.length) {
+		case 0:
+			console.log("no arguments");
+			break;
+		case 1:
+			console.log("1");
+			console.log(arguments[0]);
+			break;
+		default:
+			for (i = 0; i < arguments.length; i++) {
+				console.log(typeof(arguments[i]));
+				console.log(arguments[i]);
+			}
+			break;
+	}
+}
+
+overrideMethod();
+overrideMethod("haha");
+overrideMethod("haha", "hehe", 1, 1, 1, [2, 3, 4]);

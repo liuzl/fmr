@@ -21,7 +21,7 @@ func main() {
 	if _, err = vm.Run(script); err != nil {
 		log.Fatal(err)
 	}
-	jsVal1, _ := vm.ToValue("abc")
+	jsVal1, _ := vm.ToValue(87)
 	jsVal2, _ := vm.ToValue(3)
 	result, err := vm.Call("nf.math.sum", nil, jsVal1, jsVal2)
 	if err != nil {
