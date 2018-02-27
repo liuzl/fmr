@@ -9,7 +9,7 @@ func TestEarleyParse(t *testing.T) {
 	SYM := NewRule("SYM", NewProduction(&Terminal{"a"}))
 	OP := NewRule("OP", NewProduction("+"))
 	EXPR := NewRule("EXPR", NewProduction(SYM))
-	EXPR.add(NewProduction(EXPR, OP, EXPR))
+	EXPR.Add(NewProduction(EXPR, OP, EXPR))
 
 	strs := []string{
 		//"a",
