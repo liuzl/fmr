@@ -59,8 +59,42 @@ func (p *parser) ws() string {
 	return string(ret)
 }
 
-func (p *parser) rule() (*Rule, error) {
+func (p *parser) text() (string, error) {
+	return "", nil
+}
+
+func (p *parser) nonterminal() (name string, err error) {
+	err = p.eat('<')
+	if err != nil {
+		return
+	}
+	name, err = p.text()
+	if err != nil {
+		return
+	}
+	err = p.eat('>')
+	return
+}
+func (p *parser) expressions() ([]*RuleBody, error) {
 	return nil, nil
+}
+
+func (p *parser) rule() (*Rule, error) {
+	name, err := p.nonterminal()
+	if err != nil {
+		return nil, err
+	}
+	p.ws()
+	err = p.eat('=')
+	if err != nil {
+		return nil, err
+	}
+	p.ws()
+	body, err := p.expressions()
+	if err != nil {
+		return nil, err
+	}
+	return &Rule{name, body}, nil
 }
 
 func (p *parser) grammar() (*Grammar, error) {
