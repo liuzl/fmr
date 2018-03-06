@@ -3,7 +3,6 @@ package bnf
 import (
 	"fmt"
 	"strconv"
-	"strings"
 	"unicode/utf8"
 )
 
@@ -77,16 +76,6 @@ func (l *lexer) ignore() {
 
 func (l *lexer) isEOF() bool {
 	return l.pos >= len(l.input)
-}
-
-func (l *lexer) contains(c string) bool {
-	return strings.Index(l.input[l.pos:], c) >= 0
-}
-
-func (l *lexer) acceptUntil(c string) {
-	for !strings.ContainsRune(c, l.next()) {
-	}
-	l.backup()
 }
 
 func (l *lexer) emit(t itemType) {
