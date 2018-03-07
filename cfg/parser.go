@@ -23,6 +23,9 @@ func (p *parser) next() rune {
 		return eof
 	}
 	r, w := utf8.DecodeRuneInString(p.input[p.pos:])
+	if r == utf8.RuneError {
+		return eof
+	}
 	p.width = w
 	p.pos += w
 	p.linePos += w
@@ -32,7 +35,8 @@ func (p *parser) next() rune {
 func (p *parser) eat(expected rune) error {
 	r := p.next()
 	if r != expected {
-		return fmt.Errorf("Expected %s, got %s", expected, r)
+		return fmt.Errorf("|%d col %d| :expected %s, got %s",
+			p.line, p.linePos, expected, r)
 	}
 	return nil
 }
@@ -77,12 +81,12 @@ Loop:
 		first = false
 	}
 	if len(ret) == 0 {
-		return "", fmt.Errorf("")
+		return "", fmt.Errorf("|%d col %d| : no text", p.line, p.linePos)
 	}
 	return string(ret), nil
 }
 
-func (p *parser) terminal_text() (string, error) {
+func (p *parser) terminalText() (string, error) {
 	var ret []rune
 	var prev rune
 	for {
@@ -91,7 +95,7 @@ func (p *parser) terminal_text() (string, error) {
 			p.backup()
 			return string(ret), nil
 		case r == eof:
-			return "", fmt.Errorf("unterminated string")
+			return "", fmt.Errorf("|%d col %d| : unterminated string", p.line, p.linePos)
 		case prev == '\\' && r == '\\':
 			ret = append(ret, r)
 			prev = 0
@@ -100,7 +104,7 @@ func (p *parser) terminal_text() (string, error) {
 			prev = r
 		}
 	}
-	return "", fmt.Errorf("unexpected string")
+	return "", fmt.Errorf("|%d col %d| : unexpected string", p.line, p.linePos)
 }
 
 func (p *parser) terminal() (text string, err error) {
@@ -108,7 +112,7 @@ func (p *parser) terminal() (text string, err error) {
 	if err != nil {
 		return
 	}
-	text, err = p.terminal_text()
+	text, err = p.terminalText()
 	if err != nil {
 		return
 	}
@@ -144,7 +148,7 @@ func (p *parser) term() (*Term, error) {
 	return &Term{text, false}, nil
 }
 
-func (p *parser) expression() (*RuleBody, error) {
+func (p *parser) ruleBody() (*RuleBody, error) {
 	t, err := p.term()
 	if err != nil {
 		return nil, err
@@ -161,8 +165,8 @@ func (p *parser) expression() (*RuleBody, error) {
 	return &RuleBody{Terms: terms}, nil
 }
 
-func (p *parser) expressions() ([]*RuleBody, error) {
-	r, err := p.expression()
+func (p *parser) ruleBodies() ([]*RuleBody, error) {
+	r, err := p.ruleBody()
 	if err != nil {
 		return nil, err
 	}
@@ -173,7 +177,7 @@ func (p *parser) expressions() ([]*RuleBody, error) {
 		}
 		p.eat('|')
 		p.ws()
-		r, err = p.expression()
+		r, err = p.ruleBody()
 		if err != nil {
 			return nil, err
 		}
@@ -193,7 +197,7 @@ func (p *parser) rule() (*Rule, error) {
 		return nil, err
 	}
 	p.ws()
-	body, err := p.expressions()
+	body, err := p.ruleBodies()
 	if err != nil {
 		return nil, err
 	}
@@ -218,7 +222,7 @@ func (p *parser) grammar() (*Grammar, error) {
 		}
 	}
 	if p.next() != eof {
-		return nil, fmt.Errorf("format error")
+		return nil, fmt.Errorf("|%d col %d| : format error", p.line, p.linePos)
 	}
 	return g, nil
 }
