@@ -11,8 +11,8 @@ type Rule struct {
 }
 
 type RuleBody struct {
-	Terms    []Term `json:"terms"`
-	Semantic string `json:"semantic,omitempty"`
+	Terms    []*Term `json:"terms"`
+	Semantic string  `json:"semantic,omitempty"`
 }
 
 type Term struct {
