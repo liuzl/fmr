@@ -96,9 +96,22 @@ func (p *parser) terminalText() (string, error) {
 			return string(ret), nil
 		case r == eof:
 			return "", fmt.Errorf("|%d col %d| : unterminated string", p.line, p.linePos)
-		case prev == '\\' && r == '\\':
-			ret = append(ret, r)
+		case prev == '\\':
+			switch r {
+			case '\\':
+				ret = append(ret, '\\')
+			case 'n':
+				ret = append(ret, '\n')
+			case 't':
+				ret = append(ret, '\t')
+			case '"':
+				ret = append(ret, '"')
+			default:
+				return "", fmt.Errorf("|%d col %d| : unexpected escape string", p.line, p.linePos)
+			}
 			prev = 0
+		case r == '\\':
+			prev = r
 		default:
 			ret = append(ret, r)
 			prev = r
