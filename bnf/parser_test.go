@@ -9,7 +9,7 @@ import (
 
 var tests = []string{
 	`<list>  =  "<" <items> ">"               ;
-	<items> =  <items> " " <item> | <item>   ;
+	<items> =  <items> " " <item> {     nf.math.sum($1,$3)} | <item>   ;
 	<item>  =  "f    \\uoo\n" | "bar\t" | "baz"|"好吧"         ;
 	`,
 }

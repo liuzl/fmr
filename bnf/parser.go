@@ -36,7 +36,7 @@ func (p *parser) eat(expected rune) error {
 	r := p.next()
 	if r != expected {
 		return fmt.Errorf("|%d col %d| :expected %s, got %s",
-			p.line, p.linePos, expected, r)
+			p.line, p.linePos, string(expected), string(r))
 	}
 	return nil
 }
@@ -161,6 +161,30 @@ func (p *parser) term() (*Term, error) {
 	return &Term{text, false}, nil
 }
 
+func (p *parser) semantic() (sem string, err error) {
+	err = p.eat('{')
+	if err != nil {
+		return
+	}
+	var ret []rune
+	p.ws()
+Loop:
+	for {
+		switch r := p.next(); {
+		case r == eof:
+			err = fmt.Errorf("|%d col %d| : unterminated semantic", p.line, p.linePos)
+			return
+		case r == '}':
+			break Loop
+		default:
+			ret = append(ret, r)
+		}
+	}
+	p.ws()
+	sem = string(ret)
+	return
+}
+
 func (p *parser) ruleBody() (*RuleBody, error) {
 	t, err := p.term()
 	if err != nil {
@@ -175,7 +199,15 @@ func (p *parser) ruleBody() (*RuleBody, error) {
 		}
 		terms = append(terms, t)
 	}
-	return &RuleBody{Terms: terms}, nil
+	// parse SematicFn {}
+	var sem string
+	if p.peek() == '{' {
+		sem, err = p.semantic()
+		if err != nil {
+			return nil, err
+		}
+	}
+	return &RuleBody{terms, sem}, nil
 }
 
 func (p *parser) ruleBodies() ([]*RuleBody, error) {
