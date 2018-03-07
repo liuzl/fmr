@@ -1,4 +1,4 @@
-package cfg
+package bnf
 
 type Grammar struct {
 	Name  string           `json:"name"`

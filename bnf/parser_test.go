@@ -1,4 +1,4 @@
-package cfg
+package bnf
 
 import (
 	"bytes"
@@ -10,7 +10,7 @@ import (
 var tests = []string{
 	`<list>  =  "<" <items> ">"               ;
 	<items> =  <items> " " <item> | <item>   ;
-	<item>  =  "foo" | "bar" | "baz"         ;
+	<item>  =  "foo\n" | "bar\t" | "baz"|"好吧"         ;
 	`,
 }
 

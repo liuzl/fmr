@@ -1,4 +1,4 @@
-package cfg
+package bnf
 
 import (
 	"fmt"
