@@ -1,42 +1,16 @@
 package bnf
 
-import (
-	"fmt"
-	"os"
-)
+// this is the name of the special "gamma" rule added by the algorithm
+// (this is unicode for 'LATIN SMALL LETTER GAMMA')
+const GAMMA_RULE = "\u0263" // "\u0194"
+const DOT = "\u2022"        // "\u00B7"
 
 type TableState struct {
-	name       string
-	production *RuleBody
-	dotIndex   int
-	startCol   *TableColumn
-	endCol     *TableColumn
-}
-
-func (self *TableState) isCompleted() bool {
-	return self.dotIndex >= self.production.size()
-}
-
-func (self *TableState) getNextTerm() *Term {
-	if self.isCompleted() {
-		return nil
-	}
-	return self.production.get(self.dotIndex)
-}
-
-func (self *TableState) String() string {
-	s := ""
-	for i, term := range self.production.Terms {
-		if i == self.dotIndex {
-			s += DOT + " "
-		}
-		s += term.Value + " "
-	}
-	if self.dotIndex == self.production.size() {
-		s += DOT
-	}
-	return fmt.Sprintf("%-6s -> %-20s [%d-%d]",
-		self.name, s, self.startCol.index, self.endCol.index)
+	name  string
+	rb    *RuleBody
+	dot   int
+	start *TableColumn
+	end   *TableColumn
 }
 
 type TableColumn struct {
@@ -45,60 +19,9 @@ type TableColumn struct {
 	states []*TableState
 }
 
-func (self *TableColumn) insert(state *TableState) *TableState {
-	state.endCol = self
-	for _, s := range self.states {
-		if *state == *s {
-			return s
-		}
-	}
-	self.states = append(self.states, state)
-	return self.get(self.size() - 1)
-}
-
-func (self *TableColumn) size() int {
-	return len(self.states)
-}
-
-func (self *TableColumn) get(index int) *TableState {
-	return self.states[index]
-}
-
-func (self *TableColumn) String() string {
-	out := fmt.Sprintf("[%d] '%s'\n", self.index, self.token)
-	out += "=======================================\n"
-	for _, s := range self.states {
-		out += s.String() + "\n"
-	}
-	return out
-}
-
 type Node struct {
 	value    interface{}
 	children []*Node
-}
-
-func (self *Node) Print(out *os.File) {
-	self.PrintLevel(out, 0)
-}
-
-func (self *Node) PrintLevel(out *os.File, level int) {
-	indentation := ""
-	for i := 0; i < level; i++ {
-		indentation += "  "
-	}
-	fmt.Fprintf(out, "%s%v\n", indentation, self.value)
-	for _, child := range self.children {
-		child.PrintLevel(out, level+1)
-	}
-}
-
-func (self *Node) String() string {
-	if len(self.children) > 0 {
-		return fmt.Sprintf("%+v %+v", self.value, self.children)
-	} else {
-		return fmt.Sprintf("%+v", self.value)
-	}
 }
 
 type Parser struct {
@@ -107,18 +30,27 @@ type Parser struct {
 	finalState *TableState
 }
 
-func (self *Parser) String() string {
-	out := ""
-	for _, c := range self.columns {
-		out += c.String() + "\n"
-	}
-	return out
+func (s *TableState) isCompleted() bool {
+	return s.dot >= len(s.rb.Terms)
 }
 
-// this is the name of the special "gamma" rule added by the algorithm
-// (this is unicode for 'LATIN SMALL LETTER GAMMA')
-const GAMMA_RULE = "\u0263" // "\u0194"
-const DOT = "\u2022"        // "\u00B7"
+func (s *TableState) getNextTerm() *Term {
+	if s.isCompleted() {
+		return nil
+	}
+	return s.rb.Terms[s.dot]
+}
+
+func (col *TableColumn) insert(state *TableState) *TableState {
+	state.end = col
+	for _, s := range col.states {
+		if *state == *s {
+			return s
+		}
+	}
+	col.states = append(col.states, state)
+	return col.states[len(col.states)-1]
+}
 
 /*
  * the Earley algorithm's core: add gamma rule, fill up table, and check if the
@@ -128,11 +60,11 @@ const DOT = "\u2022"        // "\u00B7"
 func (self *Parser) parse(start string) *TableState {
 	t := &Term{start, true}
 	begin := TableState{
-		name:       GAMMA_RULE,
-		production: &RuleBody{[]*Term{t}, []*Term{t}, ""},
-		dotIndex:   0,
-		startCol:   self.columns[0],
-		endCol:     self.columns[0],
+		name:  GAMMA_RULE,
+		rb:    &RuleBody{[]*Term{t}, []*Term{t}, ""},
+		dot:   0,
+		start: self.columns[0],
+		end:   self.columns[0],
 	}
 	self.columns[0].states = append(self.columns[0].states, &begin)
 
@@ -165,8 +97,8 @@ func (self *Parser) parse(start string) *TableState {
 
 func (self *Parser) scan(col *TableColumn, st *TableState, term *Term) {
 	if term.Value == col.token {
-		col.insert(&TableState{name: st.name, production: st.production,
-			dotIndex: st.dotIndex + 1, startCol: st.startCol})
+		col.insert(&TableState{name: st.name, rb: st.rb,
+			dot: st.dot + 1, start: st.start})
 	}
 }
 
@@ -174,7 +106,7 @@ func (self *Parser) predict(col *TableColumn, term *Term) bool {
 	r := self.g.Rules[term.Value] //TODO
 	changed := false
 	for _, prod := range r.Body {
-		st := &TableState{name: r.Name, production: prod, dotIndex: 0, startCol: col}
+		st := &TableState{name: r.Name, rb: prod, dot: 0, start: col}
 		st2 := col.insert(st)
 		changed = changed || (st == st2)
 	}
@@ -184,14 +116,14 @@ func (self *Parser) predict(col *TableColumn, term *Term) bool {
 // Earley complete. returns true if the table has been changed, false otherwise
 func (self *Parser) complete(col *TableColumn, state *TableState) bool {
 	changed := false
-	for _, st := range state.startCol.states {
+	for _, st := range state.start.states {
 		term := st.getNextTerm()
 		if term == nil {
 			continue
 		}
 		if term.IsRule && term.Value == state.name {
-			st1 := &TableState{name: st.name, production: st.production,
-				dotIndex: st.dotIndex + 1, startCol: st.startCol}
+			st1 := &TableState{name: st.name, rb: st.rb,
+				dot: st.dot + 1, start: st.start}
 			st2 := col.insert(st1)
 			changed = changed || (st1 == st2)
 		}
@@ -224,25 +156,25 @@ func (self *Parser) GetTrees() []*Node {
 
 func (self *Parser) buildTrees(state *TableState) []*Node {
 	return self.buildTreesHelper(
-		&[]*Node{}, state, len(state.production.rules)-1, state.endCol)
+		&[]*Node{}, state, len(state.rb.rules)-1, state.end)
 }
 
 func (self *Parser) buildTreesHelper(children *[]*Node, state *TableState,
-	ruleIndex int, endCol *TableColumn) []*Node {
-	// begin with the last --non-terminal-- of the production of finalState
+	ruleIndex int, end *TableColumn) []*Node {
+	// begin with the last --non-terminal-- of the ruleBody of finalState
 	var outputs []*Node
-	var startCol *TableColumn
+	var start *TableColumn
 	if ruleIndex < 0 {
 		// this is the base-case for the recursion (we matched the entire rule)
 		outputs = append(outputs, &Node{value: state, children: *children})
 		return outputs
 	} else if ruleIndex == 0 {
 		// if this is the first rule
-		startCol = state.startCol
+		start = state.start
 	}
-	rule := state.production.rules[ruleIndex]
+	rule := state.rb.rules[ruleIndex]
 
-	for _, st := range endCol.states {
+	for _, st := range end.states {
 		if st == state {
 			// this prevents an endless recursion: since the states are filled in
 			// order of completion, we know that X cannot depend on state Y that
@@ -255,8 +187,8 @@ func (self *Parser) buildTreesHelper(children *[]*Node, state *TableState,
 			// match the name
 			continue
 		}
-		if startCol != nil && st.startCol != startCol {
-			// if startCol isn't nil, this state must span from startCol to endCol
+		if start != nil && st.start != start {
+			// if start isn't nil, this state must span from start to end
 			continue
 		}
 		// okay, so `st` matches -- now we need to create a tree for every possible
@@ -268,7 +200,7 @@ func (self *Parser) buildTreesHelper(children *[]*Node, state *TableState,
 			children2 = append(children2, *children...)
 			// now try all options
 			for _, node := range self.buildTreesHelper(
-				&children2, state, ruleIndex-1, st.startCol) {
+				&children2, state, ruleIndex-1, st.start) {
 				outputs = append(outputs, node)
 			}
 		}
