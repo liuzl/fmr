@@ -14,12 +14,12 @@ func TestEarleyParse(t *testing.T) {
 	strs := []string{
 		//"a",
 		"a + a",
-		"a + a + a",
+		//"a + a + a",
 		//"a + a + a + a",
 		//"a + a + a + a + a",
 		//"a + a + a + a + a + a",
 		//"a + a + a + a + a + a + a",
-		"+ a",
+		//"+ a",
 	}
 	for _, text := range strs {
 		p := NewParser(EXPR, text)
