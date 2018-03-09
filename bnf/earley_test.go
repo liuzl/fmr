@@ -25,14 +25,14 @@ func TestEarleyParse(t *testing.T) {
 	grammar = `<expr> = "a" | "a" "+" <expr>;`
 	//grammar = `<expr> = "a";`
 	strs := []string{
-		//"a",
+		"a",
 		"a + a",
-		//"a + a + a",
-		//"a + a + a + a",
+		"a + a + a",
+		"a + a + a + a",
 		//"a + a + a + a + a",
 		//"a + a + a + a + a + a",
 		//"a + a + a + a + a + a + a",
-		// "+ a",
+		"+ a",
 	}
 	g, err := Parse(grammar)
 	if err != nil {

@@ -1,7 +1,7 @@
 package bnf
 
 import (
-	"fmt"
+	//"fmt"
 	"testing"
 )
 
@@ -18,10 +18,10 @@ func TestLex(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		b, err := JsonMarshalIndent(g, "", "  ")
+		_, err = JsonMarshalIndent(g, "", "  ")
 		if err != nil {
 			t.Error(err)
 		}
-		fmt.Println(string(b))
+		//fmt.Println(string(b))
 	}
 }
