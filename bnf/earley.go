@@ -53,13 +53,9 @@ func (col *TableColumn) insert(state *TableState) *TableState {
  * state, or null, if the parse failed.
  */
 func (p *Parser) parse(start string) *TableState {
-	t := &Term{start, true}
-	//rb := &RuleBody{[]*Term{t}, []*Term{t}, ""}
-	rb := &RuleBody{[]*Term{t}, ""}
+	rb := &RuleBody{[]*Term{&Term{start, true}}, ""}
 	begin := &TableState{GAMMA_RULE, rb, 0, 0, 0}
-
 	p.columns[0].states = append(p.columns[0].states, begin)
-
 	for i, col := range p.columns {
 		for j := 0; j < len(col.states); j++ {
 			state := col.states[j]
@@ -138,66 +134,3 @@ func (p *Parser) handleEpsilons(col *TableColumn) {
 		}
 	}
 }
-
-/*
-func (p *Parser) GetTrees() []*Node {
-	if p.finalState != nil {
-		return p.buildTrees(p.finalState)
-	}
-	return nil
-}
-
-func (p *Parser) buildTrees(state *TableState) []*Node {
-	return p.buildTreesHelper(
-		&[]*Node{}, state, len(state.rb.rules)-1, state.end)
-}
-
-func (self *Parser) buildTreesHelper(children *[]*Node, state *TableState,
-	ruleIndex int, end *TableColumn) []*Node {
-	// begin with the last --non-terminal-- of the ruleBody of finalState
-	var outputs []*Node
-	var start *TableColumn
-	if ruleIndex < 0 {
-		// this is the base-case for the recursion (we matched the entire rule)
-		outputs = append(outputs, &Node{value: state, children: *children})
-		return outputs
-	} else if ruleIndex == 0 {
-		// if this is the first rule
-		start = state.start
-	}
-	rule := state.rb.rules[ruleIndex]
-
-	for _, st := range end.states {
-		if st == state {
-			// this prevents an endless recursion: since the states are filled in
-			// order of completion, we know that X cannot depend on state Y that
-			// comes after it X in chronological order
-			break
-		}
-
-		if !st.isCompleted() || st.name != rule.Value {
-			// this state is out of the question -- either not completed or does not
-			// match the name
-			continue
-		}
-		if start != nil && st.start != start {
-			// if start isn't nil, this state must span from start to end
-			continue
-		}
-		// okay, so `st` matches -- now we need to create a tree for every possible
-		// sub-match
-		for _, subTree := range self.buildTrees(st) {
-			// in python: children2 = [subTree] + children
-			children2 := []*Node{}
-			children2 = append(children2, subTree)
-			children2 = append(children2, *children...)
-			// now try all options
-			for _, node := range self.buildTreesHelper(
-				&children2, state, ruleIndex-1, st.start) {
-				outputs = append(outputs, node)
-			}
-		}
-	}
-	return outputs
-}
-*/

@@ -7,7 +7,6 @@ type Node struct {
 }
 
 func (p *Parser) GetTrees() []*Node {
-	//fmt.Printf("%+v\n", p)
 	if p.finalState != nil {
 		return p.buildTrees(p.finalState)
 	}
@@ -15,14 +14,12 @@ func (p *Parser) GetTrees() []*Node {
 }
 
 func (p *Parser) buildTrees(state *TableState) []*Node {
-	// build tree for state
-	tree := p.buildTreesHelper(
+	return p.buildTreesHelper(
 		&[]*Node{}, state, len(state.rb.Terms)-1, state.end)
-	return tree
 }
 
 func (p *Parser) buildTreesHelper(children *[]*Node, state *TableState,
-	termIndex int, end int) []*Node {
+	termIndex, end int) []*Node {
 	// begin with the last --non-terminal-- of the ruleBody of finalState
 	var outputs []*Node
 	var start = -1
@@ -34,10 +31,10 @@ func (p *Parser) buildTreesHelper(children *[]*Node, state *TableState,
 		// if this is the first rule
 		start = state.start
 	}
-	rule := state.rb.Terms[termIndex]
+	term := state.rb.Terms[termIndex]
 
-	if !rule.IsRule {
-		cld := []*Node{&Node{"terminal:" + rule.Value, nil}}
+	if !term.IsRule {
+		cld := []*Node{&Node{"terminal:" + term.Value, nil}}
 		cld = append(cld, *children...)
 		for _, node := range p.buildTreesHelper(&cld, state, termIndex-1, end) {
 			outputs = append(outputs, node)
@@ -52,7 +49,7 @@ func (p *Parser) buildTreesHelper(children *[]*Node, state *TableState,
 			break
 		}
 
-		if !st.isCompleted() || st.name != rule.Value {
+		if !st.isCompleted() || st.name != term.Value {
 			// this state is out of the question -- either not completed or does not
 			// match the name
 			continue
@@ -64,12 +61,10 @@ func (p *Parser) buildTreesHelper(children *[]*Node, state *TableState,
 		// okay, so `st` matches -- now we need to create a tree for every possible
 		// sub-match
 		for _, subTree := range p.buildTrees(st) {
-			// in python: children2 = [subTree] + children
-			children2 := []*Node{subTree}
-			children2 = append(children2, *children...)
+			cld := []*Node{subTree}
+			cld = append(cld, *children...)
 			// now try all options
-			for _, node := range p.buildTreesHelper(
-				&children2, state, termIndex-1, st.start) {
+			for _, node := range p.buildTreesHelper(&cld, state, termIndex-1, st.start) {
 				outputs = append(outputs, node)
 			}
 		}
