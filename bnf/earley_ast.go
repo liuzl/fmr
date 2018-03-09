@@ -22,11 +22,10 @@ func (p *Parser) buildTrees(state *TableState) []*Node {
 }
 
 func (p *Parser) buildTreesHelper(children *[]*Node, state *TableState,
-	termIndex int, end *TableColumn) []*Node {
-	//fmt.Printf("state:%+v\nchildren:%+v\n\n", state, children)
+	termIndex int, end int) []*Node {
 	// begin with the last --non-terminal-- of the ruleBody of finalState
 	var outputs []*Node
-	var start *TableColumn
+	var start = -1
 	if termIndex < 0 {
 		// this is the base-case for the recursion (we matched the entire rule)
 		outputs = append(outputs, &Node{value: state, children: *children})
@@ -37,19 +36,15 @@ func (p *Parser) buildTreesHelper(children *[]*Node, state *TableState,
 	}
 	rule := state.rb.Terms[termIndex]
 
-	/*fmt.Printf("\nrule:%+v->%+v, %d, end:%d\n",
-	state.rb.Terms, rule, termIndex, end.index)*/
-
 	if !rule.IsRule {
-		children2 := []*Node{&Node{"terminal:" + rule.Value, nil}}
-		children2 = append(children2, *children...)
-		for _, node := range p.buildTreesHelper(
-			&children2, state, termIndex-1, p.columns[end.index-1]) {
+		cld := []*Node{&Node{"terminal:" + rule.Value, nil}}
+		cld = append(cld, *children...)
+		for _, node := range p.buildTreesHelper(&cld, state, termIndex-1, end) {
 			outputs = append(outputs, node)
 		}
 		return outputs
 	}
-	for _, st := range end.states {
+	for _, st := range p.columns[end].states {
 		if st == state {
 			// this prevents an endless recursion: since the states are filled in
 			// order of completion, we know that X cannot depend on state Y that
@@ -62,7 +57,7 @@ func (p *Parser) buildTreesHelper(children *[]*Node, state *TableState,
 			// match the name
 			continue
 		}
-		if start != nil && st.start != start {
+		if start != -1 && st.start != start {
 			// if start isn't nil, this state must span from start to end
 			continue
 		}

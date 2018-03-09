@@ -9,8 +9,8 @@ type TableState struct {
 	name  string
 	rb    *RuleBody
 	dot   int
-	start *TableColumn
-	end   *TableColumn
+	start int
+	end   int
 }
 
 type TableColumn struct {
@@ -37,7 +37,7 @@ func (s *TableState) getNextTerm() *Term {
 }
 
 func (col *TableColumn) insert(state *TableState) *TableState {
-	state.end = col
+	state.end = col.index
 	for _, s := range col.states {
 		if *state == *s {
 			return s
@@ -56,7 +56,7 @@ func (p *Parser) parse(start string) *TableState {
 	t := &Term{start, true}
 	//rb := &RuleBody{[]*Term{t}, []*Term{t}, ""}
 	rb := &RuleBody{[]*Term{t}, ""}
-	begin := &TableState{GAMMA_RULE, rb, 0, p.columns[0], p.columns[0]}
+	begin := &TableState{GAMMA_RULE, rb, 0, 0, 0}
 
 	p.columns[0].states = append(p.columns[0].states, begin)
 
@@ -98,7 +98,7 @@ func (p *Parser) predict(col *TableColumn, term *Term) bool {
 	r := p.g.Rules[term.Value] //TODO
 	changed := false
 	for _, prod := range r.Body {
-		st := &TableState{name: r.Name, rb: prod, dot: 0, start: col}
+		st := &TableState{name: r.Name, rb: prod, dot: 0, start: col.index}
 		st2 := col.insert(st)
 		changed = changed || (st == st2)
 	}
@@ -106,9 +106,9 @@ func (p *Parser) predict(col *TableColumn, term *Term) bool {
 }
 
 // Earley complete. returns true if the table has been changed, false otherwise
-func (*Parser) complete(col *TableColumn, state *TableState) bool {
+func (p *Parser) complete(col *TableColumn, state *TableState) bool {
 	changed := false
-	for _, st := range state.start.states {
+	for _, st := range p.columns[state.start].states {
 		term := st.getNextTerm()
 		if term == nil {
 			continue
