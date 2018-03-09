@@ -19,11 +19,6 @@ type TableColumn struct {
 	states []*TableState
 }
 
-type Node struct {
-	value    interface{}
-	children []*Node
-}
-
 type Parser struct {
 	g          *Grammar
 	columns    []*TableColumn
@@ -57,36 +52,33 @@ func (col *TableColumn) insert(state *TableState) *TableState {
  * gamma rule span from the first column to the last one. return the final gamma
  * state, or null, if the parse failed.
  */
-func (self *Parser) parse(start string) *TableState {
+func (p *Parser) parse(start string) *TableState {
 	t := &Term{start, true}
-	begin := TableState{
-		name:  GAMMA_RULE,
-		rb:    &RuleBody{[]*Term{t}, []*Term{t}, ""},
-		dot:   0,
-		start: self.columns[0],
-		end:   self.columns[0],
-	}
-	self.columns[0].states = append(self.columns[0].states, &begin)
+	//rb := &RuleBody{[]*Term{t}, []*Term{t}, ""}
+	rb := &RuleBody{[]*Term{t}, ""}
+	begin := &TableState{GAMMA_RULE, rb, 0, p.columns[0], p.columns[0]}
 
-	for i, col := range self.columns {
+	p.columns[0].states = append(p.columns[0].states, begin)
+
+	for i, col := range p.columns {
 		for j := 0; j < len(col.states); j++ {
 			state := col.states[j]
 			if state.isCompleted() {
-				self.complete(col, state)
+				p.complete(col, state)
 			} else {
 				term := state.getNextTerm()
 				if term.IsRule {
-					self.predict(col, term)
-				} else if i+1 < len(self.columns) {
-					self.scan(self.columns[i+1], state, term)
+					p.predict(col, term)
+				} else if i+1 < len(p.columns) {
+					p.scan(p.columns[i+1], state, term)
 				}
 			}
 		}
-		self.handleEpsilons(col)
+		p.handleEpsilons(col)
 	}
 
 	// find end state (return nil if not found)
-	lastCol := self.columns[len(self.columns)-1]
+	lastCol := p.columns[len(p.columns)-1]
 	for _, state := range lastCol.states {
 		if state.name == GAMMA_RULE && state.isCompleted() {
 			return state
@@ -95,15 +87,15 @@ func (self *Parser) parse(start string) *TableState {
 	return nil
 }
 
-func (self *Parser) scan(col *TableColumn, st *TableState, term *Term) {
+func (*Parser) scan(col *TableColumn, st *TableState, term *Term) {
 	if term.Value == col.token {
 		col.insert(&TableState{name: st.name, rb: st.rb,
 			dot: st.dot + 1, start: st.start})
 	}
 }
 
-func (self *Parser) predict(col *TableColumn, term *Term) bool {
-	r := self.g.Rules[term.Value] //TODO
+func (p *Parser) predict(col *TableColumn, term *Term) bool {
+	r := p.g.Rules[term.Value] //TODO
 	changed := false
 	for _, prod := range r.Body {
 		st := &TableState{name: r.Name, rb: prod, dot: 0, start: col}
@@ -114,7 +106,7 @@ func (self *Parser) predict(col *TableColumn, term *Term) bool {
 }
 
 // Earley complete. returns true if the table has been changed, false otherwise
-func (self *Parser) complete(col *TableColumn, state *TableState) bool {
+func (*Parser) complete(col *TableColumn, state *TableState) bool {
 	changed := false
 	for _, st := range state.start.states {
 		term := st.getNextTerm()
@@ -131,31 +123,32 @@ func (self *Parser) complete(col *TableColumn, state *TableState) bool {
 	return changed
 }
 
-func (self *Parser) handleEpsilons(col *TableColumn) {
+func (p *Parser) handleEpsilons(col *TableColumn) {
 	changed := true
 	for changed {
 		changed = false
 		for _, state := range col.states {
 			if state.isCompleted() {
-				changed = changed || self.complete(col, state)
+				changed = changed || p.complete(col, state)
 			}
 			term := state.getNextTerm()
 			if term != nil && term.IsRule {
-				changed = changed || self.predict(col, term)
+				changed = changed || p.predict(col, term)
 			}
 		}
 	}
 }
 
-func (self *Parser) GetTrees() []*Node {
-	if self.finalState != nil {
-		return self.buildTrees(self.finalState)
+/*
+func (p *Parser) GetTrees() []*Node {
+	if p.finalState != nil {
+		return p.buildTrees(p.finalState)
 	}
 	return nil
 }
 
-func (self *Parser) buildTrees(state *TableState) []*Node {
-	return self.buildTreesHelper(
+func (p *Parser) buildTrees(state *TableState) []*Node {
+	return p.buildTreesHelper(
 		&[]*Node{}, state, len(state.rb.rules)-1, state.end)
 }
 
@@ -207,3 +200,4 @@ func (self *Parser) buildTreesHelper(children *[]*Node, state *TableState,
 	}
 	return outputs
 }
+*/

@@ -12,8 +12,8 @@ func TestEarleyParse(t *testing.T) {
 	EXPR.Add(NewProduction(EXPR, OP, EXPR))
 
 	strs := []string{
-		//"a",
-		"a + a",
+		"a",
+		//"a + a",
 		//"a + a + a",
 		//"a + a + a + a",
 		//"a + a + a + a + a",

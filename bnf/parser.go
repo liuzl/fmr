@@ -191,10 +191,6 @@ func (p *parser) ruleBody() (*RuleBody, error) {
 		return nil, err
 	}
 	terms := []*Term{t}
-	rules := []*Term{}
-	if t.IsRule {
-		rules = append(rules, t)
-	}
 	p.ws()
 	for p.ws(); strings.ContainsRune(`<"`, p.peek()); p.ws() {
 		t, err = p.term()
@@ -202,9 +198,6 @@ func (p *parser) ruleBody() (*RuleBody, error) {
 			return nil, err
 		}
 		terms = append(terms, t)
-		if t.IsRule {
-			rules = append(rules, t)
-		}
 	}
 	// parse SematicFn {}
 	var sem string
@@ -214,7 +207,7 @@ func (p *parser) ruleBody() (*RuleBody, error) {
 			return nil, err
 		}
 	}
-	return &RuleBody{terms, rules, sem}, nil
+	return &RuleBody{terms, sem}, nil
 }
 
 func (p *parser) ruleBodies() ([]*RuleBody, error) {

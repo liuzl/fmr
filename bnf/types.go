@@ -12,11 +12,14 @@ type Rule struct {
 
 type RuleBody struct {
 	Terms    []*Term `json:"terms"`
-	rules    []*Term `json:"-"`
 	Semantic string  `json:"semantic,omitempty"`
 }
 
 type Term struct {
 	Value  string `json:"value"`
 	IsRule bool   `json:"is_rule"`
+}
+
+func (t *Term) String() string {
+	return t.Value
 }

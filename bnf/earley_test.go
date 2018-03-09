@@ -22,15 +22,17 @@ func TestEarleyParse(t *testing.T) {
 	grammar := `<sym> = "a";
 	<op> = "+";
 	<expr> = <sym> | <expr> <op> <expr>;`
+	grammar = `<expr> = "a" | "a" "+" <expr>;`
+	//grammar = `<expr> = "a";`
 	strs := []string{
-		"a",
+		//"a",
 		"a + a",
-		"a + a + a",
+		//"a + a + a",
 		//"a + a + a + a",
 		//"a + a + a + a + a",
 		//"a + a + a + a + a + a",
 		//"a + a + a + a + a + a + a",
-		"+ a",
+		// "+ a",
 	}
 	g, err := Parse(grammar)
 	if err != nil {
