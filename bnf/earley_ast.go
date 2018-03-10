@@ -1,5 +1,9 @@
 package bnf
 
+import "fmt"
+
+var Debug = false
+
 // AST of tree structure
 type Node struct {
 	Value    interface{} `json:"value"`
@@ -21,6 +25,9 @@ func (p *Parser) buildTrees(state *TableState) []*Node {
 func (p *Parser) buildTreesHelper(children *[]*Node, state *TableState,
 	termIndex, end int) []*Node {
 	// begin with the last --non-terminal-- of the ruleBody of finalState
+	if Debug {
+		fmt.Printf("%+v termIndex:%d children:%+v, end:%d\n", state, termIndex, children, end)
+	}
 	var outputs []*Node
 	var start = -1
 	if termIndex < 0 {
@@ -38,7 +45,7 @@ func (p *Parser) buildTreesHelper(children *[]*Node, state *TableState,
 			state.Start + termIndex, state.Start + termIndex + 1, 0}
 		cld := []*Node{&Node{n, nil}}
 		cld = append(cld, *children...)
-		for _, node := range p.buildTreesHelper(&cld, state, termIndex-1, end) {
+		for _, node := range p.buildTreesHelper(&cld, state, termIndex-1, end-1) {
 			outputs = append(outputs, node)
 		}
 		return outputs
@@ -54,7 +61,13 @@ func (p *Parser) buildTreesHelper(children *[]*Node, state *TableState,
 		if !st.isCompleted() || st.Name != term.Value {
 			// this state is out of the question -- either not completed or does not
 			// match the name
+			if Debug {
+				fmt.Printf("\tN st:%+v, term:%+v\n", st, term)
+			}
 			continue
+		}
+		if Debug {
+			fmt.Printf("\tY st:%+v, term:%+v\n", st, term)
 		}
 		if start != -1 && st.Start != start {
 			// if start isn't nil, this state must span from start to end

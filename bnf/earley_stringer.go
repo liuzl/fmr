@@ -3,6 +3,7 @@ package bnf
 import (
 	"fmt"
 	"os"
+	"strconv"
 )
 
 func (ts *TableState) String() string {
@@ -12,13 +13,18 @@ func (ts *TableState) String() string {
 			if i == ts.dot {
 				s += DOT + " "
 			}
-			s += term.Value + " "
+			if term.IsRule {
+				s += term.Value + " "
+			} else {
+				s += strconv.Quote(term.Value) + " "
+			}
 		}
 		if ts.dot == len(ts.Rb.Terms) {
 			s += DOT
 		}
+		return fmt.Sprintf("%s -> %s [%d-%d]", ts.Name, s, ts.Start, ts.End)
 	}
-	return fmt.Sprintf("%-6s -> %-20s [%d-%d]", ts.Name, s, ts.Start, ts.End)
+	return fmt.Sprintf("%s [%d-%d]", strconv.Quote(ts.Name), ts.Start, ts.End)
 }
 
 func (tc *TableColumn) String() string {
