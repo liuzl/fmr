@@ -1,0 +1,21 @@
+<number> = "one"    {nf.math.Number(1)}
+         | "two"    {nf.math.Number(2)}
+         | "three"  {nf.math.Number(3)}
+         | "four"   {nf.math.Number(4)}
+         | "five"   {nf.math.Number(5)}
+         | "six"    {nf.math.Number(6)}
+         | "seven"  {nf.math.Number(7)}
+         | "eight"  {nf.math.Number(8)}
+         | "nine"   {nf.math.Number(9)}
+         | "ten"    {nf.math.Number(10)}
+         | <sum> | <sub> | <mul> | <neg>;
+
+<sum> = <number> "plus" <number>                    {nf.math.sum($0, $1)}
+      | <number> "add" <number>                     {nf.math.sum($0, $1)}
+      | "the" "sum" "of" <number> "and" <number>    {nf.math.sum($0, $1)};
+
+<sub> = <number> "minus" <number> {nf.math.sub($0, $1)};
+
+<mul> = <number> "times" <number> {nf.math.mul($0, $1)};
+
+<neg> = "minus" <number> {nf.math.neg($0)};
