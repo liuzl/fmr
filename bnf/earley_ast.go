@@ -11,6 +11,9 @@ type Node struct {
 }
 
 func (p *Parser) GetTrees() []*Node {
+	if Debug {
+		fmt.Printf("%+v\n", p)
+	}
 	if p.finalState != nil {
 		return p.buildTrees(p.finalState)
 	}
@@ -50,6 +53,7 @@ func (p *Parser) buildTreesHelper(children *[]*Node, state *TableState,
 		}
 		return outputs
 	}
+
 	for _, st := range p.columns[end].states {
 		if st == state {
 			// this prevents an endless recursion: since the states are filled in
@@ -66,13 +70,17 @@ func (p *Parser) buildTreesHelper(children *[]*Node, state *TableState,
 			}
 			continue
 		}
+		if start != -1 && st.Start != start {
+			// if start isn't nil, this state must span from start to end
+			if Debug {
+				fmt.Printf("\tN st:%+v, term:%+v\n", st, term)
+			}
+			continue
+		}
 		if Debug {
 			fmt.Printf("\tY st:%+v, term:%+v\n", st, term)
 		}
-		if start != -1 && st.Start != start {
-			// if start isn't nil, this state must span from start to end
-			continue
-		}
+
 		// okay, so `st` matches -- now we need to create a tree for every possible
 		// sub-match
 		for _, subTree := range p.buildTrees(st) {

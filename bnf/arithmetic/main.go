@@ -10,6 +10,9 @@ import (
 
 var inputs = []string{
 	//"one", "two", "ten",
+	"minus three minus two",
+	"two times two plus three",
+	"one add two multiply by two plus three",
 	/*
 		"one plus one",
 		"one plus two",
@@ -20,11 +23,10 @@ var inputs = []string{
 		"three plus minus two",
 		"two plus two",
 		"three minus two",
-		"minus three minus two",
 		"two times two",
 		"two times three",
 	*/
-	"three plus three minus two",
+	//"three plus three minus two",
 	//"two times two plus three",
 	//"minus four",
 }
@@ -34,7 +36,7 @@ func main() {
 	if err != nil {
 		glog.Fatal(err)
 	}
-	bnf.Debug = true
+	//bnf.Debug = true
 	g, err := bnf.Parse(string(b))
 	if err != nil {
 		glog.Fatal(err)
@@ -43,7 +45,7 @@ func main() {
 		fmt.Println(input)
 		p := bnf.NewParser(g, "number", input)
 		trees := p.GetTrees()
-		fmt.Printf("%+v\n", p)
+		//fmt.Printf("%+v\n", p)
 		fmt.Println("tree number:", len(trees))
 		for _, tree := range trees {
 			tree.Print(os.Stdout)
