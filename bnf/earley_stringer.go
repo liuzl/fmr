@@ -7,16 +7,18 @@ import (
 
 func (ts *TableState) String() string {
 	s := ""
-	for i, term := range ts.rb.Terms {
-		if i == ts.dot {
-			s += DOT + " "
+	if ts.Rb != nil {
+		for i, term := range ts.Rb.Terms {
+			if i == ts.dot {
+				s += DOT + " "
+			}
+			s += term.Value + " "
 		}
-		s += term.Value + " "
+		if ts.dot == len(ts.Rb.Terms) {
+			s += DOT
+		}
 	}
-	if ts.dot == len(ts.rb.Terms) {
-		s += DOT
-	}
-	return fmt.Sprintf("%-6s -> %-20s [%d-%d]", ts.name, s, ts.start, ts.end)
+	return fmt.Sprintf("%-6s -> %-20s [%d-%d]", ts.Name, s, ts.Start, ts.End)
 }
 
 func (tc *TableColumn) String() string {
@@ -45,16 +47,16 @@ func (n *Node) PrintLevel(out *os.File, level int) {
 	for i := 0; i < level; i++ {
 		indentation += "  "
 	}
-	fmt.Fprintf(out, "%s%v\n", indentation, n.value)
-	for _, child := range n.children {
+	fmt.Fprintf(out, "%s%v\n", indentation, n.Value)
+	for _, child := range n.Children {
 		child.PrintLevel(out, level+1)
 	}
 }
 
 func (n *Node) String() string {
-	if len(n.children) > 0 {
-		return fmt.Sprintf("%+v %+v", n.value, n.children)
+	if len(n.Children) > 0 {
+		return fmt.Sprintf("%+v %+v", n.Value, n.Children)
 	} else {
-		return fmt.Sprintf("%+v", n.value)
+		return fmt.Sprintf("%+v", n.Value)
 	}
 }

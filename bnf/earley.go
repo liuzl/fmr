@@ -6,11 +6,11 @@ const GAMMA_RULE = "\u0263" // "\u0194"
 const DOT = "\u2022"        // "\u00B7"
 
 type TableState struct {
-	name  string
-	rb    *RuleBody
+	Name  string    `json:"name"`
+	Rb    *RuleBody `json:"rb,omitempty"`
+	Start int       `json:"start"`
+	End   int       `json:"end"`
 	dot   int
-	start int
-	end   int
 }
 
 type TableColumn struct {
@@ -26,18 +26,18 @@ type Parser struct {
 }
 
 func (s *TableState) isCompleted() bool {
-	return s.dot >= len(s.rb.Terms)
+	return s.dot >= len(s.Rb.Terms)
 }
 
 func (s *TableState) getNextTerm() *Term {
 	if s.isCompleted() {
 		return nil
 	}
-	return s.rb.Terms[s.dot]
+	return s.Rb.Terms[s.dot]
 }
 
 func (col *TableColumn) insert(state *TableState) *TableState {
-	state.end = col.index
+	state.End = col.index
 	for _, s := range col.states {
 		if *state == *s {
 			return s
@@ -76,7 +76,7 @@ func (p *Parser) parse(start string) *TableState {
 	// find end state (return nil if not found)
 	lastCol := p.columns[len(p.columns)-1]
 	for _, state := range lastCol.states {
-		if state.name == GAMMA_RULE && state.isCompleted() {
+		if state.Name == GAMMA_RULE && state.isCompleted() {
 			return state
 		}
 	}
@@ -85,8 +85,8 @@ func (p *Parser) parse(start string) *TableState {
 
 func (*Parser) scan(col *TableColumn, st *TableState, term *Term) {
 	if term.Value == col.token {
-		col.insert(&TableState{name: st.name, rb: st.rb,
-			dot: st.dot + 1, start: st.start})
+		col.insert(&TableState{Name: st.Name, Rb: st.Rb,
+			dot: st.dot + 1, Start: st.Start})
 	}
 }
 
@@ -94,7 +94,7 @@ func (p *Parser) predict(col *TableColumn, term *Term) bool {
 	r := p.g.Rules[term.Value] //TODO
 	changed := false
 	for _, prod := range r.Body {
-		st := &TableState{name: r.Name, rb: prod, dot: 0, start: col.index}
+		st := &TableState{Name: r.Name, Rb: prod, dot: 0, Start: col.index}
 		st2 := col.insert(st)
 		changed = changed || (st == st2)
 	}
@@ -104,14 +104,14 @@ func (p *Parser) predict(col *TableColumn, term *Term) bool {
 // Earley complete. returns true if the table has been changed, false otherwise
 func (p *Parser) complete(col *TableColumn, state *TableState) bool {
 	changed := false
-	for _, st := range p.columns[state.start].states {
+	for _, st := range p.columns[state.Start].states {
 		term := st.getNextTerm()
 		if term == nil {
 			continue
 		}
-		if term.IsRule && term.Value == state.name {
-			st1 := &TableState{name: st.name, rb: st.rb,
-				dot: st.dot + 1, start: st.start}
+		if term.IsRule && term.Value == state.Name {
+			st1 := &TableState{Name: st.Name, Rb: st.Rb,
+				dot: st.dot + 1, Start: st.Start}
 			st2 := col.insert(st1)
 			changed = changed || (st1 == st2)
 		}

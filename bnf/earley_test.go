@@ -22,13 +22,13 @@ func TestEarleyParse(t *testing.T) {
 	grammar := `<sym> = "a";
 	<op> = "+";
 	<expr> = <sym> | <expr> <op> <expr>;`
-	grammar = `<expr> = "a" | "a" "+" <expr>;`
+	grammar = `<expr> = "a" | "a" "+" <expr> {nf.math.sum($1, $3)};`
 	//grammar = `<expr> = "a";`
 	strs := []string{
 		"a",
 		"a + a",
-		"a + a + a",
-		"a + a + a + a",
+		//"a + a + a",
+		//"a + a + a + a",
 		//"a + a + a + a + a",
 		//"a + a + a + a + a + a",
 		//"a + a + a + a + a + a + a",
@@ -50,6 +50,11 @@ func TestEarleyParse(t *testing.T) {
 		t.Log("tree number:", len(trees))
 		for _, tree := range trees {
 			tree.Print(os.Stdout)
+			b, err := JsonMarshalIndent(tree, "", " ")
+			if err != nil {
+				t.Error(err)
+			}
+			t.Logf("%+v", string(b))
 		}
 	}
 }
