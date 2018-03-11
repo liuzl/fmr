@@ -1,8 +1,9 @@
 package bnf
 
 type Grammar struct {
-	Name  string           `json:"name"`
-	Rules map[string]*Rule `json:"rules"`
+	Name    string           `json:"name"`
+	Rules   map[string]*Rule `json:"rules"`
+	Refined bool             `json:"refined"`
 }
 
 type Rule struct {
@@ -20,6 +21,5 @@ type Term struct {
 	IsRule bool   `json:"is_rule"`
 }
 
-func (t *Term) String() string {
-	return t.Value
+func (g *Grammar) refine() {
 }

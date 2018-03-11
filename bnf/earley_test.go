@@ -38,7 +38,7 @@ func TestEarleyParse(t *testing.T) {
 		t.Log("tree number:", len(trees))
 		for _, tree := range trees {
 			tree.Print(os.Stdout)
-			b, err := JsonMarshalIndent(tree, "", " ")
+			b, err := goutil.JsonMarshalIndent(tree, "", " ")
 			if err != nil {
 				t.Error(err)
 			}
