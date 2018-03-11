@@ -272,7 +272,7 @@ func (p *parser) grammar() (*Grammar, error) {
 	return g, nil
 }
 
-func Parse(d string) (*Grammar, error) {
+func CFGrammar(d string) (*Grammar, error) {
 	p := &parser{input: d}
 	return p.grammar()
 }

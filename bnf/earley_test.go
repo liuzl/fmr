@@ -1,6 +1,7 @@
 package bnf
 
 import (
+	"github.com/liuzl/goutil"
 	"os"
 	"testing"
 )
@@ -21,11 +22,11 @@ func TestEarleyParse(t *testing.T) {
 		//"a + a + a + a + a + a + a",
 		"+ a",
 	}
-	g, err := Parse(grammar)
+	g, err := CFGrammar(grammar)
 	if err != nil {
 		t.Error(err)
 	}
-	_, err = JsonMarshalIndent(g, "", " ")
+	_, err = goutil.JsonMarshalIndent(g, "", " ")
 	if err != nil {
 		t.Error(err)
 	}

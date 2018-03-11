@@ -2,6 +2,7 @@ package bnf
 
 import (
 	//"fmt"
+	"github.com/liuzl/goutil"
 	"testing"
 )
 
@@ -14,11 +15,11 @@ var tests = []string{
 
 func TestLex(t *testing.T) {
 	for _, c := range tests {
-		g, err := Parse(c)
+		g, err := CFGrammar(c)
 		if err != nil {
 			t.Error(err)
 		}
-		_, err = JsonMarshalIndent(g, "", "  ")
+		_, err = goutil.JsonMarshalIndent(g, "", "  ")
 		if err != nil {
 			t.Error(err)
 		}
