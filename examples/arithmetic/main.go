@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/golang/glog"
-	"github.com/liuzl/earley/bnf"
+	"github.com/liuzl/fmr/bnf"
 	"github.com/liuzl/goutil"
 	"io/ioutil"
 	"os"
@@ -15,6 +15,7 @@ var inputs = []string{
 	"two times two plus three",
 	"one add two multiply by two plus three",
 	"二加五减三",
+	"我的二加五减三",
 	/*
 		"one plus one",
 		"one plus two",
