@@ -1,31 +1,44 @@
 package bnf
 
 import (
+	"fmt"
 	"github.com/liuzl/ling"
+	"strings"
 )
 
 var nlp = ling.MustNLP(ling.Norm)
 
-func NewParser(g *Grammar, start, text string) *Parser {
+func (g *Grammar) EarleyParse(start, text string) (*Parse, error) {
+	start = strings.TrimSpace(start)
+	if start == "" {
+		return nil, fmt.Errorf("start rule is empty")
+	}
+	if g.Rules[start] == nil {
+		return nil, fmt.Errorf("start rule:<%s> not found in Grammar", start)
+	}
+	text = strings.TrimSpace(text)
+	if text == "" {
+		return nil, fmt.Errorf("text is empty")
+	}
 	d := ling.NewDocument(text)
 	err := nlp.Annotate(d)
 	if err != nil {
-		//TODO
-		return nil
+		return nil, err
 	}
-	var tokens []string
+
+	parse := &Parse{g: g}
+	parse.columns = append(parse.columns, &TableColumn{index: 0, token: ""})
 	for _, token := range d.Tokens {
 		if token.Type == ling.Space {
 			continue
 		}
-		tokens = append(tokens, token.Annotations[ling.Norm])
+		parse.columns = append(parse.columns,
+			&TableColumn{
+				index: len(parse.columns),
+				token: token.Annotations[ling.Norm],
+			})
 	}
-	parser := &Parser{g: g}
-	parser.columns = append(parser.columns, &TableColumn{index: 0, token: ""})
-	for i, token := range tokens {
-		parser.columns = append(parser.columns,
-			&TableColumn{index: i + 1, token: token})
-	}
-	parser.finalState = parser.parse(start)
-	return parser
+
+	parse.finalState = parse.parse(start)
+	return parse, nil
 }

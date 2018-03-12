@@ -10,7 +10,7 @@ type Node struct {
 	Children []*Node     `json:"children,omitempty"`
 }
 
-func (p *Parser) GetTrees() []*Node {
+func (p *Parse) GetTrees() []*Node {
 	if Debug {
 		fmt.Printf("%+v\n", p)
 	}
@@ -20,12 +20,12 @@ func (p *Parser) GetTrees() []*Node {
 	return nil
 }
 
-func (p *Parser) buildTrees(state *TableState) []*Node {
+func (p *Parse) buildTrees(state *TableState) []*Node {
 	return p.buildTreesHelper(
 		&[]*Node{}, state, len(state.Rb.Terms)-1, state.End)
 }
 
-func (p *Parser) buildTreesHelper(children *[]*Node, state *TableState,
+func (p *Parse) buildTreesHelper(children *[]*Node, state *TableState,
 	termIndex, end int) []*Node {
 	// begin with the last --non-terminal-- of the ruleBody of finalState
 	if Debug {

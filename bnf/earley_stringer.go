@@ -36,7 +36,7 @@ func (tc *TableColumn) String() string {
 	return out
 }
 
-func (p *Parser) String() string {
+func (p *Parse) String() string {
 	out := ""
 	for _, c := range p.columns {
 		out += c.String() + "\n"

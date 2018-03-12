@@ -19,7 +19,7 @@ type TableColumn struct {
 	states []*TableState
 }
 
-type Parser struct {
+type Parse struct {
 	g          *Grammar
 	columns    []*TableColumn
 	finalState *TableState
@@ -52,7 +52,7 @@ func (col *TableColumn) insert(state *TableState) *TableState {
  * gamma rule span from the first column to the last one. return the final gamma
  * state, or null, if the parse failed.
  */
-func (p *Parser) parse(start string) *TableState {
+func (p *Parse) parse(start string) *TableState {
 	rb := &RuleBody{[]*Term{&Term{start, true}}, ""}
 	begin := &TableState{GAMMA_RULE, rb, 0, 0, 0}
 	p.columns[0].states = append(p.columns[0].states, begin)
@@ -83,14 +83,14 @@ func (p *Parser) parse(start string) *TableState {
 	return nil
 }
 
-func (*Parser) scan(col *TableColumn, st *TableState, term *Term) {
+func (*Parse) scan(col *TableColumn, st *TableState, term *Term) {
 	if term.Value == col.token {
 		col.insert(&TableState{Name: st.Name, Rb: st.Rb,
 			dot: st.dot + 1, Start: st.Start})
 	}
 }
 
-func (p *Parser) predict(col *TableColumn, term *Term) bool {
+func (p *Parse) predict(col *TableColumn, term *Term) bool {
 	r := p.g.Rules[term.Value] //TODO
 	changed := false
 	for _, prod := range r.Body {
@@ -102,7 +102,7 @@ func (p *Parser) predict(col *TableColumn, term *Term) bool {
 }
 
 // Earley complete. returns true if the table has been changed, false otherwise
-func (p *Parser) complete(col *TableColumn, state *TableState) bool {
+func (p *Parse) complete(col *TableColumn, state *TableState) bool {
 	changed := false
 	for _, st := range p.columns[state.Start].states {
 		term := st.getNextTerm()
@@ -119,7 +119,7 @@ func (p *Parser) complete(col *TableColumn, state *TableState) bool {
 	return changed
 }
 
-func (p *Parser) handleEpsilons(col *TableColumn) {
+func (p *Parse) handleEpsilons(col *TableColumn) {
 	changed := true
 	for changed {
 		changed = false

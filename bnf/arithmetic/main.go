@@ -47,7 +47,10 @@ func main() {
 	//fmt.Println(string(b))
 	for _, input := range inputs {
 		fmt.Println(input)
-		p := bnf.NewParser(g, "number", input)
+		p, err := g.EarleyParse("number", input)
+		if err != nil {
+			glog.Fatal(err)
+		}
 		trees := p.GetTrees()
 		//fmt.Printf("%+v\n", p)
 		fmt.Println("tree number:", len(trees))
