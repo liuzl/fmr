@@ -269,7 +269,10 @@ func (p *parser) grammar() (*Grammar, error) {
 	if p.next() != eof {
 		return nil, fmt.Errorf("|%d col %d| : format error", p.line, p.linePos)
 	}
-	g.refine()
+	err := g.refine()
+	if err != nil {
+		return nil, err
+	}
 	return g, nil
 }
 

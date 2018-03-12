@@ -1,17 +1,31 @@
-<number> = <one> {nf.math.Number(1)}
-         | <two> {nf.math.Number(2)}
-         | <three> {nf.math.Number(3)}
-         | <number> <minus> <number> {nf.math.sub($0, $1)}
-         | <number> <plus> <number> {nf.math.sum($0, $1)}
-         | <number> <add> <number> {nf.math.sum($0, $1)}
-         | <number> <times> <number> {nf.math.mul($0, $1)}
-         | <neg> <number> {nf.math.neg($0)};
+<number> = "one"    {nf.math.Number(1)}
+         | "two"    {nf.math.Number(2)}
+         | "three"  {nf.math.Number(3)}
+         | "four"   {nf.math.Number(4)}
+         | "five"   {nf.math.Number(5)}
+         | "six"    {nf.math.Number(6)}
+         | "seven"  {nf.math.Number(7)}
+         | "eight"  {nf.math.Number(8)}
+         | "nine"   {nf.math.Number(9)}
+         | "ten"    {nf.math.Number(10)}
+         | "一"     {nf.math.Number(1)}
+         | "二"     {nf.math.Number(2)}
+         | "三"     {nf.math.Number(3)}
+         | "四"     {nf.math.Number(4)}
+         | "五"     {nf.math.Number(5)}
+         | "六"     {nf.math.Number(6)}
+         | "七"     {nf.math.Number(7)}
+         | "八"     {nf.math.Number(8)}
+         | "九"     {nf.math.Number(9)}
+         | "十"     {nf.math.Number(10)}
+         | <number> "minus" <number>        {nf.math.sub($0, $1)}
+         | <number> "减" <number>           {nf.math.sub($0, $1)}
+         | <number> "plus" <number>         {nf.math.sum($0, $1)}
+         | <number> "add" <number>          {nf.math.sum($0, $1)}
+         | <number> "加" <number>           {nf.math.sum($0, $1)}
+         | <number> "times" <number>        {nf.math.mul($0, $1)}
+         | <number> "multiply by" <number>  {nf.math.mul($0, $1)}
+         | <number> "乘" <number>           {nf.math.mul($0, $1)}
+         | "minus" <number>                 {nf.math.neg($0)}
+         | "负" <number>                    {nf.math.neg($0)};
 
-<times> = "times" | "multiply" "by";
-<add> = "add";
-<plus> = "plus";
-<one> = "one";
-<two> = "two";
-<three> = "three";
-<neg> = "minus";
-<minus> = "minus";

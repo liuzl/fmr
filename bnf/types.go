@@ -20,6 +20,3 @@ type Term struct {
 	Value  string `json:"value"`
 	IsRule bool   `json:"is_rule"`
 }
-
-func (g *Grammar) refine() {
-}

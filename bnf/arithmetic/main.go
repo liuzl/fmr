@@ -4,15 +4,17 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/liuzl/earley/bnf"
+	"github.com/liuzl/goutil"
 	"io/ioutil"
 	"os"
 )
 
 var inputs = []string{
 	//"one", "two", "ten",
-	"minus three minus two",
+	//"minus three minus two",
 	"two times two plus three",
 	"one add two multiply by two plus three",
+	"二 加 五 减 三",
 	/*
 		"one plus one",
 		"one plus two",
@@ -37,10 +39,12 @@ func main() {
 		glog.Fatal(err)
 	}
 	//bnf.Debug = true
-	g, err := bnf.Parse(string(b))
+	g, err := bnf.CFGrammar(string(b))
 	if err != nil {
 		glog.Fatal(err)
 	}
+	//b, _ = goutil.JsonMarshalIndent(g, "", " ")
+	//fmt.Println(string(b))
 	for _, input := range inputs {
 		fmt.Println(input)
 		p := bnf.NewParser(g, "number", input)
@@ -49,7 +53,7 @@ func main() {
 		fmt.Println("tree number:", len(trees))
 		for _, tree := range trees {
 			tree.Print(os.Stdout)
-			_, err := bnf.JsonMarshalIndent(tree, "", " ")
+			_, err := goutil.JsonMarshalIndent(tree, "", " ")
 			if err != nil {
 				glog.Fatal(err)
 			}
