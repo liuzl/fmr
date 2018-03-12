@@ -1,11 +1,25 @@
 package bnf
 
 import (
-	"strings"
+	"github.com/liuzl/ling"
 )
 
+var nlp = ling.MustNLP(ling.Norm)
+
 func NewParser(g *Grammar, start, text string) *Parser {
-	tokens := strings.Fields(text)
+	d := ling.NewDocument(text)
+	err := nlp.Annotate(d)
+	if err != nil {
+		//TODO
+		return nil
+	}
+	var tokens []string
+	for _, token := range d.Tokens {
+		if token.Type == ling.Space {
+			continue
+		}
+		tokens = append(tokens, token.Annotations[ling.Norm])
+	}
 	parser := &Parser{g: g}
 	parser.columns = append(parser.columns, &TableColumn{index: 0, token: ""})
 	for i, token := range tokens {

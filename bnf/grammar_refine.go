@@ -11,7 +11,7 @@ func (g *Grammar) refine() error {
 	if g.Refined {
 		return nil
 	}
-	pipeline, err := ling.NLP(ling.Norm)
+	nlp, err := ling.NLP(ling.Norm)
 	if err != nil {
 		return err
 	}
@@ -30,11 +30,10 @@ func (g *Grammar) refine() error {
 					term.Value = t
 				} else {
 					d := ling.NewDocument(term.Value)
-					err = pipeline.Annotate(d)
+					err = nlp.Annotate(d)
 					if err != nil {
 						return err
 					}
-
 					tname := "t"
 					rb := &RuleBody{}
 					for _, token := range d.Tokens {
@@ -46,10 +45,8 @@ func (g *Grammar) refine() error {
 							ascii = strings.Join(strings.Fields(ascii), "_")
 							tname += "_" + ascii
 						}
-
 						rb.Terms = append(rb.Terms, &Term{token.Text, false})
 					}
-
 					for name, n = tname, 0; ; name, n = fmt.Sprintf("%s_%d", tname, n), n+1 {
 						if _, has := g.Rules[name]; !has {
 							break

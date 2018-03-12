@@ -18,14 +18,14 @@
          | "八"     {nf.math.Number(8)}
          | "九"     {nf.math.Number(9)}
          | "十"     {nf.math.Number(10)}
-         | <number> "minus" <number>        {nf.math.sub($0, $1)}
-         | <number> "减" <number>           {nf.math.sub($0, $1)}
-         | <number> "plus" <number>         {nf.math.sum($0, $1)}
-         | <number> "add" <number>          {nf.math.sum($0, $1)}
-         | <number> "加" <number>           {nf.math.sum($0, $1)}
-         | <number> "times" <number>        {nf.math.mul($0, $1)}
-         | <number> "multiply by" <number>  {nf.math.mul($0, $1)}
-         | <number> "乘" <number>           {nf.math.mul($0, $1)}
-         | "minus" <number>                 {nf.math.neg($0)}
-         | "负" <number>                    {nf.math.neg($0)};
+         | <number> "minus" <number>        {nf.math.sub($0, $2)}
+         | <number> "减" <number>           {nf.math.sub($0, $2)}
+         | <number> "plus" <number>         {nf.math.sum($0, $2)}
+         | <number> "add" <number>          {nf.math.sum($0, $2)}
+         | <number> "加" <number>           {nf.math.sum($0, $2)}
+         | <number> "times" <number>        {nf.math.mul($0, $2)}
+         | <number> "multiply by" <number>  {nf.math.mul($0, $2)}
+         | <number> "乘" <number>           {nf.math.mul($0, $2)}
+         | "minus" <number>                 {nf.math.neg($1)}
+         | "负" <number>                    {nf.math.neg($1)};
 
