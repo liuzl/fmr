@@ -1,12 +1,13 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/liuzl/fmr/bnf"
 	"github.com/liuzl/goutil"
 	"io/ioutil"
-	"os"
+	//"os"
 )
 
 var inputs = []string{
@@ -35,6 +36,7 @@ var inputs = []string{
 }
 
 func main() {
+	flag.Parse()
 	b, err := ioutil.ReadFile("arithmetic.grammar")
 	if err != nil {
 		glog.Fatal(err)
@@ -56,12 +58,17 @@ func main() {
 		//fmt.Printf("%+v\n", p)
 		fmt.Println("tree number:", len(trees))
 		for _, tree := range trees {
-			tree.Print(os.Stdout)
-			_, err := goutil.JsonMarshalIndent(tree, "", " ")
+			//tree.Print(os.Stdout)
+			sem, err := tree.Semantic()
+			if err != nil {
+				glog.Error(err)
+			}
+			fmt.Println(sem)
+			_, err = goutil.JsonMarshalIndent(tree, "", " ")
 			if err != nil {
 				glog.Fatal(err)
 			}
-			//fmt.Println(string(b))
 		}
+		fmt.Println()
 	}
 }

@@ -2,6 +2,7 @@ package bnf
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -28,7 +29,12 @@ func (p *parser) next() rune {
 	}
 	p.width = w
 	p.pos += w
-	p.linePos += w
+	if r == '\n' {
+		p.line += 1
+		p.linePos = 0
+	} else {
+		p.linePos += w
+	}
 	return r
 }
 
@@ -36,7 +42,8 @@ func (p *parser) eat(expected rune) error {
 	r := p.next()
 	if r != expected {
 		return fmt.Errorf("|%d col %d| :expected %s, got %s",
-			p.line, p.linePos, string(expected), string(r))
+			p.line, p.linePos,
+			strconv.Quote(string(expected)), strconv.Quote(string(r)))
 	}
 	return nil
 }
@@ -161,28 +168,156 @@ func (p *parser) term() (*Term, error) {
 	return &Term{text, false}, nil
 }
 
-func (p *parser) semantic() (sem string, err error) {
-	err = p.eat('{')
-	if err != nil {
+func (p *parser) semanticFn() (f *FMR, err error) {
+	if err = p.eat('{'); err != nil {
 		return
 	}
-	var ret []rune
 	p.ws()
-Loop:
-	for {
-		switch r := p.next(); {
-		case r == eof:
-			err = fmt.Errorf("|%d col %d| : unterminated semantic", p.line, p.linePos)
-			return
-		case r == '}':
-			break Loop
-		default:
-			ret = append(ret, r)
-		}
+	f = &FMR{}
+	if f.Fn, err = p.funcName(); err != nil {
+		return
+	}
+	if f.Args, err = p.funcArgs(); err != nil {
+		return
 	}
 	p.ws()
-	sem = string(ret)
+	err = p.eat('}')
+	p.ws()
 	return
+}
+
+func (p *parser) funcName() (string, error) {
+	var ret []rune
+	first := true
+	var prev, r rune = eof, eof
+Loop:
+	for {
+		switch r = p.next(); {
+		case unicode.IsLetter(r) || r == '_':
+			ret = append(ret, r)
+		case unicode.IsDigit(r) && !first:
+			ret = append(ret, r)
+		case r == '.' && prev != '.' && !first:
+			ret = append(ret, r)
+		default:
+			p.backup()
+			break Loop
+		}
+		first = false
+		prev = r
+	}
+	if len(ret) == 0 {
+		return "", fmt.Errorf("|%d col %d| : no funcName", p.line, p.linePos)
+	}
+	p.ws()
+	return string(ret), nil
+}
+
+func (p *parser) funcArgs() (args []*Arg, err error) {
+	if err = p.eat('('); err != nil {
+		return
+	}
+	var r rune
+	var arg *Arg
+	for {
+		p.ws()
+		switch r = p.peek(); {
+		case r == '$':
+			if arg, err = p.idxArg(); err != nil {
+				return
+			}
+		case r == '"':
+			if arg, err = p.strArg(); err != nil {
+				return
+			}
+		case unicode.IsDigit(r) || r == '-':
+			neg := (r == '-')
+			if arg, err = p.numArg(neg); err != nil {
+				return
+			}
+		default:
+			if arg, err = p.fArg(); err != nil {
+				return
+			}
+		}
+		args = append(args, arg)
+		if r == ',' {
+			continue
+		} else {
+			p.ws()
+			r = p.next()
+			if r == ',' {
+				continue
+			} else if r == ')' {
+				break
+			} else {
+				err = fmt.Errorf("|%d col %d| : unexpected semantic args", p.line, p.linePos)
+				return
+			}
+		}
+	}
+	return
+}
+
+func (p *parser) getNumber() (idx int, err error) {
+	idx = -1
+	var n uint64 = 0
+	var r rune
+	for r = p.next(); unicode.IsDigit(r); r = p.next() {
+		if n, err = strconv.ParseUint(string(r), 10, 32); err != nil {
+			return
+		}
+		if idx == -1 {
+			idx = int(n)
+		} else {
+			idx = idx*10 + int(n)
+		}
+	}
+	if idx == -1 {
+		err = fmt.Errorf("|%d col %d| : number expected", p.line, p.linePos)
+		return
+	}
+	p.backup()
+	return
+}
+
+func (p *parser) idxArg() (arg *Arg, err error) {
+	if err = p.eat('$'); err != nil {
+		return
+	}
+	var idx int
+	if idx, err = p.getNumber(); err != nil {
+		return
+	}
+	arg = &Arg{"index", idx}
+	return
+}
+
+func (p *parser) strArg() (*Arg, error) {
+	if text, err := p.terminal(); err != nil {
+		return nil, err
+	} else {
+		return &Arg{"string", text}, nil
+	}
+}
+
+func (p *parser) numArg(neg bool) (*Arg, error) {
+	if n, err := p.getNumber(); err != nil {
+		return nil, err
+	} else {
+		if neg {
+			n = -n
+		}
+		return &Arg{"number", n}, nil
+	}
+}
+
+func (p *parser) fArg() (*Arg, error) {
+	if f, err := p.semanticFn(); err != nil {
+		return nil, err
+	} else {
+		return &Arg{"func", f}, nil
+	}
 }
 
 func (p *parser) ruleBody() (*RuleBody, error) {
@@ -199,15 +334,14 @@ func (p *parser) ruleBody() (*RuleBody, error) {
 		}
 		terms = append(terms, t)
 	}
-	// parse SematicFn {}
-	var sem string
+	var f *FMR
 	if p.peek() == '{' {
-		sem, err = p.semantic()
+		f, err = p.semanticFn()
 		if err != nil {
 			return nil, err
 		}
 	}
-	return &RuleBody{terms, sem}, nil
+	return &RuleBody{terms, f}, nil
 }
 
 func (p *parser) ruleBodies() ([]*RuleBody, error) {

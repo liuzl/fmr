@@ -32,7 +32,10 @@ func TestEarleyParse(t *testing.T) {
 	}
 	//fmt.Println(string(b))
 	for _, text := range strs {
-		p := NewParser(g, "expr", text)
+		p, err := g.EarleyParse("expr", text)
+		if err != nil {
+			t.Error(err)
+		}
 		t.Logf("%+v\n", p)
 		trees := p.GetTrees()
 		t.Log("tree number:", len(trees))

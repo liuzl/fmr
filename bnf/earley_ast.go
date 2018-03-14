@@ -6,7 +6,7 @@ var Debug = false
 
 // AST of tree structure
 type Node struct {
-	Value    interface{} `json:"value"`
+	Value    *TableState `json:"value"`
 	Children []*Node     `json:"children,omitempty"`
 }
 

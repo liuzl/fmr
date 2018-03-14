@@ -12,11 +12,21 @@ type Rule struct {
 }
 
 type RuleBody struct {
-	Terms    []*Term `json:"terms"`
-	Semantic string  `json:"semantic,omitempty"`
+	Terms []*Term `json:"terms"`
+	F     *FMR    `json:"f,omitempty"`
 }
 
 type Term struct {
 	Value  string `json:"value"`
 	IsRule bool   `json:"is_rule"`
+}
+
+type Arg struct {
+	Type  string      `json:"type"`
+	Value interface{} `json:"value"`
+}
+
+type FMR struct {
+	Fn   string `json:fn,omitempty`
+	Args []*Arg `json:args,omitempty`
 }

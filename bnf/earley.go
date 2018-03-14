@@ -53,7 +53,10 @@ func (col *TableColumn) insert(state *TableState) *TableState {
  * state, or null, if the parse failed.
  */
 func (p *Parse) parse(start string) *TableState {
-	rb := &RuleBody{[]*Term{&Term{start, true}}, ""}
+	rb := &RuleBody{
+		[]*Term{&Term{start, true}},
+		&FMR{"nf.I", []*Arg{&Arg{"index", 1}}},
+	}
 	begin := &TableState{GAMMA_RULE, rb, 0, 0, 0}
 	p.columns[0].states = append(p.columns[0].states, begin)
 	for i, col := range p.columns {
