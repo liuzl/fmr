@@ -1,43 +1,26 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/liuzl/fmr/bnf"
-	"github.com/liuzl/goutil"
+	"github.com/robertkrimen/otto"
+	"io"
 	"io/ioutil"
-	//"os"
+	"os"
 )
 
-var inputs = []string{
-	//"one", "two", "ten",
-	//"minus three minus two",
-	"two times two plus three",
-	"one add two multiply by two plus three",
-	"二加五减三",
-	"我的二加五减三",
-	/*
-		"one plus one",
-		"one plus two",
-		"one plus three",
-		"two plus two",
-		"two plus three",
-		"three plus one",
-		"three plus minus two",
-		"two plus two",
-		"three minus two",
-		"two times two",
-		"two times three",
-	*/
-	//"three plus three minus two",
-	//"two times two plus three",
-	//"minus four",
-}
+var (
+	grammar = flag.String("g", "arithmetic.grammar", "grammar file")
+	js      = flag.String("js", "math.js", "javascript file")
+	input   = flag.String("input", "", "file of original text to read")
+)
 
 func main() {
 	flag.Parse()
-	b, err := ioutil.ReadFile("arithmetic.grammar")
+	b, err := ioutil.ReadFile(*grammar)
 	if err != nil {
 		glog.Fatal(err)
 	}
@@ -46,11 +29,38 @@ func main() {
 	if err != nil {
 		glog.Fatal(err)
 	}
-	//b, _ = goutil.JsonMarshalIndent(g, "", " ")
-	//fmt.Println(string(b))
-	for _, input := range inputs {
-		fmt.Println(input)
-		p, err := g.EarleyParse("number", input)
+
+	script, err := ioutil.ReadFile(*js)
+	if err != nil {
+		glog.Fatal(err)
+	}
+	vm := otto.New()
+	if _, err = vm.Run(script); err != nil {
+		glog.Fatal(err)
+	}
+
+	var in *os.File
+	if *input == "" {
+		in = os.Stdin
+	} else {
+		in, err = os.Open(*input)
+		if err != nil {
+			glog.Fatal(err)
+		}
+		defer in.Close()
+	}
+	br := bufio.NewReader(in)
+
+	for {
+		line, c := br.ReadString('\n')
+		if c == io.EOF {
+			break
+		}
+		if c != nil {
+			glog.Fatal(c)
+		}
+		fmt.Println(line)
+		p, err := g.EarleyParse("number", line)
 		if err != nil {
 			glog.Fatal(err)
 		}
@@ -61,13 +71,13 @@ func main() {
 			//tree.Print(os.Stdout)
 			sem, err := tree.Semantic()
 			if err != nil {
-				glog.Error(err)
+				glog.Fatal(err)
 			}
-			fmt.Println(sem)
-			_, err = goutil.JsonMarshalIndent(tree, "", " ")
+			result, err := vm.Run(sem)
 			if err != nil {
 				glog.Fatal(err)
 			}
+			fmt.Printf("%s=%v\n", sem, result)
 		}
 		fmt.Println()
 	}
