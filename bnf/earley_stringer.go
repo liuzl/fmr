@@ -44,25 +44,25 @@ func (p *Parse) String() string {
 	return out
 }
 
+// Print this tree to out
 func (n *Node) Print(out *os.File) {
-	n.PrintLevel(out, 0)
+	n.printLevel(out, 0)
 }
 
-func (n *Node) PrintLevel(out *os.File, level int) {
+func (n *Node) printLevel(out *os.File, level int) {
 	indentation := ""
 	for i := 0; i < level; i++ {
 		indentation += "  "
 	}
 	fmt.Fprintf(out, "%s%v\n", indentation, n.Value)
 	for _, child := range n.Children {
-		child.PrintLevel(out, level+1)
+		child.printLevel(out, level+1)
 	}
 }
 
 func (n *Node) String() string {
 	if len(n.Children) > 0 {
 		return fmt.Sprintf("%+v %+v", n.Value, n.Children)
-	} else {
-		return fmt.Sprintf("%+v", n.Value)
 	}
+	return fmt.Sprintf("%+v", n.Value)
 }

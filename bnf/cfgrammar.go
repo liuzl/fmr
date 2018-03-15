@@ -18,6 +18,12 @@ type parser struct {
 
 const eof = -1
 
+// CFGrammar constructs the Contex-Free Grammar from string d
+func CFGrammar(d string) (*Grammar, error) {
+	p := &parser{input: d}
+	return p.grammar()
+}
+
 func (p *parser) next() rune {
 	if p.pos >= len(p.input) {
 		p.width = 0
@@ -410,10 +416,4 @@ func (p *parser) grammar() (*Grammar, error) {
 		return nil, err
 	}
 	return g, nil
-}
-
-// CFGrammar constructs the Contex-Free Grammar from string d
-func CFGrammar(d string) (*Grammar, error) {
-	p := &parser{input: d}
-	return p.grammar()
 }
