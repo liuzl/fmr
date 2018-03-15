@@ -27,6 +27,6 @@ type Arg struct {
 }
 
 type FMR struct {
-	Fn   string `json:fn,omitempty`
-	Args []*Arg `json:args,omitempty`
+	Fn   string `json:"fn,omitempty"`
+	Args []*Arg `json:"args,omitempty"`
 }

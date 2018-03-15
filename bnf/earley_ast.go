@@ -2,14 +2,16 @@ package bnf
 
 import "fmt"
 
+// Debug flag
 var Debug = false
 
-// AST of tree structure
+// Node is the AST of tree structure
 type Node struct {
 	Value    *TableState `json:"value"`
 	Children []*Node     `json:"children,omitempty"`
 }
 
+// GetTrees returns all possible parse results
 func (p *Parse) GetTrees() []*Node {
 	if Debug {
 		fmt.Printf("%+v\n", p)

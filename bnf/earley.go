@@ -1,10 +1,15 @@
 package bnf
 
-// this is the name of the special "gamma" rule added by the algorithm
+// GAMMA_RULE is the name of the special "gamma" rule added by the algorithm
 // (this is unicode for 'LATIN SMALL LETTER GAMMA')
 const GAMMA_RULE = "\u0263" // "\u0194"
-const DOT = "\u2022"        // "\u00B7"
 
+// DOT indicates the current position inside a TableState
+const DOT = "\u2022" // "\u00B7"
+
+// TableState uses Earley's dot notation: given a production X → αβ,
+// the notation X → α • β represents a condition in which α has already
+// been parsed and β is expected.
 type TableState struct {
 	Name  string    `json:"name"`
 	Rb    *RuleBody `json:"rb,omitempty"`
@@ -13,12 +18,14 @@ type TableState struct {
 	dot   int
 }
 
+// TableColumn is the TableState set
 type TableColumn struct {
 	token  string
 	index  int
 	states []*TableState
 }
 
+// Parse stores a parse chart by Grammar g
 type Parse struct {
 	g          *Grammar
 	columns    []*TableColumn

@@ -15,7 +15,7 @@ import (
 var (
 	grammar = flag.String("g", "arithmetic.grammar", "grammar file")
 	js      = flag.String("js", "math.js", "javascript file")
-	input   = flag.String("input", "", "file of original text to read")
+	input   = flag.String("i", "", "file of original text to read")
 )
 
 func main() {
@@ -77,7 +77,7 @@ func main() {
 			if err != nil {
 				glog.Fatal(err)
 			}
-			fmt.Printf("%s=%v\n", sem, result)
+			fmt.Printf("%s = %v\n", sem, result)
 		}
 		fmt.Println()
 	}

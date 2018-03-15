@@ -124,7 +124,6 @@ func (p *parser) terminalText() (string, error) {
 			prev = r
 		}
 	}
-	return "", fmt.Errorf("|%d col %d| : unexpected string", p.line, p.linePos)
 }
 
 func (p *parser) terminal() (text string, err error) {
@@ -261,7 +260,7 @@ func (p *parser) funcArgs() (args []*Arg, err error) {
 
 func (p *parser) getNumber() (idx int, err error) {
 	idx = -1
-	var n uint64 = 0
+	var n uint64
 	var r rune
 	for r = p.next(); unicode.IsDigit(r); r = p.next() {
 		if n, err = strconv.ParseUint(string(r), 10, 32); err != nil {
@@ -294,30 +293,33 @@ func (p *parser) idxArg() (arg *Arg, err error) {
 }
 
 func (p *parser) strArg() (*Arg, error) {
-	if text, err := p.terminal(); err != nil {
+	var text string
+	var err error
+	if text, err = p.terminal(); err != nil {
 		return nil, err
-	} else {
-		return &Arg{"string", text}, nil
 	}
+	return &Arg{"string", text}, nil
 }
 
 func (p *parser) numArg(neg bool) (*Arg, error) {
-	if n, err := p.getNumber(); err != nil {
+	var n int
+	var err error
+	if n, err = p.getNumber(); err != nil {
 		return nil, err
-	} else {
-		if neg {
-			n = -n
-		}
-		return &Arg{"number", n}, nil
 	}
+	if neg {
+		n = -n
+	}
+	return &Arg{"number", n}, nil
 }
 
 func (p *parser) fArg() (*Arg, error) {
-	if f, err := p.semanticFn(); err != nil {
+	var f *FMR
+	var err error
+	if f, err = p.semanticFn(); err != nil {
 		return nil, err
-	} else {
-		return &Arg{"func", f}, nil
 	}
+	return &Arg{"func", f}, nil
 }
 
 func (p *parser) ruleBody() (*RuleBody, error) {
@@ -410,6 +412,7 @@ func (p *parser) grammar() (*Grammar, error) {
 	return g, nil
 }
 
+// CFGrammar constructs the Contex-Free Grammar from string d
 func CFGrammar(d string) (*Grammar, error) {
 	p := &parser{input: d}
 	return p.grammar()

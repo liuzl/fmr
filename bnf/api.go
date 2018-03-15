@@ -8,6 +8,7 @@ import (
 
 var nlp = ling.MustNLP(ling.Norm)
 
+// EarleyParse parses text for rule <start>
 func (g *Grammar) EarleyParse(start, text string) (*Parse, error) {
 	if start = strings.TrimSpace(start); start == "" {
 		return nil, fmt.Errorf("start rule is empty")
