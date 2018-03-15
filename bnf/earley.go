@@ -101,7 +101,10 @@ func (*Parse) scan(col *TableColumn, st *TableState, term *Term) {
 }
 
 func (p *Parse) predict(col *TableColumn, term *Term) bool {
-	r := p.g.Rules[term.Value] //TODO
+	r, has := p.g.Rules[term.Value]
+	if !has {
+		return false
+	}
 	changed := false
 	for _, prod := range r.Body {
 		st := &TableState{Name: r.Name, Rb: prod, dot: 0, Start: col.index}
