@@ -5,3 +5,4 @@ one add two multiply by two plus three
 我的二加五减三
 three plus three minus two
 minus four
+四加七等于几？

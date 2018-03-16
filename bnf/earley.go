@@ -84,10 +84,19 @@ func (p *Parse) parse(start string) *TableState {
 	}
 
 	// find end state (return nil if not found)
-	lastCol := p.columns[len(p.columns)-1]
-	for _, state := range lastCol.states {
-		if state.Name == GAMMA_RULE && state.isCompleted() {
-			return state
+	/*
+		lastCol := p.columns[len(p.columns)-1]
+		for _, state := range lastCol.states {
+			if state.Name == GAMMA_RULE && state.isCompleted() {
+				return state
+			}
+		}
+	*/
+	for i := len(p.columns) - 1; i >= 0; i-- {
+		for _, state := range p.columns[i].states {
+			if state.Name == GAMMA_RULE && state.isCompleted() {
+				return state
+			}
 		}
 	}
 	return nil

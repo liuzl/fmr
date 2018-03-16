@@ -60,24 +60,27 @@ func main() {
 			glog.Fatal(c)
 		}
 		fmt.Println(line)
-		p, err := g.EarleyParse("number", line)
+		//p, err := g.EarleyParse("number", line)
+		ps, err := g.EarleyParseAll("number", line)
 		if err != nil {
 			glog.Fatal(err)
 		}
-		trees := p.GetTrees()
-		//fmt.Printf("%+v\n", p)
-		fmt.Println("tree number:", len(trees))
-		for _, tree := range trees {
-			//tree.Print(os.Stdout)
-			sem, err := tree.Semantic()
-			if err != nil {
-				glog.Fatal(err)
+		for i, p := range ps {
+			trees := p.GetTrees()
+			//fmt.Printf("%+v\n", p)
+			fmt.Printf("p%d tree number:%d\n", i, len(trees))
+			for _, tree := range trees {
+				//tree.Print(os.Stdout)
+				sem, err := tree.Semantic()
+				if err != nil {
+					glog.Fatal(err)
+				}
+				result, err := vm.Run(sem)
+				if err != nil {
+					glog.Fatal(err)
+				}
+				fmt.Printf("%s = %v\n", sem, result)
 			}
-			result, err := vm.Run(sem)
-			if err != nil {
-				glog.Fatal(err)
-			}
-			fmt.Printf("%s = %v\n", sem, result)
 		}
 		fmt.Println()
 	}
