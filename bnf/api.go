@@ -24,7 +24,7 @@ func (g *Grammar) EarleyParseAll(start, text string) ([]*Parse, error) {
 		return nil, err
 	}
 	var ret []*Parse
-	for i := 0; i < len(tokens)-1; {
+	for i := 0; i < len(tokens); {
 		p, err := g.earleyParse(start, tokens[i:])
 		if err != nil {
 			return nil, err
