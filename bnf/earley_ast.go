@@ -27,6 +27,19 @@ func (p *Parse) buildTrees(state *TableState) []*Node {
 		&[]*Node{}, state, len(state.Rb.Terms)-1, state.End)
 }
 
+/*
+ * How it works: suppose we're trying to match [X -> Y Z W]. We go from finish
+ * to start, e.g., first we'll try to match W in X.encCol. Let this matching
+ * state be M1. Next we'll try to match Z in M1.startCol. Let this matching
+ * state be M2. And finally, we'll try to match Y in M2.startCol, which must
+ * also start at X.startCol. Let this matching state be M3.
+ *
+ * If we matched M1, M2 and M3, then we've found a parsing for X:
+ * X->
+ *    Y -> M3
+ *    Z -> M2
+ *    W -> M1
+ */
 func (p *Parse) buildTreesHelper(children *[]*Node, state *TableState,
 	termIndex, end int) []*Node {
 	// begin with the last --non-terminal-- of the ruleBody of finalState
