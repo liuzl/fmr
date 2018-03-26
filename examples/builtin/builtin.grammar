@@ -1,0 +1,103 @@
+<cardinal_unit> = "zero"  {nf.I(0)} | "o" {nf.I(0)}
+                | "one"   {nf.I(1)} | "a" {nf.I(1)} | "an" {nf.I(1)}
+                | "two"   {nf.I(2)}
+                | "three" {nf.I(3)}
+                | "four"  {nf.I(4)}
+                | "five"  {nf.I(5)}
+                | "six"   {nf.I(6)}
+                | "seven" {nf.I(7)}
+                | "eight" {nf.I(8)}
+                | "nine"  {nf.I(9)}
+                ;
+
+<cardinal_ten> = "ten"       {nf.I(10)}
+               | "eleven"    {nf.I(11)}
+               | "twelve"    {nf.I(12)}
+               | "thirteen"  {nf.I(13)}
+               | "fourteen"  {nf.I(14)}
+               | "fifteen"   {nf.I(15)}
+               | "sixteen"   {nf.I(16)}
+               | "seventeen" {nf.I(17)}
+               | "eighteen"  {nf.I(18)}
+               | "nineteen"  {nf.I(19)}
+               ;
+        
+<ordinal_unit> = "first"   {nf.I(1)}
+               | "second"  {nf.I(2)}
+               | "third"   {nf.I(3)}
+               | "fourth"  {nf.I(4)}
+               | "fifth"   {nf.I(5)}
+               | "sixth"   {nf.I(6)}
+               | "seventh" {nf.I(7)}
+               | "eighth"  {nf.I(8)}
+               | "ninth"   {nf.I(9)}
+               ;
+
+<ordinal_ten>  = "tenth"       {nf.I(10)}
+               | "eleventh"    {nf.I(11)}
+               | "twelfth"     {nf.I(12)}
+               | "thirteenth"  {nf.I(13)}
+               | "fourteenth"  {nf.I(14)}
+               | "fifteenth"   {nf.I(15)}
+               | "sixteenth"   {nf.I(16)}
+               | "seventeenth" {nf.I(17)}
+               | "eighteenth"  {nf.I(18)}
+               | "nineteenth"  {nf.I(19)}
+               ;
+
+<cardinal_tens> = "twenty"  {nf.I(20)}
+                | "thirty"  {nf.I(30)}
+                | "forty"   {nf.I(40)}
+                | "fifty"   {nf.I(50)}
+                | "sixty"   {nf.I(60)}
+                | "seventy" {nf.I(70)}
+                | "eighty"  {nf.I(80)}
+                | "ninety"  {nf.I(90)}
+                ;
+               
+<ordinal_tens> = "twentieth"  {nf.I(20)}
+               | "thirtieth"  {nf.I(30)}
+               | "fortieth"   {nf.I(40)}
+               | "fiftieth"   {nf.I(50)}
+               | "sixtieth"   {nf.I(60)}
+               | "seventieth" {nf.I(70)}
+               | "eightieth"  {nf.I(80)}
+               | "ninetieth"  {nf.I(90)}
+               ;
+
+<magnitude> = "hundred"     {nf.I(100)}
+            | "thousand"    {nf.I(1000)}
+            | "million"     {nf.I(1000000)}
+            | "billion"     {nf.I(1000000000)}
+            | "trillion"    {nf.I(1000000000000)}
+            | "quadrillion" {nf.I(1000000000000000)}
+            | "quintillion" {nf.I(1000000000000000000)}
+            | "sextillion"  {nf.I(1000000000000000000000)}
+            | "septillion"  {nf.I(1000000000000000000000000)}
+            | "octillion"   {nf.I(1000000000000000000000000000)}
+            | "nonillion"   {nf.I(1000000000000000000000000000000)}
+            | "decillion"   {nf.I(1000000000000000000000000000000000)}
+            ;
+
+<base_number> = <cardinal_unit>  {nf.I($1)}
+              | <cardinal_ten>   {nf.I($1)}
+              | <cardinal_tens>  {nf.I($1)}
+              | <cardinal_tens> <cardinal_unit> {nf.math.sum($1, $2)}
+              | <cardinal_tens> "and" <cardinal_unit> {nf.math.sum($1, $3)}
+              | <cardinal_tens> "-" <cardinal_unit> {nf.math.sum($1, $3)}
+              | <cardinal_tens> "," <cardinal_unit> {nf.math.sum($1, $3)}
+              ;
+
+<magnitude_number> = <base_number> <magnitude>      {nf.math.product($1, $2)}
+                   | <base_number> "-" <magnitude>  {nf.math.product($1, $3)}
+                   | <magnitude_number> <magnitude> {nf.math.product($1, $2)}
+                   ;
+
+<section> = <magnitude_number> {nf.I($1)}
+          | <base_number> {nf.I($1)}
+          ;
+
+<number> = <section> {nf.I($1)}
+         | <section> <number> {nf.math.sum($1, $2)}
+         | <section> "and" <number> {nf.math.sum($1, $3)}
+         ;
