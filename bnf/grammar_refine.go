@@ -17,6 +17,7 @@ func (g *Grammar) refine() error {
 	}
 	var terminalRules []*Rule
 	var terminals = make(map[string]string)
+	var names = make(map[string]bool)
 	var n = 0
 	var name string
 	for _, rule := range g.Rules {
@@ -48,10 +49,11 @@ func (g *Grammar) refine() error {
 						rb.Terms = append(rb.Terms, &Term{token.Text, false})
 					}
 					for name, n = tname, 0; ; name, n = fmt.Sprintf("%s_%d", tname, n), n+1 {
-						if _, has := g.Rules[name]; !has {
+						if g.Rules[name] == nil && !names[name] {
 							break
 						}
 					}
+					names[name] = true
 					terminals[term.Value] = name
 					terminalRules = append(terminalRules, &Rule{name, []*RuleBody{rb}})
 					term.Value = name
