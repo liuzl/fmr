@@ -235,9 +235,15 @@ func (p *parser) funcArgs() (args []*Arg, err error) {
 			if arg, err = p.strArg(); err != nil {
 				return
 			}
-		case unicode.IsDigit(r) || r == '-':
-			neg := (r == '-')
-			if arg, err = p.numArg(neg); err != nil {
+		case unicode.IsDigit(r):
+			if arg, err = p.numArg(false); err != nil {
+				return
+			}
+		case r == '-':
+			if err = p.eat('-'); err != nil {
+				return
+			}
+			if arg, err = p.numArg(true); err != nil {
 				return
 			}
 		default:
