@@ -33,12 +33,13 @@ func main() {
 	if err != nil {
 		glog.Fatal(err)
 	}
-	b, err = goutil.JsonMarshalIndent(g, "", "    ")
-	if err != nil {
-		glog.Fatal(err)
+	if *debug {
+		b, err = goutil.JsonMarshalIndent(g, "", "    ")
+		if err != nil {
+			glog.Fatal(err)
+		}
+		fmt.Printf("%s\n", string(b))
 	}
-	fmt.Printf("%s\n", string(b))
-
 	script, err := ioutil.ReadFile(*js)
 	if err != nil {
 		glog.Fatal(err)
@@ -83,6 +84,9 @@ func main() {
 				sem, err := tree.Semantic()
 				if err != nil {
 					glog.Fatal(err)
+				}
+				if *debug {
+					fmt.Printf("%s = ?\n", sem)
 				}
 				result, err := vm.Run(sem)
 				if err != nil {
