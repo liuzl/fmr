@@ -2,6 +2,7 @@ package bnf
 
 import (
 	"fmt"
+	"math/big"
 	"strconv"
 	"strings"
 )
@@ -43,11 +44,16 @@ func semStr(arg *Arg, nodes []*Node) (string, error) {
 			return strconv.Quote(s), nil
 		}
 		return "", fmt.Errorf("arg.Value: %+v is not string", arg.Value)
-	case "number":
-		if i, ok := arg.Value.(int); ok {
-			return strconv.Itoa(i), nil
+	case "int":
+		if i, ok := arg.Value.(*big.Int); ok {
+			return i.String(), nil
 		}
-		return "", fmt.Errorf("arg.Value: %+v is not number", arg.Value)
+		return "", fmt.Errorf("arg.Value: %+v is not int", arg.Value)
+	case "float":
+		if f, ok := arg.Value.(*big.Float); ok {
+			return f.String(), nil
+		}
+		return "", fmt.Errorf("arg.Value: %+v is not float", arg.Value)
 	case "func":
 		if s, ok := arg.Value.(string); ok {
 			return s, nil

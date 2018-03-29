@@ -2,6 +2,7 @@ package bnf
 
 import (
 	"fmt"
+	"math/big"
 	"strconv"
 	"strings"
 	"unicode"
@@ -270,7 +271,7 @@ func (p *parser) funcArgs() (args []*Arg, err error) {
 	return
 }
 
-func (p *parser) getNumber() (idx int, err error) {
+func (p *parser) getInt() (idx int, err error) {
 	idx = -1
 	var n uint64
 	var r rune
@@ -297,7 +298,7 @@ func (p *parser) idxArg() (arg *Arg, err error) {
 		return
 	}
 	var idx int
-	if idx, err = p.getNumber(); err != nil {
+	if idx, err = p.getInt(); err != nil {
 		return
 	}
 	arg = &Arg{"index", idx}
@@ -314,15 +315,43 @@ func (p *parser) strArg() (*Arg, error) {
 }
 
 func (p *parser) numArg(neg bool) (*Arg, error) {
-	var n int
-	var err error
-	if n, err = p.getNumber(); err != nil {
+	var ret []rune
+	hasDot := false
+	for r := p.next(); ; r = p.next() {
+		if unicode.IsDigit(r) {
+			ret = append(ret, r)
+		} else if r == '.' {
+			if hasDot {
+				return nil, fmt.Errorf(
+					"|%d col %d| : unexpected dot", p.line, p.linePos)
+			}
+			hasDot = true
+			ret = append(ret, r)
+		} else {
+			break
+		}
+	}
+	if len(ret) == 0 {
+		return nil, fmt.Errorf("|%d col %d| : number expected", p.line, p.linePos)
+	}
+	p.backup()
+	if neg {
+		ret = append([]rune{'-'}, ret...)
+	}
+	if hasDot {
+		n := new(big.Float)
+		_, err := fmt.Sscan(string(ret), n)
+		if err != nil {
+			return nil, err
+		}
+		return &Arg{"float", n}, nil
+	}
+	n := new(big.Int)
+	_, err := fmt.Sscan(string(ret), n)
+	if err != nil {
 		return nil, err
 	}
-	if neg {
-		n = -n
-	}
-	return &Arg{"number", n}, nil
+	return &Arg{"int", n}, nil
 }
 
 func (p *parser) fArg() (*Arg, error) {
