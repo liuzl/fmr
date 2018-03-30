@@ -11,17 +11,26 @@ import (
 
 type parser struct {
 	input   string
-	line    int
 	pos     int
 	width   int
-	linePos int
+	current *position
+	info    map[int]*position
+}
+
+type position struct {
+	row, col int
+	r        string
+}
+
+func (p *position) String() string {
+	return fmt.Sprintf("|row:%d, col:%d, c:%s|", p.row, p.col, strconv.Quote(p.r))
 }
 
 const eof = -1
 
 // CFGrammar constructs the Contex-Free Grammar from string d
 func CFGrammar(d string) (*Grammar, error) {
-	p := &parser{input: d}
+	p := &parser{input: d, info: make(map[int]*position)}
 	return p.grammar()
 }
 
@@ -36,11 +45,19 @@ func (p *parser) next() rune {
 	}
 	p.width = w
 	p.pos += w
-	if r == '\n' {
-		p.line += 1
-		p.linePos = 0
+	if p.info[p.pos] == nil {
+		if p.current == nil {
+			p.current = &position{1, w, string(r)}
+		} else {
+			if r == '\n' {
+				p.current = &position{p.current.row + 1, w, string(r)}
+			} else {
+				p.current = &position{p.current.row, p.current.col + w, string(r)}
+			}
+		}
+		p.info[p.pos] = p.current
 	} else {
-		p.linePos += w
+		p.current = p.info[p.pos]
 	}
 	return r
 }
@@ -48,8 +65,7 @@ func (p *parser) next() rune {
 func (p *parser) eat(expected rune) error {
 	r := p.next()
 	if r != expected {
-		return fmt.Errorf("|%d col %d| :expected %s, got %s",
-			p.line, p.linePos,
+		return fmt.Errorf("%s :expected %s, got %s", p.current,
 			strconv.Quote(string(expected)), strconv.Quote(string(r)))
 	}
 	return nil
@@ -57,6 +73,7 @@ func (p *parser) eat(expected rune) error {
 
 func (p *parser) backup() {
 	p.pos -= p.width
+	p.current = p.info[p.pos]
 }
 
 func (p *parser) peek() rune {
@@ -68,10 +85,6 @@ func (p *parser) peek() rune {
 func (p *parser) ws() string {
 	var ret []rune
 	for r := p.next(); unicode.IsSpace(r); r = p.next() {
-		if r == '\n' {
-			p.line += 1
-			p.linePos = 0
-		}
 		ret = append(ret, r)
 	}
 	p.backup()
@@ -95,7 +108,7 @@ Loop:
 		first = false
 	}
 	if len(ret) == 0 {
-		return "", fmt.Errorf("|%d col %d| : no text", p.line, p.linePos)
+		return "", fmt.Errorf("%s : no text", p.current)
 	}
 	return string(ret), nil
 }
@@ -109,7 +122,7 @@ func (p *parser) terminalText() (string, error) {
 			p.backup()
 			return string(ret), nil
 		case r == eof:
-			return "", fmt.Errorf("|%d col %d| : unterminated string", p.line, p.linePos)
+			return "", fmt.Errorf("%s : unterminated string", p.current)
 		case prev == '\\':
 			switch r {
 			case '\\':
@@ -121,7 +134,7 @@ func (p *parser) terminalText() (string, error) {
 			case '"':
 				ret = append(ret, '"')
 			default:
-				return "", fmt.Errorf("|%d col %d| : unexpected escape string", p.line, p.linePos)
+				return "", fmt.Errorf("%s : unexpected escape string", p.current)
 			}
 			prev = 0
 		case r == '\\':
@@ -175,9 +188,6 @@ func (p *parser) term() (*Term, error) {
 }
 
 func (p *parser) semanticFn() (f *FMR, err error) {
-	if err = p.eat('{'); err != nil {
-		return
-	}
 	p.ws()
 	f = &FMR{}
 	if f.Fn, err = p.funcName(); err != nil {
@@ -186,8 +196,6 @@ func (p *parser) semanticFn() (f *FMR, err error) {
 	if f.Args, err = p.funcArgs(); err != nil {
 		return
 	}
-	p.ws()
-	err = p.eat('}')
 	p.ws()
 	return
 }
@@ -213,7 +221,7 @@ Loop:
 		prev = r
 	}
 	if len(ret) == 0 {
-		return "", fmt.Errorf("|%d col %d| : no funcName", p.line, p.linePos)
+		return "", fmt.Errorf("%s : no funcName", p.current)
 	}
 	p.ws()
 	return string(ret), nil
@@ -263,7 +271,7 @@ func (p *parser) funcArgs() (args []*Arg, err error) {
 			} else if r == ')' {
 				break
 			} else {
-				err = fmt.Errorf("|%d col %d| : unexpected semantic args", p.line, p.linePos)
+				err = fmt.Errorf("%s : unexpected semantic args", p.current)
 				return
 			}
 		}
@@ -286,7 +294,7 @@ func (p *parser) getInt() (idx int, err error) {
 		}
 	}
 	if idx == -1 {
-		err = fmt.Errorf("|%d col %d| : number expected", p.line, p.linePos)
+		err = fmt.Errorf("%s : number expected", p.current)
 		return
 	}
 	p.backup()
@@ -322,8 +330,7 @@ func (p *parser) numArg(neg bool) (*Arg, error) {
 			ret = append(ret, r)
 		} else if r == '.' {
 			if hasDot {
-				return nil, fmt.Errorf(
-					"|%d col %d| : unexpected dot", p.line, p.linePos)
+				return nil, fmt.Errorf("%s : unexpected dot", p.current)
 			}
 			hasDot = true
 			ret = append(ret, r)
@@ -332,7 +339,7 @@ func (p *parser) numArg(neg bool) (*Arg, error) {
 		}
 	}
 	if len(ret) == 0 {
-		return nil, fmt.Errorf("|%d col %d| : number expected", p.line, p.linePos)
+		return nil, fmt.Errorf("%s : number expected", p.current)
 	}
 	p.backup()
 	if neg {
@@ -379,10 +386,14 @@ func (p *parser) ruleBody() (*RuleBody, error) {
 	}
 	var f *FMR
 	if p.peek() == '{' {
-		f, err = p.semanticFn()
-		if err != nil {
+		p.eat('{')
+		if f, err = p.semanticFn(); err != nil {
 			return nil, err
 		}
+		if err = p.eat('}'); err != nil {
+			return nil, err
+		}
+		p.ws()
 	}
 	return &RuleBody{terms, f}, nil
 }
@@ -444,7 +455,7 @@ func (p *parser) grammar() (*Grammar, error) {
 		}
 	}
 	if p.next() != eof {
-		return nil, fmt.Errorf("|%d col %d| : format error", p.line, p.linePos)
+		return nil, fmt.Errorf("%s : format error", p.current)
 	}
 	err := g.refine()
 	if err != nil {

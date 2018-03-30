@@ -12,11 +12,18 @@ func (n *Node) Semantic() (string, error) {
 	if n.Value.Rb == nil || n.Value.Rb.F == nil {
 		return "", nil
 	}
-	if n.Value.Rb.F.Fn == "nf.I" {
-		if len(n.Value.Rb.F.Args) != 1 {
+	return fmrStr(n.Value.Rb.F, n.Children)
+}
+
+func fmrStr(f *FMR, children []*Node) (string, error) {
+	if f == nil {
+		return "", nil
+	}
+	if f.Fn == "nf.I" {
+		if len(f.Args) != 1 {
 			return "", fmt.Errorf("the length of Args of nf.I should be one")
 		}
-		s, err := semStr(n.Value.Rb.F.Args[0], n.Children)
+		s, err := semStr(f.Args[0], children)
 		if err != nil {
 			return "", err
 		}
@@ -24,14 +31,14 @@ func (n *Node) Semantic() (string, error) {
 	}
 
 	var args []string
-	for _, arg := range n.Value.Rb.F.Args {
-		s, err := semStr(arg, n.Children)
+	for _, arg := range f.Args {
+		s, err := semStr(arg, children)
 		if err != nil {
 			return "", err
 		}
 		args = append(args, s)
 	}
-	return fmt.Sprintf("%s(%s)", n.Value.Rb.F.Fn, strings.Join(args, ", ")), nil
+	return fmt.Sprintf("%s(%s)", f.Fn, strings.Join(args, ", ")), nil
 }
 
 func semStr(arg *Arg, nodes []*Node) (string, error) {
@@ -55,8 +62,8 @@ func semStr(arg *Arg, nodes []*Node) (string, error) {
 		}
 		return "", fmt.Errorf("arg.Value: %+v is not float", arg.Value)
 	case "func":
-		if s, ok := arg.Value.(string); ok {
-			return s, nil
+		if fmr, ok := arg.Value.(*FMR); ok {
+			return fmrStr(fmr, nodes)
 		}
 		return "", fmt.Errorf("arg.Value: %+v is not func", arg.Value)
 	case "index":

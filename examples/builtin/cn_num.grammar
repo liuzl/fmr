@@ -20,10 +20,27 @@
 <cn_num_10000> = "万"     {nf.I(10000)};
 <cn_num_100000000> = "亿" {nf.I(100000000)};
 
-<cn_num_10s> = <cn_num_10> {nf.I($1)}
-             | <cn_num_unit> <cn_num_10> {nf.math.product($1, $2)}
+<cn_num_10s> = <cn_num_10>                             {nf.I($1)}
+             | <cn_num_unit> <cn_num_10>               {nf.math.product($1, $2)}
+             | <cn_num_unit> <cn_num_10> <cn_num_unit> {nf.math.sum(nf.math.product($1, $2), $3)}
              ;
 
-<cn_num_100s> = <cn_num_unit> <cn_num_100> {nf.math.product($1, $2)};
-<cn_num_1000s> = <cn_num_unit> <cn_num_1000> {nf.math.product($1, $2)};
+<cn_num_100s> = <cn_num_unit> <cn_num_100>                         {nf.math.product($1, $2)}
+              | <cn_num_unit> <cn_num_100> <cn_num_10s>            {nf.math.sum(nf.math.product($1, $2), $3)}
+              | <cn_num_unit> <cn_num_100> <cn_zero> <cn_num_unit> {nf.math.sum(nf.math.product($1, $2), $4)}
+              ;
+
+<cn_num_1000s> = <cn_num_unit> <cn_num_1000>                         {nf.math.product($1, $2)}
+               | <cn_num_unit> <cn_num_1000> <cn_num_100s>           {nf.math.sum(nf.math.product($1, $2), $3)}
+               | <cn_num_unit> <cn_num_1000> <cn_zero> <cn_num_unit> {nf.math.sum(nf.math.product($1, $2), $4)}
+               | <cn_num_unit> <cn_num_1000> <cn_zero> <cn_num_10s>  {nf.math.sum(nf.math.product($1, $2), $4)}
+               ;
+
+<cn_base_num> = <cn_num_unit>  {nf.I($1)}
+              | <cn_num_10s>   {nf.I($1)}
+              | <cn_num_100s>  {nf.I($1)}
+              | <cn_num_1000s> {nf.I($1)}
+              ;
+
+<number> = <cn_base_num> {nf.I($1)};
 
