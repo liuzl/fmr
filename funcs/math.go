@@ -12,55 +12,44 @@ func init() {
 }
 
 func sum(x, y string) string {
-	if strings.Contains(x, ".") || strings.Contains(y, ".") {
-		xf := new(big.Float)
-		yf := new(big.Float)
-		_, err := fmt.Sscan(x, xf)
-		if err != nil {
-			return ""
-		}
-		_, err = fmt.Sscan(y, yf)
-		if err != nil {
-			return ""
-		}
-		return xf.Add(xf, yf).String()
-	}
-	xi := new(big.Int)
-	yi := new(big.Int)
-	_, err := fmt.Sscan(x, xi)
-	if err != nil {
-		return ""
-	}
-	_, err = fmt.Sscan(y, yi)
-	if err != nil {
-		return ""
-	}
-	return xi.Add(xi, yi).String()
+	return calc(x, y, "Add")
 }
 
 func product(x, y string) string {
+	return calc(x, y, "Mul")
+}
+
+func calc(x, y, method string) string {
 	if strings.Contains(x, ".") || strings.Contains(y, ".") {
-		xf := new(big.Float)
-		yf := new(big.Float)
-		_, err := fmt.Sscan(x, xf)
-		if err != nil {
+		xf, yf := new(big.Float), new(big.Float)
+		if _, err := fmt.Sscan(x, xf); err != nil {
 			return ""
 		}
-		_, err = fmt.Sscan(y, yf)
-		if err != nil {
+		if _, err := fmt.Sscan(y, yf); err != nil {
 			return ""
 		}
-		return xf.Mul(xf, yf).String()
+		switch method {
+		case "Add":
+			return xf.Add(xf, yf).String()
+		case "Mul":
+			return xf.Mul(xf, yf).String()
+		default:
+			return ""
+		}
 	}
-	xi := new(big.Int)
-	yi := new(big.Int)
-	_, err := fmt.Sscan(x, xi)
-	if err != nil {
+	xi, yi := new(big.Int), new(big.Int)
+	if _, err := fmt.Sscan(x, xi); err != nil {
 		return ""
 	}
-	_, err = fmt.Sscan(y, yi)
-	if err != nil {
+	if _, err := fmt.Sscan(y, yi); err != nil {
 		return ""
 	}
-	return xi.Mul(xi, yi).String()
+	switch method {
+	case "Add":
+		return xi.Add(xi, yi).String()
+	case "Mul":
+		return xi.Mul(xi, yi).String()
+	default:
+		return ""
+	}
 }
