@@ -93,6 +93,8 @@ func main() {
 					glog.Fatal(err)
 				}
 				fmt.Printf("%s = %v\n", sem, result)
+				eval, err := tree.Eval()
+				fmt.Printf("Eval: %s, Err: %+v\n", eval, err)
 			}
 		}
 		fmt.Println()

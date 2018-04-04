@@ -1,12 +1,19 @@
 package funcs
 
 import (
+	"fmt"
 	"github.com/liuzl/goutil"
-	"reflect"
 )
 
 var builtinFuncs = make(map[string]interface{})
 
-func Call(fn string, args ...interface{}) ([]reflect.Value, error) {
-	return goutil.Call(builtinFuncs, fn, args)
+func Call(fn string, args ...interface{}) (string, error) {
+	ret, err := goutil.Call(builtinFuncs, fn, args...)
+	if err != nil {
+		return "", err
+	}
+	if len(ret) == 0 {
+		return "", nil
+	}
+	return fmt.Sprintf("%+v", ret[0]), nil
 }
