@@ -3,6 +3,7 @@ package funcs
 import (
 	"fmt"
 	"math/big"
+	"strconv"
 	"strings"
 )
 
@@ -17,6 +18,18 @@ func sum(x, y string) string {
 
 func product(x, y string) string {
 	return calc(x, y, "Mul")
+}
+
+func div(x, y string) string {
+	fx, err := strconv.ParseFloat(x, 64)
+	if err != nil {
+		return fmt.Sprintf("%s/%s", x, y)
+	}
+	fy, err := strconv.ParseFloat(y, 64)
+	if err != nil || fy == 0 {
+		return fmt.Sprintf("%s/%s", x, y)
+	}
+	return fmt.Sprintf("%f", fx/fy)
 }
 
 func calc(x, y, method string) string {
