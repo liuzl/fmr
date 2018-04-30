@@ -10,6 +10,7 @@ import (
 func init() {
 	builtinFuncs["nf.math.sum"] = sum
 	builtinFuncs["nf.math.product"] = product
+	builtinFuncs["nf.math.div"] = div
 }
 
 func sum(x, y string) string {
