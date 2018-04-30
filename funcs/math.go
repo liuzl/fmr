@@ -2,6 +2,7 @@ package funcs
 
 import (
 	"fmt"
+	"math"
 	"math/big"
 	"strconv"
 	"strings"
@@ -11,6 +12,7 @@ func init() {
 	builtinFuncs["nf.math.sum"] = sum
 	builtinFuncs["nf.math.product"] = product
 	builtinFuncs["nf.math.div"] = div
+	builtinFuncs["nf.math.pow"] = pow
 }
 
 func sum(x, y string) string {
@@ -31,6 +33,18 @@ func div(x, y string) string {
 		return fmt.Sprintf("%s/%s", x, y)
 	}
 	return fmt.Sprintf("%f", fx/fy)
+}
+
+func pow(x, y string) string {
+	fx, err := strconv.ParseFloat(x, 64)
+	if err != nil {
+		return fmt.Sprintf("%s^%s", x, y)
+	}
+	fy, err := strconv.ParseFloat(y, 64)
+	if err != nil {
+		return fmt.Sprintf("%s^%s", x, y)
+	}
+	return fmt.Sprintf("%f", math.Pow(fx, fy))
 }
 
 func calc(x, y, method string) string {

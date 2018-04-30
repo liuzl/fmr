@@ -9,4 +9,5 @@ func TestSum(t *testing.T) {
 	t.Log(div("399", "987"))
 	t.Log(div("3e9", "987"))
 	t.Log(div("abc", "987"))
+	t.Log(pow("2.1", "7.9"))
 }
