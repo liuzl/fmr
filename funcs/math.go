@@ -14,6 +14,8 @@ func init() {
 	builtinFuncs["nf.math.div"] = div
 	builtinFuncs["nf.math.pow"] = pow
 	builtinFuncs["nf.math.neg"] = neg
+	builtinFuncs["nf.math.even"] = even
+	builtinFuncs["nf.math.odd"] = odd
 }
 
 func sum(x, y string) string {
@@ -54,6 +56,22 @@ func neg(x string) string {
 		return ""
 	}
 	return xf.Neg(xf).String()
+}
+
+func even(x string) string {
+	xi := new(big.Int)
+	if _, err := fmt.Sscan(x, xi); err == nil && xi.Bit(0) == 0 {
+		return "true"
+	}
+	return "false"
+}
+
+func odd(x string) string {
+	xi := new(big.Int)
+	if _, err := fmt.Sscan(x, xi); err == nil && xi.Bit(0) == 1 {
+		return "true"
+	}
+	return "false"
 }
 
 func calc(x, y, method string) string {
