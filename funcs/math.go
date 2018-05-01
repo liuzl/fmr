@@ -13,6 +13,7 @@ func init() {
 	builtinFuncs["nf.math.product"] = product
 	builtinFuncs["nf.math.div"] = div
 	builtinFuncs["nf.math.pow"] = pow
+	builtinFuncs["nf.math.neg"] = neg
 }
 
 func sum(x, y string) string {
@@ -45,6 +46,14 @@ func pow(x, y string) string {
 		return fmt.Sprintf("%s^%s", x, y)
 	}
 	return fmt.Sprintf("%f", math.Pow(fx, fy))
+}
+
+func neg(x string) string {
+	xf := new(big.Float)
+	if _, err := fmt.Sscan(x, xf); err != nil {
+		return ""
+	}
+	return xf.Neg(xf).String()
 }
 
 func calc(x, y, method string) string {

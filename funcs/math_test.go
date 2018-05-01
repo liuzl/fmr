@@ -10,4 +10,5 @@ func TestSum(t *testing.T) {
 	t.Log(div("3e9", "987"))
 	t.Log(div("abc", "987"))
 	t.Log(pow("2.1", "7.9"))
+	t.Log(neg("-2.1e100"))
 }
