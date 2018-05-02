@@ -13,4 +13,7 @@ func TestSum(t *testing.T) {
 	t.Log(neg("-2.1e100"))
 	t.Log(odd("24"))
 	t.Log(even("24"))
+	t.Log(prime("100000223"))
+	t.Log(prime("100000227"))
+	t.Log(Call("nf.math.prime", "100000227"))
 }

@@ -16,6 +16,7 @@ func init() {
 	builtinFuncs["nf.math.neg"] = neg
 	builtinFuncs["nf.math.even"] = even
 	builtinFuncs["nf.math.odd"] = odd
+	builtinFuncs["nf.math.prime"] = prime
 }
 
 func sum(x, y string) string {
@@ -69,6 +70,14 @@ func even(x string) string {
 func odd(x string) string {
 	xi := new(big.Int)
 	if _, err := fmt.Sscan(x, xi); err == nil && xi.Bit(0) == 1 {
+		return "true"
+	}
+	return "false"
+}
+
+func prime(x string) string {
+	xi := new(big.Int)
+	if _, err := fmt.Sscan(x, xi); err == nil && xi.ProbablyPrime(10) {
 		return "true"
 	}
 	return "false"
