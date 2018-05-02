@@ -9,7 +9,7 @@ nf.math.sum = function(x, y) {
 nf.math.sub = function(x, y) {
     return x - y;
 }
-nf.math.product = function(x, y) {
+nf.math.mul = function(x, y) {
     return x * y;
 }
 nf.math.neg = function(x) {

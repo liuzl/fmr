@@ -88,9 +88,9 @@
               | <cardinal_tens> "," <cardinal_unit> {nf.math.sum($1, $3)}
               ;
 
-<magnitude_number> = <base_number> <magnitude>      {nf.math.product($1, $2)}
-                   | <base_number> "-" <magnitude>  {nf.math.product($1, $3)}
-                   | <magnitude_number> <magnitude> {nf.math.product($1, $2)}
+<magnitude_number> = <base_number> <magnitude>      {nf.math.mul($1, $2)}
+                   | <base_number> "-" <magnitude>  {nf.math.mul($1, $3)}
+                   | <magnitude_number> <magnitude> {nf.math.mul($1, $2)}
                    ;
 
 <section> = <magnitude_number> {nf.I($1)}

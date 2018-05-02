@@ -10,7 +10,7 @@ import (
 
 func init() {
 	builtinFuncs["nf.math.sum"] = sum
-	builtinFuncs["nf.math.product"] = product
+	builtinFuncs["nf.math.mul"] = mul
 	builtinFuncs["nf.math.div"] = div
 	builtinFuncs["nf.math.pow"] = pow
 	builtinFuncs["nf.math.neg"] = neg
@@ -22,7 +22,7 @@ func sum(x, y string) string {
 	return calc(x, y, "Add")
 }
 
-func product(x, y string) string {
+func mul(x, y string) string {
 	return calc(x, y, "Mul")
 }
 
