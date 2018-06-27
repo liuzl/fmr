@@ -1,0 +1,5 @@
+<company> = <location> (any) "有限公司"
+          ;
+<location> = "北京"
+           | "天津"
+           ;
