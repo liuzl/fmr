@@ -23,7 +23,7 @@ func (g *Grammar) refine() error {
 	for _, rule := range g.Rules {
 		for _, body := range rule.Body {
 			for _, term := range body.Terms {
-				if term.IsRule {
+				if term.Type == Nonterminal {
 					continue
 				}
 				// if this is a terminal text inside a ruleBody
@@ -46,7 +46,7 @@ func (g *Grammar) refine() error {
 							ascii = strings.Join(strings.Fields(ascii), "_")
 							tname += "_" + ascii
 						}
-						rb.Terms = append(rb.Terms, &Term{token.Text, false})
+						rb.Terms = append(rb.Terms, &Term{Value: token.Text, Type: Terminal})
 					}
 					for name, n = tname, 0; ; name, n = fmt.Sprintf("%s_%d", tname, n), n+1 {
 						if g.Rules[name] == nil && !names[name] {
@@ -58,7 +58,7 @@ func (g *Grammar) refine() error {
 					terminalRules = append(terminalRules, &Rule{name, []*RuleBody{rb}})
 					term.Value = name
 				}
-				term.IsRule = true
+				term.Type = Nonterminal
 			}
 		}
 	}

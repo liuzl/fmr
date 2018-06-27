@@ -59,7 +59,8 @@ func (p *Parse) buildTreesHelper(children *[]*Node, state *TableState,
 	}
 	term := state.Rb.Terms[termIndex]
 
-	if !term.IsRule {
+	//if !term.IsRule {
+	if term.Type == Terminal {
 		n := &TableState{term.Value, nil,
 			state.Start + termIndex, state.Start + termIndex + 1, 0}
 		cld := []*Node{&Node{n, nil}}

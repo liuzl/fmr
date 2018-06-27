@@ -61,7 +61,7 @@ func (col *TableColumn) insert(state *TableState) *TableState {
  */
 func (p *Parse) parse(start string) *TableState {
 	rb := &RuleBody{
-		[]*Term{&Term{start, true}},
+		[]*Term{&Term{Value: start, Type: Nonterminal}},
 		&FMR{"nf.I", []*Arg{&Arg{"index", 1}}},
 	}
 	begin := &TableState{GAMMA_RULE, rb, 0, 0, 0}
@@ -73,7 +73,7 @@ func (p *Parse) parse(start string) *TableState {
 				p.complete(col, state)
 			} else {
 				term := state.getNextTerm()
-				if term.IsRule {
+				if term.Type == Nonterminal {
 					p.predict(col, term)
 				} else if i+1 < len(p.columns) {
 					p.scan(p.columns[i+1], state, term)
@@ -131,7 +131,7 @@ func (p *Parse) complete(col *TableColumn, state *TableState) bool {
 		if term == nil {
 			continue
 		}
-		if term.IsRule && term.Value == state.Name {
+		if term.Type == Nonterminal && term.Value == state.Name {
 			st1 := &TableState{Name: st.Name, Rb: st.Rb,
 				dot: st.dot + 1, Start: st.Start}
 			st2 := col.insert(st1)
@@ -150,7 +150,7 @@ func (p *Parse) handleEpsilons(col *TableColumn) {
 				changed = changed || p.complete(col, state)
 			}
 			term := state.getNextTerm()
-			if term != nil && term.IsRule {
+			if term != nil && term.Type == Nonterminal {
 				changed = changed || p.predict(col, term)
 			}
 		}

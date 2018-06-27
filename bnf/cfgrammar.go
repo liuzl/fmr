@@ -147,12 +147,10 @@ func (p *parser) terminalText() (string, error) {
 }
 
 func (p *parser) terminal() (text string, err error) {
-	err = p.eat('"')
-	if err != nil {
+	if err = p.eat('"'); err != nil {
 		return
 	}
-	text, err = p.terminalText()
-	if err != nil {
+	if text, err = p.terminalText(); err != nil {
 		return
 	}
 	err = p.eat('"')
@@ -160,31 +158,51 @@ func (p *parser) terminal() (text string, err error) {
 }
 
 func (p *parser) nonterminal() (name string, err error) {
-	err = p.eat('<')
-	if err != nil {
+	if err = p.eat('<'); err != nil {
 		return
 	}
-	name, err = p.text()
-	if err != nil {
+	if name, err = p.text(); err != nil {
 		return
 	}
 	err = p.eat('>')
 	return
 }
 
+func (p *parser) special() (*Term, error) {
+	if err := p.eat('('); err != nil {
+		return nil, err
+	}
+	name, err := p.text()
+	if err != nil {
+		return nil, err
+	}
+	if name != "any" {
+		return nil, fmt.Errorf("%s: special rule:(%s) not supported", p.current, name)
+	}
+	if err := p.eat(')'); err != nil {
+		return nil, err
+	}
+	return &Term{Value: name, Type: Special}, nil
+}
+
 func (p *parser) term() (*Term, error) {
-	if p.peek() == '<' {
+	switch p.peek() {
+	case '<':
 		name, err := p.nonterminal()
 		if err != nil {
 			return nil, err
 		}
-		return &Term{name, true}, nil
+		return &Term{Value: name, Type: Nonterminal}, nil
+	case '"':
+		text, err := p.terminal()
+		if err != nil {
+			return nil, err
+		}
+		return &Term{Value: text, Type: Terminal}, nil
+	case '(':
+		return p.special()
 	}
-	text, err := p.terminal()
-	if err != nil {
-		return nil, err
-	}
-	return &Term{text, false}, nil
+	return nil, fmt.Errorf("%s :invalid term char", p.current)
 }
 
 func (p *parser) semanticFn() (f *FMR, err error) {
@@ -377,7 +395,7 @@ func (p *parser) ruleBody() (*RuleBody, error) {
 	}
 	terms := []*Term{t}
 	p.ws()
-	for p.ws(); strings.ContainsRune(`<"`, p.peek()); p.ws() {
+	for p.ws(); strings.ContainsRune(`<"(`, p.peek()); p.ws() {
 		t, err = p.term()
 		if err != nil {
 			return nil, err

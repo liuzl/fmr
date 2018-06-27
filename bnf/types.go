@@ -19,12 +19,19 @@ type RuleBody struct {
 	F     *FMR    `json:"f,omitempty"`
 }
 
+type TermType byte
+
+const (
+	EOF TermType = iota
+	Nonterminal
+	Terminal
+	Special
+)
+
 // A Term is the component of RuleBody
-// IsRule=true for Nonterminals
-// IsRule=false for Terminals
 type Term struct {
-	Value  string `json:"value"`
-	IsRule bool   `json:"is_rule"`
+	Value string   `json:"value"`
+	Type  TermType `json:"type"`
 }
 
 // Arg is the type of argument for functions

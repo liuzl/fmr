@@ -13,7 +13,7 @@ func (ts *TableState) String() string {
 			if i == ts.dot {
 				s += DOT + " "
 			}
-			if term.IsRule {
+			if term.Type == Nonterminal {
 				s += term.Value + " "
 			} else {
 				s += strconv.Quote(term.Value) + " "
