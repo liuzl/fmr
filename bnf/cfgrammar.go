@@ -168,7 +168,7 @@ func (p *parser) nonterminal() (name string, err error) {
 	return
 }
 
-func (p *parser) special() (*Term, error) {
+func (p *parser) any() (*Term, error) {
 	if err := p.eat('('); err != nil {
 		return nil, err
 	}
@@ -177,12 +177,12 @@ func (p *parser) special() (*Term, error) {
 		return nil, err
 	}
 	if name != "any" {
-		return nil, fmt.Errorf("%s: special rule:(%s) not supported", p.current, name)
+		return nil, fmt.Errorf("%s: any rule:(%s) not supported", p.current, name)
 	}
 	if err := p.eat(')'); err != nil {
 		return nil, err
 	}
-	return &Term{Value: name, Type: Special}, nil
+	return &Term{Value: name, Type: Any}, nil
 }
 
 func (p *parser) term() (*Term, error) {
@@ -200,7 +200,7 @@ func (p *parser) term() (*Term, error) {
 		}
 		return &Term{Value: text, Type: Terminal}, nil
 	case '(':
-		return p.special()
+		return p.any()
 	}
 	return nil, fmt.Errorf("%s :invalid term char", p.current)
 }

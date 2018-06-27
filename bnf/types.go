@@ -25,7 +25,7 @@ const (
 	EOF TermType = iota
 	Nonterminal
 	Terminal
-	Special
+	Any
 )
 
 // A Term is the component of RuleBody

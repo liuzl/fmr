@@ -16,6 +16,7 @@ type TableState struct {
 	Start int       `json:"start"`
 	End   int       `json:"end"`
 	dot   int
+	isAny bool
 }
 
 // TableColumn is the TableState set
@@ -33,10 +34,21 @@ type Parse struct {
 }
 
 func (s *TableState) isCompleted() bool {
+	if s.isAny {
+		if s.dot > 0 {
+			return true
+		}
+		return false
+	}
 	return s.dot >= len(s.Rb.Terms)
 }
 
+var anyTerm = &Term{Value: "any", Type: Any}
+
 func (s *TableState) getNextTerm() *Term {
+	if s.isAny {
+		return anyTerm
+	}
 	if s.isCompleted() {
 		return nil
 	}
@@ -64,19 +76,32 @@ func (p *Parse) parse(start string) *TableState {
 		[]*Term{&Term{Value: start, Type: Nonterminal}},
 		&FMR{"nf.I", []*Arg{&Arg{"index", 1}}},
 	}
-	begin := &TableState{GAMMA_RULE, rb, 0, 0, 0}
+	begin := &TableState{GAMMA_RULE, rb, 0, 0, 0, false}
 	p.columns[0].states = append(p.columns[0].states, begin)
 	for i, col := range p.columns {
 		for j := 0; j < len(col.states); j++ {
 			state := col.states[j]
-			if state.isCompleted() {
-				p.complete(col, state)
+
+			if state.isAny {
+				if state.dot > 0 {
+					p.complete(col, state)
+				}
+				if i+1 < len(p.columns) {
+					p.scan(p.columns[i+1], state, anyTerm)
+				}
 			} else {
-				term := state.getNextTerm()
-				if term.Type == Nonterminal {
-					p.predict(col, term)
-				} else if i+1 < len(p.columns) {
-					p.scan(p.columns[i+1], state, term)
+				if state.isCompleted() {
+					p.complete(col, state)
+				} else {
+					term := state.getNextTerm()
+					switch term.Type {
+					case Nonterminal, Any:
+						p.predict(col, term)
+					case Terminal:
+						if i+1 < len(p.columns) {
+							p.scan(p.columns[i+1], state, term)
+						}
+					}
 				}
 			}
 		}
@@ -103,6 +128,11 @@ func (p *Parse) parse(start string) *TableState {
 }
 
 func (*Parse) scan(col *TableColumn, st *TableState, term *Term) {
+	if term.Type == Any {
+		col.insert(&TableState{Name: st.Name, Rb: st.Rb,
+			dot: st.dot + 1, Start: st.Start, isAny: st.isAny})
+		return
+	}
 	if term.Value == col.token {
 		col.insert(&TableState{Name: st.Name, Rb: st.Rb,
 			dot: st.dot + 1, Start: st.Start})
@@ -110,17 +140,25 @@ func (*Parse) scan(col *TableColumn, st *TableState, term *Term) {
 }
 
 func (p *Parse) predict(col *TableColumn, term *Term) bool {
-	r, has := p.g.Rules[term.Value]
-	if !has {
-		return false
-	}
-	changed := false
-	for _, prod := range r.Body {
-		st := &TableState{Name: r.Name, Rb: prod, dot: 0, Start: col.index}
+	switch term.Type {
+	case Nonterminal:
+		r, has := p.g.Rules[term.Value]
+		if !has {
+			return false
+		}
+		changed := false
+		for _, prod := range r.Body {
+			st := &TableState{Name: r.Name, Rb: prod, dot: 0, Start: col.index}
+			st2 := col.insert(st)
+			changed = changed || (st == st2)
+		}
+		return changed
+	case Any:
+		st := &TableState{Name: "any", Start: col.index, isAny: true}
 		st2 := col.insert(st)
-		changed = changed || (st == st2)
+		return st == st2
 	}
-	return changed
+	return false
 }
 
 // Earley complete. returns true if the table has been changed, false otherwise
@@ -131,9 +169,10 @@ func (p *Parse) complete(col *TableColumn, state *TableState) bool {
 		if term == nil {
 			continue
 		}
-		if term.Type == Nonterminal && term.Value == state.Name {
+		if term.Type == Any ||
+			(term.Type == Nonterminal && term.Value == state.Name) {
 			st1 := &TableState{Name: st.Name, Rb: st.Rb,
-				dot: st.dot + 1, Start: st.Start}
+				dot: st.dot + 1, Start: st.Start, isAny: st.isAny}
 			st2 := col.insert(st1)
 			changed = changed || (st1 == st2)
 		}

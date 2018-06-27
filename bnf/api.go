@@ -59,7 +59,6 @@ func (g *Grammar) earleyParse(start string, tokens []*ling.Token) (*Parse, error
 				token: token.Annotations[ling.Norm],
 			})
 	}
-
 	parse.finalState = parse.parse(start)
 	return parse, nil
 }

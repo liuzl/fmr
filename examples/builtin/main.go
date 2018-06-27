@@ -11,6 +11,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"strings"
 )
 
 var (
@@ -18,6 +19,7 @@ var (
 	js      = flag.String("js", "math.js", "javascript file")
 	input   = flag.String("i", "", "file of original text to read")
 	debug   = flag.Bool("debug", false, "debug mode")
+	start   = flag.String("start", "number", "start rule")
 )
 
 func main() {
@@ -69,9 +71,14 @@ func main() {
 		if c != nil {
 			glog.Fatal(c)
 		}
+		line = strings.TrimSpace(line)
 		fmt.Println(line)
-		//p, err := g.EarleyParse("number", line)
-		ps, err := g.EarleyParseAll("number", line)
+		//p, err := g.EarleyParse(*start, line)
+		//fmt.Println(p, err)
+		//TODO p.GetTrees for (any)
+		//p.GetTrees()
+
+		ps, err := g.EarleyParseAll(*start, line)
 		if err != nil {
 			glog.Fatal(err)
 		}

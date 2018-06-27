@@ -13,16 +13,28 @@ func (ts *TableState) String() string {
 			if i == ts.dot {
 				s += DOT + " "
 			}
-			if term.Type == Nonterminal {
+			switch term.Type {
+			case Nonterminal:
 				s += term.Value + " "
-			} else {
+			case Terminal:
 				s += strconv.Quote(term.Value) + " "
+			case Any:
+				s += "(any) "
 			}
 		}
 		if ts.dot == len(ts.Rb.Terms) {
 			s += DOT
 		}
 		return fmt.Sprintf("%s -> %s [%d-%d]", ts.Name, s, ts.Start, ts.End)
+	}
+	if ts.isAny {
+		for i := ts.Start; i <= ts.End; i++ {
+			if i == ts.dot+ts.Start {
+				s += DOT + " "
+			}
+			s += "# "
+		}
+		return fmt.Sprintf("(any) -> %s [%d-%d]", s, ts.Start, ts.End)
 	}
 	return fmt.Sprintf("%s [%d-%d]", strconv.Quote(ts.Name), ts.Start, ts.End)
 }

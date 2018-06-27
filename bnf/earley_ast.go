@@ -62,7 +62,7 @@ func (p *Parse) buildTreesHelper(children *[]*Node, state *TableState,
 	//if !term.IsRule {
 	if term.Type == Terminal {
 		n := &TableState{term.Value, nil,
-			state.Start + termIndex, state.Start + termIndex + 1, 0}
+			state.Start + termIndex, state.Start + termIndex + 1, 0, false}
 		cld := []*Node{&Node{n, nil}}
 		cld = append(cld, *children...)
 		for _, node := range p.buildTreesHelper(&cld, state, termIndex-1, end-1) {
