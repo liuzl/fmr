@@ -61,6 +61,9 @@ func (col *TableColumn) insert(state *TableState) *TableState {
 		if *state == *s {
 			return s
 		}
+		if state.isAny && s.isAny && state.Start == s.Start && state.End == s.End {
+			return s
+		}
 	}
 	col.states = append(col.states, state)
 	return col.states[len(col.states)-1]

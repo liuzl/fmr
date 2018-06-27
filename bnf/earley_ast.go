@@ -44,7 +44,7 @@ func (p *Parse) buildTreesHelper(children *[]*Node, state *TableState,
 	termIndex, end int) []*Node {
 	// begin with the last --non-terminal-- of the ruleBody of finalState
 	if Debug {
-		fmt.Printf("%+v termIndex:%d children:%+v, end:%d\n",
+		fmt.Printf("debug: %+v termIndex:%d children:%+v, end:%d\n",
 			state, termIndex, children, end)
 	}
 	var outputs []*Node

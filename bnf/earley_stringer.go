@@ -28,12 +28,10 @@ func (ts *TableState) String() string {
 		return fmt.Sprintf("%s -> %s [%d-%d]", ts.Name, s, ts.Start, ts.End)
 	}
 	if ts.isAny {
-		for i := ts.Start; i <= ts.End; i++ {
-			if i == ts.dot+ts.Start {
-				s += DOT + " "
-			}
+		for i := ts.Start; i < ts.End; i++ {
 			s += "# "
 		}
+		s += DOT + " * "
 		return fmt.Sprintf("(any) -> %s [%d-%d]", s, ts.Start, ts.End)
 	}
 	return fmt.Sprintf("%s [%d-%d]", strconv.Quote(ts.Name), ts.Start, ts.End)

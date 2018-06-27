@@ -23,6 +23,11 @@ var (
 )
 
 func main() {
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println(err)
+		}
+	}()
 	flag.Parse()
 	b, err := ioutil.ReadFile(*grammar)
 	if err != nil {
