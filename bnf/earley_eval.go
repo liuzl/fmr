@@ -2,14 +2,24 @@ package bnf
 
 import (
 	"fmt"
-	"github.com/liuzl/fmr/funcs"
 	"math/big"
+	"strings"
+
+	"github.com/liuzl/fmr/funcs"
 )
 
 // Semantic returns the stringified FMR of Node n
 func (n *Node) Eval() (string, error) {
 	if n.Value.Rb == nil || n.Value.Rb.F == nil {
-		return "", nil
+		if n.p == nil {
+			return "", nil
+		}
+		var s []string
+		for i := n.Value.Start + 1; i <= n.Value.End; i++ {
+			s = append(s, n.p.columns[i].token)
+		}
+		return strings.Join(s, " "), nil
+
 	}
 	return fmrEval(n.Value.Rb.F, n.Children)
 }

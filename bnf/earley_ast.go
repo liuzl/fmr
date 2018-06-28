@@ -9,6 +9,8 @@ var Debug = false
 type Node struct {
 	Value    *TableState `json:"value"`
 	Children []*Node     `json:"children,omitempty"`
+
+	p *Parse `json:"-"`
 }
 
 // GetTrees returns all possible parse results
@@ -25,7 +27,7 @@ func (p *Parse) GetTrees() []*Node {
 func (p *Parse) buildTrees(state *TableState) []*Node {
 	if state.isAny {
 		n := &TableState{"any", nil, state.Start, state.End, state.End, true}
-		cld := []*Node{&Node{n, nil}}
+		cld := []*Node{&Node{n, nil, p}}
 		return cld
 	}
 	return p.buildTreesHelper(
@@ -56,7 +58,7 @@ func (p *Parse) buildTreesHelper(children *[]*Node, state *TableState,
 	var start = -1
 	if termIndex < 0 {
 		// this is the base-case for the recursion (we matched the entire rule)
-		outputs = append(outputs, &Node{state, *children})
+		outputs = append(outputs, &Node{state, *children, p})
 		return outputs
 	} else if termIndex == 0 {
 		// if this is the first rule
@@ -68,7 +70,7 @@ func (p *Parse) buildTreesHelper(children *[]*Node, state *TableState,
 	if term.Type == Terminal {
 		n := &TableState{term.Value, nil,
 			state.Start + termIndex, state.Start + termIndex + 1, 0, false}
-		cld := []*Node{&Node{n, nil}}
+		cld := []*Node{&Node{n, nil, p}}
 		cld = append(cld, *children...)
 		for _, node := range p.buildTreesHelper(&cld, state, termIndex-1, end-1) {
 			outputs = append(outputs, node)

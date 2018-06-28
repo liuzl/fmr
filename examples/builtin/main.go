@@ -94,6 +94,7 @@ func main() {
 			for _, tree := range trees {
 				tree.Print(os.Stdout)
 				sem, err := tree.Semantic()
+				fmt.Println(sem)
 				if err != nil {
 					glog.Fatal(err)
 				}
@@ -102,7 +103,7 @@ func main() {
 				}
 				result, err := vm.Run(sem)
 				if err != nil {
-					glog.Fatal(err)
+					glog.Error(err)
 				}
 				fmt.Printf("%s = %v\n", sem, result)
 				eval, err := tree.Eval()
