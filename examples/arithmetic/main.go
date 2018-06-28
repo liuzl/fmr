@@ -4,12 +4,13 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	"github.com/golang/glog"
-	"github.com/liuzl/fmr/bnf"
-	"github.com/robertkrimen/otto"
 	"io"
 	"io/ioutil"
 	"os"
+
+	"github.com/golang/glog"
+	"github.com/liuzl/fmr/bnf"
+	"github.com/robertkrimen/otto"
 )
 
 var (

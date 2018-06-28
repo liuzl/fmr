@@ -2,9 +2,10 @@ package bnf
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/liuzl/ling"
 	"github.com/liuzl/unidecode"
-	"strings"
 )
 
 func (g *Grammar) refine() error {

@@ -1,9 +1,10 @@
 package bnf
 
 import (
-	"github.com/liuzl/goutil"
 	"os"
 	"testing"
+
+	"github.com/liuzl/goutil"
 )
 
 func TestEarleyParse(t *testing.T) {

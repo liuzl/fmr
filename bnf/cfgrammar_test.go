@@ -2,8 +2,9 @@ package bnf
 
 import (
 	//"fmt"
-	"github.com/liuzl/goutil"
 	"testing"
+
+	"github.com/liuzl/goutil"
 )
 
 var tests = []string{

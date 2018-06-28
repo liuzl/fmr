@@ -2,8 +2,9 @@ package bnf
 
 import (
 	"fmt"
-	"github.com/liuzl/ling"
 	"strings"
+
+	"github.com/liuzl/ling"
 )
 
 var nlp = ling.MustNLP(ling.Norm)
