@@ -1,4 +1,4 @@
-<company> = <location> (any) "有限公司"
+<company> = <location> (any) "有限公司" {nf.I($2)}
           ;
 <location> = "北京"
            | "天津"
