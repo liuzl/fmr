@@ -23,6 +23,11 @@ func (p *Parse) GetTrees() []*Node {
 }
 
 func (p *Parse) buildTrees(state *TableState) []*Node {
+	if state.isAny {
+		n := &TableState{"any", nil, state.Start, state.End, state.End, true}
+		cld := []*Node{&Node{n, nil}}
+		return cld
+	}
 	return p.buildTreesHelper(
 		&[]*Node{}, state, len(state.Rb.Terms)-1, state.End)
 }
@@ -71,6 +76,9 @@ func (p *Parse) buildTreesHelper(children *[]*Node, state *TableState,
 		return outputs
 	}
 
+	if Debug {
+		fmt.Println("\nend:", end, "term.value:", term.Value, state)
+	}
 	for _, st := range p.columns[end].states {
 		if st == state {
 			// this prevents an endless recursion: since the states are filled in
@@ -83,14 +91,14 @@ func (p *Parse) buildTreesHelper(children *[]*Node, state *TableState,
 			// this state is out of the question -- either not completed or does not
 			// match the name
 			if Debug {
-				fmt.Printf("\tN st:%+v, term:%+v\n", st, term)
+				//fmt.Printf("\tN st:%+v, term:%+v\n", st, term)
 			}
 			continue
 		}
 		if start != -1 && st.Start != start {
 			// if start isn't nil, this state must span from start to end
 			if Debug {
-				fmt.Printf("\tN st:%+v, term:%+v\n", st, term)
+				//fmt.Printf("\tN st:%+v, term:%+v\n", st, term)
 			}
 			continue
 		}
