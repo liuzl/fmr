@@ -43,7 +43,7 @@ func (s *TableState) isCompleted() bool {
 	return s.dot >= len(s.Rb.Terms)
 }
 
-var anyTerm = &Term{Value: "any", Type: Any}
+var anyTerm = &Term{Type: Any}
 
 func (s *TableState) getNextTerm() *Term {
 	if s.isAny {
@@ -132,7 +132,7 @@ func (p *Parse) parse(start string) *TableState {
 
 func (*Parse) scan(col *TableColumn, st *TableState, term *Term) {
 	if term.Type == Any {
-		col.insert(&TableState{Name: st.Name, Rb: st.Rb,
+		col.insert(&TableState{Name: "any", Rb: st.Rb,
 			dot: st.dot + 1, Start: st.Start, isAny: st.isAny})
 		return
 	}
