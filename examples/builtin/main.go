@@ -106,7 +106,8 @@ func main() {
 				if err != nil {
 					glog.Error(err)
 				}
-				fmt.Printf("%s = %+v\n", sem, result)
+				rs, _ := result.Export()
+				fmt.Printf("%s = %+v\n", sem, rs)
 				eval, err := tree.Eval()
 				fmt.Printf("Eval: %s, Err: %+v\n", eval, err)
 			}
