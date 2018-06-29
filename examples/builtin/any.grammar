@@ -1,5 +1,5 @@
-<company> = <location> (any) "有限公司" {nf.I($2)}
+<company> = <location> (any) "有限公司" {nf.company($1,$2,$3)}
           ;
-<location> = "北京"
-           | "天津"
+<location> = "北京" {nf.I("beijing")}
+           | "天津" {nf.I("tianjin")}
            ;
