@@ -21,14 +21,17 @@ type TableState struct {
 
 // TableColumn is the TableState set
 type TableColumn struct {
-	token  string
-	index  int
-	states []*TableState
+	token     string
+	startByte int
+	endByte   int
+	index     int
+	states    []*TableState
 }
 
 // Parse stores a parse chart by Grammar g
 type Parse struct {
 	g          *Grammar
+	text       string
 	columns    []*TableColumn
 	finalState *TableState
 }

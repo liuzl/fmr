@@ -15,7 +15,7 @@ func (g *Grammar) EarleyParse(start, text string) (*Parse, error) {
 	if err != nil {
 		return nil, err
 	}
-	return g.earleyParse(start, tokens)
+	return g.earleyParse(start, text, tokens)
 }
 
 // EarleyParseAll extracts all submatches in text for rule <start>
@@ -26,7 +26,7 @@ func (g *Grammar) EarleyParseAll(start, text string) ([]*Parse, error) {
 	}
 	var ret []*Parse
 	for i := 0; i < len(tokens); {
-		p, err := g.earleyParse(start, tokens[i:])
+		p, err := g.earleyParse(start, text, tokens[i:])
 		if err != nil {
 			return nil, err
 		}
@@ -40,7 +40,7 @@ func (g *Grammar) EarleyParseAll(start, text string) ([]*Parse, error) {
 	return ret, nil
 }
 
-func (g *Grammar) earleyParse(start string, tokens []*ling.Token) (*Parse, error) {
+func (g *Grammar) earleyParse(start, t string, tokens []*ling.Token) (*Parse, error) {
 	if start = strings.TrimSpace(start); start == "" {
 		return nil, fmt.Errorf("start rule is empty")
 	}
@@ -51,13 +51,14 @@ func (g *Grammar) earleyParse(start string, tokens []*ling.Token) (*Parse, error
 		return nil, fmt.Errorf("no tokens to parse")
 	}
 
-	parse := &Parse{g: g}
+	parse := &Parse{g: g, text: t}
 	parse.columns = append(parse.columns, &TableColumn{index: 0, token: ""})
 	for _, token := range tokens {
 		parse.columns = append(parse.columns,
 			&TableColumn{
-				index: len(parse.columns),
-				token: token.Annotations[ling.Norm],
+				index:     len(parse.columns),
+				token:     token.Annotations[ling.Norm],
+				startByte: token.StartByte, endByte: token.EndByte,
 			})
 	}
 	parse.finalState = parse.parse(start)
