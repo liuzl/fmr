@@ -19,9 +19,11 @@ func (n *Node) Semantic() (string, error) {
 		for i := n.Value.Start + 1; i <= n.Value.End; i++ {
 			s = append(s, n.p.columns[i].token)
 		}
-		start := n.p.columns[n.Value.Start+1].startByte
-		end := n.p.columns[n.Value.End].endByte
-		fmt.Printf("%s[%d:%d]:%s\n", n.p.text, start, end, n.p.text[start:end])
+		/*
+			start := n.p.columns[n.Value.Start+1].startByte
+			end := n.p.columns[n.Value.End].endByte
+			fmt.Printf("%s[%d:%d]:%s\n", n.p.text, start, end, n.p.text[start:end])
+		*/
 		return strconv.Quote(goutil.Join(s)), nil
 	}
 	return fmrStr(n.Value.Rb.F, n.Children)
