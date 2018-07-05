@@ -365,15 +365,13 @@ func (p *parser) numArg(neg bool) (*Arg, error) {
 	}
 	if hasDot {
 		n := new(big.Float)
-		_, err := fmt.Sscan(string(ret), n)
-		if err != nil {
+		if _, err := fmt.Sscan(string(ret), n); err != nil {
 			return nil, err
 		}
 		return &Arg{"float", n}, nil
 	}
 	n := new(big.Int)
-	_, err := fmt.Sscan(string(ret), n)
-	if err != nil {
+	if _, err := fmt.Sscan(string(ret), n); err != nil {
 		return nil, err
 	}
 	return &Arg{"int", n}, nil
@@ -396,8 +394,7 @@ func (p *parser) ruleBody() (*RuleBody, error) {
 	terms := []*Term{t}
 	p.ws()
 	for p.ws(); strings.ContainsRune(`<"(`, p.peek()); p.ws() {
-		t, err = p.term()
-		if err != nil {
+		if t, err = p.term(); err != nil {
 			return nil, err
 		}
 		terms = append(terms, t)
@@ -428,8 +425,7 @@ func (p *parser) ruleBodies() ([]*RuleBody, error) {
 		}
 		p.eat('|')
 		p.ws()
-		r, err = p.ruleBody()
-		if err != nil {
+		if r, err = p.ruleBody(); err != nil {
 			return nil, err
 		}
 		rules = append(rules, r)
@@ -443,8 +439,7 @@ func (p *parser) rule() (*Rule, error) {
 		return nil, err
 	}
 	p.ws()
-	err = p.eat('=')
-	if err != nil {
+	if err = p.eat('='); err != nil {
 		return nil, err
 	}
 	p.ws()
@@ -452,8 +447,7 @@ func (p *parser) rule() (*Rule, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = p.eat(';')
-	if err != nil {
+	if err = p.eat(';'); err != nil {
 		return nil, err
 	}
 	return &Rule{name, body}, nil
@@ -475,8 +469,7 @@ func (p *parser) grammar() (*Grammar, error) {
 	if p.next() != eof {
 		return nil, fmt.Errorf("%s : format error", p.current)
 	}
-	err := g.refine()
-	if err != nil {
+	if err := g.refine(); err != nil {
 		return nil, err
 	}
 	return g, nil
