@@ -30,7 +30,7 @@ type TableColumn struct {
 
 // Parse stores a parse chart by Grammar g
 type Parse struct {
-	g          *Grammar
+	grammars   []*Grammar
 	text       string
 	columns    []*TableColumn
 	finalState *TableState
@@ -145,18 +145,26 @@ func (*Parse) scan(col *TableColumn, st *TableState, term *Term) {
 	}
 }
 
+func predict(g *Grammar, col *TableColumn, term *Term) bool {
+	r, has := g.Rules[term.Value]
+	if !has {
+		return false
+	}
+	changed := false
+	for _, prod := range r.Body {
+		st := &TableState{Name: r.Name, Rb: prod, dot: 0, Start: col.index}
+		st2 := col.insert(st)
+		changed = changed || (st == st2)
+	}
+	return changed
+}
+
 func (p *Parse) predict(col *TableColumn, term *Term) bool {
 	switch term.Type {
 	case Nonterminal:
-		r, has := p.g.Rules[term.Value]
-		if !has {
-			return false
-		}
 		changed := false
-		for _, prod := range r.Body {
-			st := &TableState{Name: r.Name, Rb: prod, dot: 0, Start: col.index}
-			st2 := col.insert(st)
-			changed = changed || (st == st2)
+		for _, g := range p.grammars {
+			changed = changed || predict(g, col, term)
 		}
 		return changed
 	case Any:

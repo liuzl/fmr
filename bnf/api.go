@@ -51,7 +51,7 @@ func (g *Grammar) earleyParse(start, t string, tokens []*ling.Token) (*Parse, er
 		return nil, fmt.Errorf("no tokens to parse")
 	}
 
-	parse := &Parse{g: g, text: t}
+	parse := &Parse{grammars: []*Grammar{g}, text: t}
 	parse.columns = append(parse.columns, &TableColumn{index: 0, token: ""})
 	for _, token := range tokens {
 		parse.columns = append(parse.columns,
