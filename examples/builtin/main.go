@@ -93,9 +93,9 @@ func main() {
 			//fmt.Printf("%+v\n", p)
 			fmt.Printf("p%d tree number:%d\n", i, len(trees))
 			for _, tree := range trees {
-				//tree.Print(os.Stdout)
+				tree.Print(os.Stdout)
 				sem, err := tree.Semantic()
-				fmt.Println(sem)
+				//fmt.Println(sem)
 				if err != nil {
 					glog.Fatal(err)
 				}
@@ -108,8 +108,8 @@ func main() {
 				}
 				rs, _ := result.Export()
 				fmt.Printf("%s = %+v\n", sem, rs)
-				eval, err := tree.Eval()
-				fmt.Printf("Eval: %s, Err: %+v\n", eval, err)
+				//eval, err := tree.Eval()
+				//fmt.Printf("Eval: %s, Err: %+v\n", eval, err)
 			}
 		}
 		fmt.Println()
