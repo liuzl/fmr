@@ -2,21 +2,13 @@ package bnf
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/liuzl/ling"
 )
 
-func localGrammar(text string, lnlp *ling.Pipeline) (*Grammar, error) {
-	if text = strings.TrimSpace(text); text == "" {
-		return nil, fmt.Errorf("text is empty")
-	}
-	if lnlp == nil {
-		lnlp = nlp
-	}
-	d := ling.NewDocument(text)
-	if err := lnlp.Annotate(d); err != nil {
-		return nil, err
+func localGrammar(d *ling.Document) (*Grammar, error) {
+	if d == nil {
+		return nil, fmt.Errorf("document is empty")
 	}
 	if len(d.Spans) == 0 {
 		return nil, nil

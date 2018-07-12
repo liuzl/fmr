@@ -3,30 +3,49 @@ package bnf
 import (
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/liuzl/ling"
 )
 
-var nlp = ling.MustNLP(ling.Norm)
+var nlp *ling.Pipeline
+var once sync.Once
+
+func NLP() *ling.Pipeline {
+	once.Do(func() {
+		var err error
+		var tagger *ling.DictTagger
+		if nlp, err = ling.DefaultNLP(); err != nil {
+			panic(err)
+		}
+		if tagger, err = ling.NewDictTagger(); err != nil {
+			panic(err)
+		}
+		if err = nlp.AddTagger(tagger); err != nil {
+			panic(err)
+		}
+	})
+	return nlp
+}
 
 // EarleyParse parses text for rule <start>
 func (g *Grammar) EarleyParse(start, text string) (*Parse, error) {
-	tokens, err := getTokens(text)
+	tokens, l, err := extract(text)
 	if err != nil {
 		return nil, err
 	}
-	return g.earleyParse(start, text, tokens)
+	return g.earleyParse(start, text, tokens, l)
 }
 
 // EarleyParseAll extracts all submatches in text for rule <start>
 func (g *Grammar) EarleyParseAll(start, text string) ([]*Parse, error) {
-	tokens, err := getTokens(text)
+	tokens, l, err := extract(text)
 	if err != nil {
 		return nil, err
 	}
 	var ret []*Parse
 	for i := 0; i < len(tokens); {
-		p, err := g.earleyParse(start, text, tokens[i:])
+		p, err := g.earleyParse(start, text, tokens[i:], l)
 		if err != nil {
 			return nil, err
 		}
@@ -40,7 +59,8 @@ func (g *Grammar) EarleyParseAll(start, text string) ([]*Parse, error) {
 	return ret, nil
 }
 
-func (g *Grammar) earleyParse(start, t string, tokens []*ling.Token) (*Parse, error) {
+func (g *Grammar) earleyParse(start, text string,
+	tokens []*ling.Token, l *Grammar) (*Parse, error) {
 	if start = strings.TrimSpace(start); start == "" {
 		return nil, fmt.Errorf("start rule is empty")
 	}
@@ -51,7 +71,10 @@ func (g *Grammar) earleyParse(start, t string, tokens []*ling.Token) (*Parse, er
 		return nil, fmt.Errorf("no tokens to parse")
 	}
 
-	parse := &Parse{grammars: []*Grammar{g}, text: t}
+	parse := &Parse{grammars: []*Grammar{g}, text: text}
+	if l != nil {
+		parse.grammars = append(parse.grammars, l)
+	}
 	parse.columns = append(parse.columns, &TableColumn{index: 0, token: ""})
 	for _, token := range tokens {
 		parse.columns = append(parse.columns,
@@ -65,13 +88,13 @@ func (g *Grammar) earleyParse(start, t string, tokens []*ling.Token) (*Parse, er
 	return parse, nil
 }
 
-func getTokens(text string) ([]*ling.Token, error) {
+func extract(text string) ([]*ling.Token, *Grammar, error) {
 	if text = strings.TrimSpace(text); text == "" {
-		return nil, fmt.Errorf("text is empty")
+		return nil, nil, fmt.Errorf("text is empty")
 	}
 	d := ling.NewDocument(text)
-	if err := nlp.Annotate(d); err != nil {
-		return nil, err
+	if err := NLP().Annotate(d); err != nil {
+		return nil, nil, err
 	}
 	var ret []*ling.Token
 	for _, token := range d.Tokens {
@@ -80,5 +103,12 @@ func getTokens(text string) ([]*ling.Token, error) {
 		}
 		ret = append(ret, token)
 	}
-	return ret, nil
+	if len(ret) == 0 {
+		return nil, nil, fmt.Errorf("no tokens")
+	}
+	l, err := localGrammar(d)
+	if err != nil {
+		return nil, nil, err
+	}
+	return ret, l, nil
 }
