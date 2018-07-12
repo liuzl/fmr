@@ -40,7 +40,10 @@ func localGrammar(text string, lnlp *ling.Pipeline) (*Grammar, error) {
 			}
 		}
 	}
-	if err := g.refine(); err != nil {
+	if len(g.Rules) == 0 {
+		return nil, nil
+	}
+	if err := g.refine("l"); err != nil {
 		return nil, err
 	}
 	return g, nil

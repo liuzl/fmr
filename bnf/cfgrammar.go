@@ -469,7 +469,7 @@ func (p *parser) grammar() (*Grammar, error) {
 	if p.next() != eof {
 		return nil, fmt.Errorf("%s : format error", p.current)
 	}
-	if err := g.refine(); err != nil {
+	if err := g.refine("g"); err != nil {
 		return nil, err
 	}
 	return g, nil

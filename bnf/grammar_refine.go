@@ -8,7 +8,7 @@ import (
 	"github.com/liuzl/unidecode"
 )
 
-func (g *Grammar) refine() error {
+func (g *Grammar) refine(prefix string) error {
 	if g.Refined {
 		return nil
 	}
@@ -36,7 +36,7 @@ func (g *Grammar) refine() error {
 					if err != nil {
 						return err
 					}
-					tname := "t"
+					tname := prefix + "_t"
 					rb := &RuleBody{}
 					for _, token := range d.Tokens {
 						if token.Type == ling.Space {
