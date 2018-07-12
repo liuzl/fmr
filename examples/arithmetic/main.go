@@ -9,7 +9,7 @@ import (
 	"os"
 
 	"github.com/golang/glog"
-	"github.com/liuzl/fmr/bnf"
+	"github.com/liuzl/fmr"
 	"github.com/robertkrimen/otto"
 )
 
@@ -26,7 +26,7 @@ func main() {
 		glog.Fatal(err)
 	}
 	//bnf.Debug = true
-	g, err := bnf.CFGrammar(string(b))
+	g, err := fmr.CFGrammar(string(b))
 	if err != nil {
 		glog.Fatal(err)
 	}

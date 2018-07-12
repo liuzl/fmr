@@ -1,4 +1,4 @@
-package bnf
+package fmr
 
 // A Grammar stores a Context-Free Grammar
 type Grammar struct {

@@ -1,4 +1,4 @@
-package bnf
+package fmr
 
 import (
 	"os"

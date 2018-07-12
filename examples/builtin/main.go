@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
-	"github.com/liuzl/fmr/bnf"
+	"github.com/liuzl/fmr"
 	"github.com/liuzl/goutil"
 	"github.com/robertkrimen/otto"
 )
@@ -35,9 +35,9 @@ func main() {
 		glog.Fatal(err)
 	}
 	if *debug {
-		bnf.Debug = true
+		fmr.Debug = true
 	}
-	g, err := bnf.CFGrammar(string(b))
+	g, err := fmr.CFGrammar(string(b))
 	if err != nil {
 		glog.Fatal(err)
 	}

@@ -1,4 +1,4 @@
-package bnf
+package fmr
 
 // GAMMA_RULE is the name of the special "gamma" rule added by the algorithm
 // (this is unicode for 'LATIN SMALL LETTER GAMMA')
