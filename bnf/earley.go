@@ -28,7 +28,7 @@ type TableColumn struct {
 	states    []*TableState
 }
 
-// Parse stores a parse chart by Grammar g
+// Parse stores a parse chart by grammars
 type Parse struct {
 	grammars   []*Grammar
 	text       string
