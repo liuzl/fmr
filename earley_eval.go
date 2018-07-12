@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"math/big"
 	"strings"
-
-	"github.com/liuzl/fmr/funcs"
 )
 
 // Semantic returns the stringified FMR of Node n
@@ -50,7 +48,7 @@ func fmrEval(f *FMR, children []*Node) (string, error) {
 	if Debug {
 		fmt.Printf("funcs.Call(%s, %+v)\n", f.Fn, args)
 	}
-	return funcs.Call(f.Fn, args...)
+	return Call(f.Fn, args...)
 }
 
 func semEval(arg *Arg, nodes []*Node) (string, error) {

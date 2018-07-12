@@ -1,7 +1,8 @@
-package funcs
+package fmr
 
 import (
 	"fmt"
+
 	"github.com/liuzl/goutil"
 )
 
