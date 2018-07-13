@@ -65,8 +65,7 @@ func (p *parser) next() rune {
 }
 
 func (p *parser) eat(expected rune) error {
-	r := p.next()
-	if r != expected {
+	if r := p.next(); r != expected {
 		return fmt.Errorf("%s :expected %s, got %s", p.current,
 			strconv.Quote(string(expected)), strconv.Quote(string(r)))
 	}
