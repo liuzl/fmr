@@ -7,6 +7,8 @@ import (
 	"strings"
 	"unicode"
 	"unicode/utf8"
+
+	"github.com/mitchellh/hashstructure"
 )
 
 type parser struct {
@@ -413,12 +415,16 @@ func (p *parser) ruleBody() (*RuleBody, error) {
 	return &RuleBody{terms, f}, nil
 }
 
-func (p *parser) ruleBodies() ([]*RuleBody, error) {
+func (p *parser) ruleBodies() (map[uint64]*RuleBody, error) {
 	r, err := p.ruleBody()
 	if err != nil {
 		return nil, err
 	}
-	rules := []*RuleBody{r}
+	hash, err := hashstructure.Hash(r, nil)
+	if err != nil {
+		return nil, err
+	}
+	rules := map[uint64]*RuleBody{hash: r}
 	for {
 		if p.peek() != '|' {
 			break
@@ -428,7 +434,10 @@ func (p *parser) ruleBodies() ([]*RuleBody, error) {
 		if r, err = p.ruleBody(); err != nil {
 			return nil, err
 		}
-		rules = append(rules, r)
+		if hash, err = hashstructure.Hash(r, nil); err != nil {
+			return nil, err
+		}
+		rules[hash] = r
 	}
 	return rules, nil
 }
@@ -461,7 +470,10 @@ func (p *parser) grammar() (*Grammar, error) {
 			return nil, err
 		}
 		if _, has := g.Rules[r.Name]; has {
-			g.Rules[r.Name].Body = append(g.Rules[r.Name].Body, r.Body...)
+			//g.Rules[r.Name].Body = append(g.Rules[r.Name].Body, r.Body...)
+			for k, v := range r.Body {
+				g.Rules[r.Name].Body[k] = v
+			}
 		} else {
 			g.Rules[r.Name] = r
 		}

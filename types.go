@@ -9,8 +9,9 @@ type Grammar struct {
 
 // A Rule stores a set of production rules of Name
 type Rule struct {
-	Name string      `json:"-"`
-	Body []*RuleBody `json:"body,omitempty"`
+	Name string               `json:"-"`
+	Body map[uint64]*RuleBody `json:"body,omitempty"`
+	//Body []*RuleBody `json:"body,omitempty"`
 }
 
 // A RuleBody is one production rule

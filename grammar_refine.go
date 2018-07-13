@@ -6,6 +6,7 @@ import (
 
 	"github.com/liuzl/ling"
 	"github.com/liuzl/unidecode"
+	"github.com/mitchellh/hashstructure"
 )
 
 func (g *Grammar) refine(prefix string) error {
@@ -47,16 +48,23 @@ func (g *Grammar) refine(prefix string) error {
 							ascii = strings.Join(strings.Fields(ascii), "_")
 							tname += "_" + ascii
 						}
-						rb.Terms = append(rb.Terms, &Term{Value: token.Text, Type: Terminal})
+						rb.Terms = append(rb.Terms,
+							&Term{Value: token.Text, Type: Terminal})
 					}
-					for name, n = tname, 0; ; name, n = fmt.Sprintf("%s_%d", tname, n), n+1 {
+					for name, n = tname, 0; ; name, n =
+						fmt.Sprintf("%s_%d", tname, n), n+1 {
 						if g.Rules[name] == nil && !names[name] {
 							break
 						}
 					}
 					names[name] = true
 					terminals[term.Value] = name
-					terminalRules = append(terminalRules, &Rule{name, []*RuleBody{rb}})
+					hash, err := hashstructure.Hash(rb, nil)
+					if err != nil {
+						return err
+					}
+					terminalRules = append(terminalRules,
+						&Rule{name, map[uint64]*RuleBody{hash: rb}})
 					term.Value = name
 				}
 				term.Type = Nonterminal
