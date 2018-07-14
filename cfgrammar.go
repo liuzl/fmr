@@ -158,15 +158,23 @@ func (p *parser) terminal() (text string, err error) {
 	return
 }
 
-func (p *parser) nonterminal() (name string, err error) {
-	if err = p.eat('<'); err != nil {
+func (p *parser) token(begin, end rune) (name string, err error) {
+	if err = p.eat(begin); err != nil {
 		return
 	}
 	if name, err = p.text(); err != nil {
 		return
 	}
-	err = p.eat('>')
+	err = p.eat(end)
 	return
+}
+
+func (p *parser) nonterminal() (string, error) {
+	return p.token('<', '>')
+}
+
+func (p *parser) frame() (string, error) {
+	return p.token('[', ']')
 }
 
 func (p *parser) any() (*Term, error) {
@@ -441,10 +449,20 @@ func (p *parser) ruleBodies() (map[uint64]*RuleBody, error) {
 	return rules, nil
 }
 
-func (p *parser) rule() (*Rule, error) {
-	name, err := p.nonterminal()
-	if err != nil {
-		return nil, err
+func (p *parser) rule(c rune) (*Rule, error) {
+	var name string
+	var err error
+	switch c {
+	case '<':
+		if name, err = p.nonterminal(); err != nil {
+			return nil, err
+		}
+	case '[':
+		if name, err = p.frame(); err != nil {
+			return nil, err
+		}
+	default:
+		return nil, fmt.Errorf("%s : unexpected char", p.current)
 	}
 	p.ws()
 	if err = p.eat('='); err != nil {
@@ -462,20 +480,34 @@ func (p *parser) rule() (*Rule, error) {
 }
 
 func (p *parser) grammar() (*Grammar, error) {
-	g := &Grammar{Name: "grammar", Rules: make(map[string]*Rule)}
-	for p.ws(); p.peek() == '<'; p.ws() {
-		r, err := p.rule()
+	g := &Grammar{
+		Name:   "grammar",
+		Rules:  make(map[string]*Rule),
+		Frames: make(map[string]*Rule),
+	}
+	for {
+		p.ws()
+		c := p.peek()
+		if !strings.ContainsRune(`<[`, c) {
+			break
+		}
+		r, err := p.rule(c)
 		if err != nil {
 			return nil, err
+
 		}
-		if _, has := g.Rules[r.Name]; has {
-			//g.Rules[r.Name].Body = append(g.Rules[r.Name].Body, r.Body...)
+		rules := g.Rules
+		if c == '[' {
+			rules = g.Frames
+		}
+		if _, has := rules[r.Name]; has {
 			for k, v := range r.Body {
-				g.Rules[r.Name].Body[k] = v
+				rules[r.Name].Body[k] = v
 			}
 		} else {
-			g.Rules[r.Name] = r
+			rules[r.Name] = r
 		}
+		p.ws()
 	}
 	if p.next() != eof {
 		return nil, fmt.Errorf("%s : format error", p.current)

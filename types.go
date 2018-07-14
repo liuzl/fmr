@@ -4,6 +4,7 @@ package fmr
 type Grammar struct {
 	Name    string           `json:"name"`
 	Rules   map[string]*Rule `json:"rules"`
+	Frames  map[string]*Rule `json:"frames"`
 	Refined bool             `json:"refined"`
 }
 
