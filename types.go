@@ -12,7 +12,6 @@ type Grammar struct {
 type Rule struct {
 	Name string               `json:"-"`
 	Body map[uint64]*RuleBody `json:"body,omitempty"`
-	//Body []*RuleBody `json:"body,omitempty"`
 }
 
 // A RuleBody is one production rule
