@@ -1,11 +1,15 @@
 package fmr
 
+import "github.com/liuzl/d"
+
 // A Grammar stores a Context-Free Grammar
 type Grammar struct {
 	Name    string           `json:"name"`
 	Rules   map[string]*Rule `json:"rules"`
 	Frames  map[string]*Rule `json:"frames"`
 	Refined bool             `json:"refined"`
+
+	matcher, kv *d.Dictionary
 }
 
 // A Rule stores a set of production rules of Name
