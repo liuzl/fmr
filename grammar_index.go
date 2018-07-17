@@ -9,10 +9,9 @@ import (
 func (g *Grammar) indexRules(rules map[string]*Rule, cate string) error {
 	var err error
 	for _, rule := range rules {
-		v := map[string]interface{}{rule.Name: cate}
+		v := map[string]interface{}{cate: rule.Name}
 		for _, body := range rule.Body {
 			for _, term := range body.Terms {
-				fmt.Println(term, v)
 				switch term.Type {
 				case Terminal:
 					if err = g.matcher.Update(term.Value, v); err != nil {
