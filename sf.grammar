@@ -1,0 +1,17 @@
+<flight> = <departure> <arrival> {nf.flight($1, $2)}
+         ;
+[flight] = <departure> <arrival> {nf.flight($1, $2)}
+         ;
+
+<departure> = <from> <city> {nf.I($2)};
+<arrival> = <to> <city> {nf.I($2)};
+
+<from> = "从" ;
+
+<to> = "到" | "去" | "飞"; 
+
+<city> = "北京" {nf.I("beijing")}
+       | "天津" {nf.I("tianjin")}
+       | "上海" {nf.I("shanghai")}
+       ;
+
