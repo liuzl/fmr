@@ -5,27 +5,38 @@ import (
 )
 
 func (g *Grammar) MatchFrames(text string) error {
-	hits, err := g.matcher.MultiMatch(text)
+	frames, rules, err := g.getCandidates(text)
 	if err != nil {
 		return err
 	}
-	frames := map[string]bool{}
-	rules := map[string]bool{}
+	fmt.Println(frames, rules)
+	return nil
+}
+
+func (g *Grammar) getCandidates(text string) (
+	map[RbKey]bool, map[RbKey]bool, error) {
+
+	hits, err := g.matcher.MultiMatch(text)
+	if err != nil {
+		return nil, nil, err
+	}
+	frames := map[RbKey]bool{}
+	rules := map[RbKey]bool{}
 	for _, v := range hits {
-		for cate, _rule := range v.Value {
-			rule, ok := _rule.(string)
+		for cate, _rbKey := range v.Value {
+			rbKey, ok := _rbKey.(RbKey)
 			if !ok {
-				return fmt.Errorf("type error in grammar dict matcher")
+				return nil, nil, fmt.Errorf("type error in grammar dict matcher")
 			}
 			switch cate {
 			case "frame":
-				frames[rule] = true
+				frames[rbKey] = true
 			case "rule":
-				rules[rule] = true
+				rules[rbKey] = true
 			}
 		}
 	}
-	var ruleList []string
+	var ruleList []RbKey
 	for k, _ := range rules {
 		ruleList = append(ruleList, k)
 	}
@@ -35,29 +46,28 @@ func (g *Grammar) MatchFrames(text string) error {
 		}
 		r := ruleList[0]
 		ruleList = ruleList[1:]
-		ret, err := g.kv.Get(r)
+		ret, err := g.kv.Get(r.RuleName)
 		if err != nil {
 			if err.Error() == "leveldb: not found" {
 				continue
 			}
-			return err
+			return nil, nil, err
 		}
-		for cate, _rule := range ret {
-			rule, ok := _rule.(string)
+		for cate, _rbKey := range ret {
+			rbKey, ok := _rbKey.(RbKey)
 			if !ok {
-				return fmt.Errorf("type error in grammar dicts")
+				return nil, nil, fmt.Errorf("type error in grammar dicts")
 			}
 			switch cate {
 			case "frame":
-				frames[rule] = true
+				frames[rbKey] = true
 			case "rule":
-				if !rules[rule] {
-					ruleList = append(ruleList, rule)
-					rules[rule] = true
+				if !rules[rbKey] {
+					ruleList = append(ruleList, rbKey)
+					rules[rbKey] = true
 				}
 			}
 		}
 	}
-	fmt.Println(frames, rules)
-	return nil
+	return frames, rules, nil
 }

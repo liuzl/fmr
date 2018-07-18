@@ -1,6 +1,14 @@
 package fmr
 
-import "github.com/liuzl/d"
+import (
+	"encoding/gob"
+
+	"github.com/liuzl/d"
+)
+
+func init() {
+	gob.Register(RbKey{})
+}
 
 // A Grammar stores a Context-Free Grammar
 type Grammar struct {
@@ -10,6 +18,11 @@ type Grammar struct {
 	Refined bool             `json:"refined"`
 
 	matcher, kv *d.Dictionary
+}
+
+type RbKey struct {
+	RuleName string `json:"rule_name"`
+	BodyId   uint64 `json:"body_id"`
 }
 
 // A Rule stores a set of production rules of Name
