@@ -12,8 +12,12 @@ func (g *Grammar) MatchFrames(text string) error {
 	frames := map[string]bool{}
 	rules := map[string]bool{}
 	for _, v := range hits {
-		for rule, typ := range v.Value {
-			switch typ {
+		for cate, _rule := range v.Value {
+			rule, ok := _rule.(string)
+			if !ok {
+				return fmt.Errorf("type error in grammar dict matcher")
+			}
+			switch cate {
 			case "frame":
 				frames[rule] = true
 			case "rule":

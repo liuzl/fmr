@@ -31,7 +31,6 @@ func localGrammar(d *ling.Document) (*Grammar, error) {
 		}
 		for k, _ := range m {
 			if _, has := g.Rules[k]; has {
-				//g.Rules[k].Body = append(g.Rules[k].Body, rb)
 				g.Rules[k].Body[hash] = rb
 			} else {
 				g.Rules[k] = &Rule{k, map[uint64]*RuleBody{hash: rb}}
