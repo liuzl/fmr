@@ -18,6 +18,8 @@ func TestMatchFrames(t *testing.T) {
 		t.Error(err)
 	}
 	for _, c := range cases {
-		g.MatchFrames(c)
+		if err = g.MatchFrames(c); err != nil {
+			t.Error(err)
+		}
 	}
 }

@@ -20,9 +20,15 @@ type Grammar struct {
 	matcher, kv *d.Dictionary
 }
 
+// A RbKey identifies a specific RuleBody by name and id
 type RbKey struct {
 	RuleName string `json:"rule_name"`
 	BodyId   uint64 `json:"body_id"`
+}
+
+type SlotFilling struct {
+	Terms    map[Term][]*d.Pos
+	Complete bool
 }
 
 // A Rule stores a set of production rules of Name
