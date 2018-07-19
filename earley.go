@@ -77,13 +77,18 @@ func (col *TableColumn) insert(state *TableState) *TableState {
  * gamma rule span from the first column to the last one. return the final gamma
  * state, or null, if the parse failed.
  */
-func (p *Parse) parse(start string) *TableState {
-	rb := &RuleBody{
-		[]*Term{&Term{Value: start, Type: Nonterminal}},
-		&FMR{"nf.I", []*Arg{&Arg{"index", 1}}},
+func (p *Parse) parse(starts ...string) *TableState {
+	if len(starts) == 0 {
+		return nil
 	}
-	begin := &TableState{GAMMA_RULE, rb, 0, 0, 0, false}
-	p.columns[0].states = append(p.columns[0].states, begin)
+	for _, start := range starts {
+		rb := &RuleBody{
+			[]*Term{&Term{Value: start, Type: Nonterminal}},
+			&FMR{"nf.I", []*Arg{&Arg{"index", 1}}},
+		}
+		begin := &TableState{GAMMA_RULE, rb, 0, 0, 0, false}
+		p.columns[0].states = append(p.columns[0].states, begin)
+	}
 	for i, col := range p.columns {
 		for j := 0; j < len(col.states); j++ {
 			state := col.states[j]
