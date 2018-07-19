@@ -17,9 +17,12 @@ func (g *Grammar) MatchFrames(text string) (map[RbKey]*SlotFilling, error) {
 		for _, finalState := range p.finalStates {
 			tag := p.Tag(finalState)
 			pos := p.Boundary(finalState)
+			trees := p.GetTrees(finalState)
 			if tag == "" || pos == nil {
 				return nil, fmt.Errorf("invalid parse")
 			}
+
+			slot := &Slot{*pos, trees}
 
 			ret, err := g.kv.Get(tag)
 			if err != nil {
@@ -37,11 +40,11 @@ func (g *Grammar) MatchFrames(text string) (map[RbKey]*SlotFilling, error) {
 					return nil, fmt.Errorf("format error")
 				}
 				if frames[rbKey] == nil {
-					frames[rbKey] = &SlotFilling{make(map[Term][]*Pos), false}
+					frames[rbKey] = &SlotFilling{make(map[Term][]*Slot), false}
 				}
 				t := Term{tag, Nonterminal}
-				frames[rbKey].Terms[t] = append(frames[rbKey].Terms[t], pos)
-				if len(frames[rbKey].Terms) >=
+				frames[rbKey].Fillings[t] = append(frames[rbKey].Fillings[t], slot)
+				if len(frames[rbKey].Fillings) >=
 					len(g.Frames[rbKey.RuleName].Body[rbKey.BodyId].Terms) {
 					frames[rbKey].Complete = true
 				}
@@ -69,14 +72,14 @@ func (g *Grammar) getCandidates(text string) (
 			switch cate {
 			case "frame":
 				if frames[rbKey] == nil {
-					frames[rbKey] = &SlotFilling{make(map[Term][]*Pos), false}
+					frames[rbKey] = &SlotFilling{make(map[Term][]*Slot), false}
 				}
 				t := Term{word, Terminal}
 				for _, hit := range v.Hits {
-					frames[rbKey].Terms[t] = append(frames[rbKey].Terms[t],
-						&Pos{hit.Start, hit.End})
+					frames[rbKey].Fillings[t] = append(frames[rbKey].Fillings[t],
+						&Slot{Pos{hit.Start, hit.End}, nil})
 				}
-				if len(frames[rbKey].Terms) >=
+				if len(frames[rbKey].Fillings) >=
 					len(g.Frames[rbKey.RuleName].Body[rbKey.BodyId].Terms) {
 					frames[rbKey].Complete = true
 				}

@@ -31,8 +31,13 @@ type Pos struct {
 	EndByte   int `json:"end_byte"`
 }
 
+type Slot struct {
+	Pos
+	Trees []*Node
+}
+
 type SlotFilling struct {
-	Terms    map[Term][]*Pos
+	Fillings map[Term][]*Slot
 	Complete bool
 }
 

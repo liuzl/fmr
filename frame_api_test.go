@@ -21,7 +21,18 @@ func TestMatchFrames(t *testing.T) {
 		if frames, err := g.MatchFrames(c); err != nil {
 			t.Error(err)
 		} else {
-			t.Log(frames)
+			for k, sf := range frames {
+				t.Log(k)
+				t.Log(sf)
+				for term, slots := range sf.Fillings {
+					t.Log(term)
+					for _, slot := range slots {
+						for _, tree := range slot.Trees {
+							t.Log(tree.Semantic())
+						}
+					}
+				}
+			}
 		}
 	}
 }
