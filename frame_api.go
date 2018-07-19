@@ -2,24 +2,86 @@ package fmr
 
 import (
 	"fmt"
-
-	"github.com/liuzl/d"
 )
 
-func (g *Grammar) MatchFrames(text string) error {
-	frames, rules, err := g.getCandidates(text)
+func (g *Grammar) FrameFMR(text string) error {
+	frames, err := g.MatchFrames(text)
 	if err != nil {
 		return err
 	}
-	fmt.Println(frames, rules)
 	for k, v := range frames {
-		fmt.Println(k, v)
+		fmr := g.Frames[k.RuleName].Body[k.BodyId].F
+		terms := g.Frames[k.RuleName].Body[k.BodyId].Terms
+		var children []*Node
+		for _, term := range terms {
+			slots := v.Fillings[*term]
+			if slots == nil || len(slots) == 0 || len(slots[0].Trees) == 0 {
+				children = append(children, nil)
+				continue
+			}
+			children = append(children, slots[0].Trees[0])
+		}
+		str, err := fmrStr(fmr, children)
+		if err != nil {
+			return err
+		}
+		fmt.Println(text, str)
 	}
 	return nil
 }
 
+func (g *Grammar) MatchFrames(text string) (map[RbKey]*SlotFilling, error) {
+	frames, starts, err := g.getCandidates(text)
+	if err != nil {
+		return nil, err
+	}
+	ps, err := g.EarleyParseAll(text, starts...)
+	if err != nil {
+		return nil, err
+	}
+	for _, p := range ps {
+		for _, finalState := range p.finalStates {
+			tag := p.Tag(finalState)
+			pos := p.Boundary(finalState)
+			trees := p.GetTrees(finalState)
+			if tag == "" || pos == nil {
+				return nil, fmt.Errorf("invalid parse")
+			}
+
+			slot := &Slot{*pos, trees}
+
+			ret, err := g.kv.Get(tag)
+			if err != nil {
+				if err.Error() == "leveldb: not found" {
+					continue
+				}
+				return nil, err
+			}
+			for cate, _rbKey := range ret {
+				if cate != "frame" {
+					continue
+				}
+				rbKey, ok := _rbKey.(RbKey)
+				if !ok {
+					return nil, fmt.Errorf("format error")
+				}
+				if frames[rbKey] == nil {
+					frames[rbKey] = &SlotFilling{make(map[Term][]*Slot), false}
+				}
+				t := Term{tag, Nonterminal}
+				frames[rbKey].Fillings[t] = append(frames[rbKey].Fillings[t], slot)
+				if len(frames[rbKey].Fillings) >=
+					len(g.Frames[rbKey.RuleName].Body[rbKey.BodyId].Terms) {
+					frames[rbKey].Complete = true
+				}
+			}
+		}
+	}
+	return frames, nil
+}
+
 func (g *Grammar) getCandidates(text string) (
-	map[RbKey]*SlotFilling, map[string]bool, error) {
+	map[RbKey]*SlotFilling, []string, error) {
 
 	matches, err := g.matcher.MultiMatch(text)
 	if err != nil {
@@ -36,10 +98,17 @@ func (g *Grammar) getCandidates(text string) (
 			switch cate {
 			case "frame":
 				if frames[rbKey] == nil {
-					frames[rbKey] = &SlotFilling{make(map[Term][]*d.Pos), false}
+					frames[rbKey] = &SlotFilling{make(map[Term][]*Slot), false}
 				}
 				t := Term{word, Terminal}
-				frames[rbKey].Terms[t] = append(frames[rbKey].Terms[t], v.Hits...)
+				for _, hit := range v.Hits {
+					frames[rbKey].Fillings[t] = append(frames[rbKey].Fillings[t],
+						&Slot{Pos{hit.Start, hit.End}, nil})
+				}
+				if len(frames[rbKey].Fillings) >=
+					len(g.Frames[rbKey.RuleName].Body[rbKey.BodyId].Terms) {
+					frames[rbKey].Complete = true
+				}
 			case "rule":
 				rules[rbKey.RuleName] = true
 			}
@@ -73,5 +142,9 @@ func (g *Grammar) getCandidates(text string) (
 			}
 		}
 	}
-	return frames, rules, nil
+	var starts []string
+	for k, _ := range rules {
+		starts = append(starts, k)
+	}
+	return frames, starts, nil
 }

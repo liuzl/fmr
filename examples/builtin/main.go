@@ -84,32 +84,34 @@ func main() {
 		//TODO p.GetTrees for (any)
 		//p.GetTrees()
 
-		ps, err := g.EarleyParseAll(*start, line)
+		ps, err := g.EarleyParseAll(line, *start)
 		if err != nil {
 			glog.Fatal(err)
 		}
 		for i, p := range ps {
-			trees := p.GetTrees()
-			//fmt.Printf("%+v\n", p)
-			fmt.Printf("p%d tree number:%d\n", i, len(trees))
-			for _, tree := range trees {
-				//tree.Print(os.Stdout)
-				sem, err := tree.Semantic()
-				//fmt.Println(sem)
-				if err != nil {
-					glog.Fatal(err)
+			for _, f := range p.GetFinalStates() {
+				trees := p.GetTrees(f)
+				//fmt.Printf("%+v\n", p)
+				fmt.Printf("p%d tree number:%d\n", i, len(trees))
+				for _, tree := range trees {
+					//tree.Print(os.Stdout)
+					sem, err := tree.Semantic()
+					//fmt.Println(sem)
+					if err != nil {
+						glog.Fatal(err)
+					}
+					if *debug {
+						fmt.Printf("%s = ?\n", sem)
+					}
+					result, err := vm.Run(sem)
+					if err != nil {
+						glog.Error(err)
+					}
+					rs, _ := result.Export()
+					fmt.Printf("%s = %+v\n", sem, rs)
+					//eval, err := tree.Eval()
+					//fmt.Printf("Eval: %s, Err: %+v\n", eval, err)
 				}
-				if *debug {
-					fmt.Printf("%s = ?\n", sem)
-				}
-				result, err := vm.Run(sem)
-				if err != nil {
-					glog.Error(err)
-				}
-				rs, _ := result.Export()
-				fmt.Printf("%s = %+v\n", sem, rs)
-				//eval, err := tree.Eval()
-				//fmt.Printf("Eval: %s, Err: %+v\n", eval, err)
 			}
 		}
 		fmt.Println()

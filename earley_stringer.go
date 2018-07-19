@@ -38,7 +38,8 @@ func (ts *TableState) String() string {
 }
 
 func (tc *TableColumn) String() string {
-	out := fmt.Sprintf("[%d] '%s'\n", tc.index, tc.token)
+	out := fmt.Sprintf("[%d] '%s' position:[%d-%d]\n",
+		tc.index, tc.token, tc.startByte, tc.endByte)
 	out += "=======================================\n"
 	for _, s := range tc.states {
 		out += s.String() + "\n"

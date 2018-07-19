@@ -26,8 +26,18 @@ type RbKey struct {
 	BodyId   uint64 `json:"body_id"`
 }
 
+type Pos struct {
+	StartByte int `json:"start_byte"`
+	EndByte   int `json:"end_byte"`
+}
+
+type Slot struct {
+	Pos
+	Trees []*Node
+}
+
 type SlotFilling struct {
-	Terms    map[Term][]*d.Pos
+	Fillings map[Term][]*Slot
 	Complete bool
 }
 

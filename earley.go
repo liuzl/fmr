@@ -30,10 +30,11 @@ type TableColumn struct {
 
 // Parse stores a parse chart by grammars
 type Parse struct {
-	grammars   []*Grammar
-	text       string
-	columns    []*TableColumn
-	finalState *TableState
+	grammars    []*Grammar
+	text        string
+	starts      []string
+	columns     []*TableColumn
+	finalStates []*TableState
 }
 
 func (s *TableState) isCompleted() bool {
@@ -77,11 +78,11 @@ func (col *TableColumn) insert(state *TableState) *TableState {
  * gamma rule span from the first column to the last one. return the final gamma
  * state, or null, if the parse failed.
  */
-func (p *Parse) parse(starts ...string) *TableState {
-	if len(starts) == 0 {
+func (p *Parse) parse() []*TableState {
+	if len(p.starts) == 0 {
 		return nil
 	}
-	for _, start := range starts {
+	for _, start := range p.starts {
 		rb := &RuleBody{
 			[]*Term{&Term{Value: start, Type: Nonterminal}},
 			&FMR{"nf.I", []*Arg{&Arg{"index", 1}}},
@@ -128,14 +129,16 @@ func (p *Parse) parse(starts ...string) *TableState {
 			}
 		}
 	*/
+	var ret []*TableState
 	for i := len(p.columns) - 1; i >= 0; i-- {
 		for _, state := range p.columns[i].states {
 			if state.Name == GAMMA_RULE && state.isCompleted() {
-				return state
+				ret = append(ret, state)
 			}
 		}
 	}
-	return nil
+	p.finalStates = ret
+	return ret
 }
 
 func (*Parse) scan(col *TableColumn, st *TableState, term *Term) {

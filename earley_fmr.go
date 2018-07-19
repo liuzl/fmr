@@ -88,6 +88,9 @@ func semStr(arg *Arg, nodes []*Node) (string, error) {
 		if i < 1 || i > len(nodes) {
 			return "", fmt.Errorf("i=%d not in range [1, %d]", i, len(nodes))
 		}
+		if nodes[i-1] == nil {
+			return "null", nil
+		}
 		s, err := nodes[i-1].Semantic()
 		if err != nil {
 			return "", err

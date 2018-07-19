@@ -33,20 +33,22 @@ func TestEarleyParse(t *testing.T) {
 	}
 	//fmt.Println(string(b))
 	for _, text := range strs {
-		p, err := g.EarleyParse("expr", text)
+		p, err := g.EarleyParse(text, "expr")
 		if err != nil {
 			t.Error(err)
 		}
 		t.Logf("%+v\n", p)
-		trees := p.GetTrees()
-		t.Log("tree number:", len(trees))
-		for _, tree := range trees {
-			tree.Print(os.Stdout)
-			b, err := goutil.JsonMarshalIndent(tree, "", " ")
-			if err != nil {
-				t.Error(err)
+		for _, finalState := range p.finalStates {
+			trees := p.GetTrees(finalState)
+			t.Log("tree number:", len(trees))
+			for _, tree := range trees {
+				tree.Print(os.Stdout)
+				b, err := goutil.JsonMarshalIndent(tree, "", " ")
+				if err != nil {
+					t.Error(err)
+				}
+				t.Logf("%+v", string(b))
 			}
-			t.Logf("%+v", string(b))
 		}
 	}
 }

@@ -29,49 +29,44 @@ func NLP() *ling.Pipeline {
 }
 
 // EarleyParse parses text for rule <start>
-func (g *Grammar) EarleyParse(start, text string) (*Parse, error) {
+func (g *Grammar) EarleyParse(text string, starts ...string) (*Parse, error) {
 	tokens, l, err := extract(text)
 	if err != nil {
 		return nil, err
 	}
-	return g.earleyParse(start, text, tokens, l)
+	return g.earleyParse(text, tokens, l, starts...)
 }
 
 // EarleyParseAll extracts all submatches in text for rule <start>
-func (g *Grammar) EarleyParseAll(start, text string) ([]*Parse, error) {
+func (g *Grammar) EarleyParseAll(text string, starts ...string) ([]*Parse, error) {
 	tokens, l, err := extract(text)
 	if err != nil {
 		return nil, err
 	}
 	var ret []*Parse
-	for i := 0; i < len(tokens); {
-		p, err := g.earleyParse(start, text, tokens[i:], l)
+	for i := 0; i < len(tokens); i++ {
+		p, err := g.earleyParse(text, tokens[i:], l, starts...)
 		if err != nil {
 			return nil, err
 		}
-		if p.finalState != nil {
+		if p.finalStates != nil {
 			ret = append(ret, p)
-			i += p.finalState.End
-		} else {
-			i++
+			//i += p.finalState.End
 		}
 	}
 	return ret, nil
 }
 
-func (g *Grammar) earleyParse(start, text string,
-	tokens []*ling.Token, l *Grammar) (*Parse, error) {
-	if start = strings.TrimSpace(start); start == "" {
-		return nil, fmt.Errorf("start rule is empty")
-	}
-	if g.Rules[start] == nil {
-		return nil, fmt.Errorf("start rule:<%s> not found in Grammar", start)
+func (g *Grammar) earleyParse(text string,
+	tokens []*ling.Token, l *Grammar, starts ...string) (*Parse, error) {
+	if len(starts) == 0 {
+		return nil, fmt.Errorf("no start rules")
 	}
 	if len(tokens) == 0 {
 		return nil, fmt.Errorf("no tokens to parse")
 	}
 
-	parse := &Parse{grammars: []*Grammar{g}, text: text}
+	parse := &Parse{grammars: []*Grammar{g}, text: text, starts: starts}
 	if l != nil {
 		parse.grammars = append(parse.grammars, l)
 	}
@@ -84,7 +79,7 @@ func (g *Grammar) earleyParse(start, text string,
 				startByte: token.StartByte, endByte: token.EndByte,
 			})
 	}
-	parse.finalState = parse.parse(start)
+	parse.parse()
 	return parse, nil
 }
 
