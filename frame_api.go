@@ -2,16 +2,52 @@ package fmr
 
 import (
 	"fmt"
-
-	"github.com/liuzl/d"
 )
 
 func (g *Grammar) MatchFrames(text string) error {
-	frames, rules, err := g.getCandidates(text)
+	frames, starts, err := g.getCandidates(text)
 	if err != nil {
 		return err
 	}
-	fmt.Println(frames, rules)
+	fmt.Println(starts)
+	ps, err := g.EarleyParseAll(text, starts...)
+	//ps, err := g.EarleyParseAll(text, "departure")
+	if err != nil {
+		return err
+	}
+	for _, p := range ps {
+		for _, finalState := range p.finalStates {
+			tag := p.Tag(finalState)
+			pos := p.Boundary(finalState)
+			fmt.Println(tag)
+			if tag == "" || pos == nil {
+				return fmt.Errorf("invalid parse")
+			}
+
+			ret, err := g.kv.Get(tag)
+			fmt.Println(tag, ret)
+			if err != nil {
+				if err.Error() == "leveldb: not found" {
+					continue
+				}
+				return err
+			}
+			for cate, _rbKey := range ret {
+				if cate != "frame" {
+					continue
+				}
+				rbKey, ok := _rbKey.(RbKey)
+				if !ok {
+					return fmt.Errorf("format error")
+				}
+				if frames[rbKey] == nil {
+					frames[rbKey] = &SlotFilling{make(map[Term][]*Pos), false}
+				}
+				t := Term{tag, Nonterminal}
+				frames[rbKey].Terms[t] = append(frames[rbKey].Terms[t], pos)
+			}
+		}
+	}
 	for k, v := range frames {
 		fmt.Println(k, v)
 	}
@@ -19,7 +55,7 @@ func (g *Grammar) MatchFrames(text string) error {
 }
 
 func (g *Grammar) getCandidates(text string) (
-	map[RbKey]*SlotFilling, map[string]bool, error) {
+	map[RbKey]*SlotFilling, []string, error) {
 
 	matches, err := g.matcher.MultiMatch(text)
 	if err != nil {
@@ -36,10 +72,13 @@ func (g *Grammar) getCandidates(text string) (
 			switch cate {
 			case "frame":
 				if frames[rbKey] == nil {
-					frames[rbKey] = &SlotFilling{make(map[Term][]*d.Pos), false}
+					frames[rbKey] = &SlotFilling{make(map[Term][]*Pos), false}
 				}
 				t := Term{word, Terminal}
-				frames[rbKey].Terms[t] = append(frames[rbKey].Terms[t], v.Hits...)
+				for _, hit := range v.Hits {
+					frames[rbKey].Terms[t] = append(frames[rbKey].Terms[t],
+						&Pos{hit.Start, hit.End})
+				}
 			case "rule":
 				rules[rbKey.RuleName] = true
 			}
@@ -73,5 +112,9 @@ func (g *Grammar) getCandidates(text string) (
 			}
 		}
 	}
-	return frames, rules, nil
+	var starts []string
+	for k, _ := range rules {
+		starts = append(starts, k)
+	}
+	return frames, starts, nil
 }

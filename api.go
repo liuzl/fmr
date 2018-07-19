@@ -44,16 +44,14 @@ func (g *Grammar) EarleyParseAll(text string, starts ...string) ([]*Parse, error
 		return nil, err
 	}
 	var ret []*Parse
-	for i := 0; i < len(tokens); {
+	for i := 0; i < len(tokens); i++ {
 		p, err := g.earleyParse(text, tokens[i:], l, starts...)
 		if err != nil {
 			return nil, err
 		}
-		if p.finalState != nil {
+		if p.finalStates != nil {
 			ret = append(ret, p)
-			i += p.finalState.End
-		} else {
-			i++
+			//i += p.finalState.End
 		}
 	}
 	return ret, nil
@@ -68,7 +66,7 @@ func (g *Grammar) earleyParse(text string,
 		return nil, fmt.Errorf("no tokens to parse")
 	}
 
-	parse := &Parse{grammars: []*Grammar{g}, text: text}
+	parse := &Parse{grammars: []*Grammar{g}, text: text, starts: starts}
 	if l != nil {
 		parse.grammars = append(parse.grammars, l)
 	}
@@ -81,7 +79,7 @@ func (g *Grammar) earleyParse(text string,
 				startByte: token.StartByte, endByte: token.EndByte,
 			})
 	}
-	parse.finalState = parse.parse(starts...)
+	parse.parse()
 	return parse, nil
 }
 

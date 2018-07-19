@@ -13,13 +13,33 @@ type Node struct {
 	p *Parse `json:"-"`
 }
 
+func (p *Parse) GetFinalStates() []*TableState {
+	return p.finalStates
+}
+
+func (p *Parse) Boundary(finalState *TableState) *Pos {
+	if finalState == nil {
+		return nil
+	}
+	start := p.columns[1].startByte
+	end := p.columns[finalState.End].endByte
+	return &Pos{start, end}
+}
+
+func (p *Parse) Tag(finalState *TableState) string {
+	if finalState == nil {
+		return ""
+	}
+	return finalState.Rb.Terms[0].Value
+}
+
 // GetTrees returns all possible parse results
-func (p *Parse) GetTrees() []*Node {
+func (p *Parse) GetTrees(finalState *TableState) []*Node {
 	if Debug {
 		fmt.Printf("%+v\n", p)
 	}
-	if p.finalState != nil {
-		return p.buildTrees(p.finalState)
+	if finalState != nil {
+		return p.buildTrees(finalState)
 	}
 	return nil
 }
