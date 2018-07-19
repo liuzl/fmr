@@ -1,6 +1,6 @@
 <flight> = <departure> <arrival> {nf.flight($1, $2)}
          ;
-[flight] = <departure> <arrival> {nf.flight($1, $2)}
+[flight] = <arrival> <departure> {nf.flight($2, $1)}
          ;
 
 <departure> = <from> <city> {nf.I($2)};
