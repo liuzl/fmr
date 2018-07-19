@@ -8,6 +8,8 @@ import (
 func TestMatchFrames(t *testing.T) {
 	cases := []string{
 		`从北京飞上海`,
+		`飞上海 从北京`,
+		`我要从北京走`,
 	}
 	b, err := ioutil.ReadFile("sf.grammar")
 	if err != nil {
@@ -33,6 +35,9 @@ func TestMatchFrames(t *testing.T) {
 					}
 				}
 			}
+		}
+		if err := g.FrameFMR(c); err != nil {
+			t.Error(err)
 		}
 	}
 }

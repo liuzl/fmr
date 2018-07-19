@@ -4,6 +4,32 @@ import (
 	"fmt"
 )
 
+func (g *Grammar) FrameFMR(text string) error {
+	frames, err := g.MatchFrames(text)
+	if err != nil {
+		return err
+	}
+	for k, v := range frames {
+		fmr := g.Frames[k.RuleName].Body[k.BodyId].F
+		terms := g.Frames[k.RuleName].Body[k.BodyId].Terms
+		var children []*Node
+		for _, term := range terms {
+			slots := v.Fillings[*term]
+			if slots == nil || len(slots) == 0 || len(slots[0].Trees) == 0 {
+				children = append(children, nil)
+				continue
+			}
+			children = append(children, slots[0].Trees[0])
+		}
+		str, err := fmrStr(fmr, children)
+		if err != nil {
+			return err
+		}
+		fmt.Println(text, str)
+	}
+	return nil
+}
+
 func (g *Grammar) MatchFrames(text string) (map[RbKey]*SlotFilling, error) {
 	frames, starts, err := g.getCandidates(text)
 	if err != nil {
