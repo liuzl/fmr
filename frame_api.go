@@ -4,33 +4,29 @@ import (
 	"fmt"
 )
 
-func (g *Grammar) MatchFrames(text string) error {
+func (g *Grammar) MatchFrames(text string) (map[RbKey]*SlotFilling, error) {
 	frames, starts, err := g.getCandidates(text)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	fmt.Println(starts)
 	ps, err := g.EarleyParseAll(text, starts...)
-	//ps, err := g.EarleyParseAll(text, "departure")
 	if err != nil {
-		return err
+		return nil, err
 	}
 	for _, p := range ps {
 		for _, finalState := range p.finalStates {
 			tag := p.Tag(finalState)
 			pos := p.Boundary(finalState)
-			fmt.Println(tag)
 			if tag == "" || pos == nil {
-				return fmt.Errorf("invalid parse")
+				return nil, fmt.Errorf("invalid parse")
 			}
 
 			ret, err := g.kv.Get(tag)
-			fmt.Println(tag, ret)
 			if err != nil {
 				if err.Error() == "leveldb: not found" {
 					continue
 				}
-				return err
+				return nil, err
 			}
 			for cate, _rbKey := range ret {
 				if cate != "frame" {
@@ -38,20 +34,21 @@ func (g *Grammar) MatchFrames(text string) error {
 				}
 				rbKey, ok := _rbKey.(RbKey)
 				if !ok {
-					return fmt.Errorf("format error")
+					return nil, fmt.Errorf("format error")
 				}
 				if frames[rbKey] == nil {
 					frames[rbKey] = &SlotFilling{make(map[Term][]*Pos), false}
 				}
 				t := Term{tag, Nonterminal}
 				frames[rbKey].Terms[t] = append(frames[rbKey].Terms[t], pos)
+				if len(frames[rbKey].Terms) >=
+					len(g.Frames[rbKey.RuleName].Body[rbKey.BodyId].Terms) {
+					frames[rbKey].Complete = true
+				}
 			}
 		}
 	}
-	for k, v := range frames {
-		fmt.Println(k, v)
-	}
-	return nil
+	return frames, nil
 }
 
 func (g *Grammar) getCandidates(text string) (
@@ -78,6 +75,10 @@ func (g *Grammar) getCandidates(text string) (
 				for _, hit := range v.Hits {
 					frames[rbKey].Terms[t] = append(frames[rbKey].Terms[t],
 						&Pos{hit.Start, hit.End})
+				}
+				if len(frames[rbKey].Terms) >=
+					len(g.Frames[rbKey.RuleName].Body[rbKey.BodyId].Terms) {
+					frames[rbKey].Complete = true
 				}
 			case "rule":
 				rules[rbKey.RuleName] = true
