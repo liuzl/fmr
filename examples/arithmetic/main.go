@@ -62,7 +62,7 @@ func main() {
 		}
 		fmt.Println(line)
 		//p, err := g.EarleyParse("number", line)
-		ps, err := g.EarleyParseAll("number", line)
+		ps, err := g.EarleyParseAll(line, "number")
 		if err != nil {
 			glog.Fatal(err)
 		}

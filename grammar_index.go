@@ -2,6 +2,7 @@ package fmr
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/liuzl/d"
 )
@@ -14,6 +15,9 @@ func (g *Grammar) indexRules(rules map[string]*Rule, cate string) error {
 				v := map[string]interface{}{cate: RbKey{rule.Name, id}}
 				switch term.Type {
 				case Terminal:
+					if strings.TrimSpace(term.Value) == "" {
+						continue
+					}
 					if err = g.matcher.Update(term.Value, v); err != nil {
 						return err
 					}

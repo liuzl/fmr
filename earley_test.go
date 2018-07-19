@@ -33,7 +33,7 @@ func TestEarleyParse(t *testing.T) {
 	}
 	//fmt.Println(string(b))
 	for _, text := range strs {
-		p, err := g.EarleyParse("expr", text)
+		p, err := g.EarleyParse(text, "expr")
 		if err != nil {
 			t.Error(err)
 		}
