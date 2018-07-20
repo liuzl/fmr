@@ -20,24 +20,10 @@ func TestMatchFrames(t *testing.T) {
 		t.Error(err)
 	}
 	for _, c := range cases {
-		if frames, err := g.MatchFrames(c); err != nil {
-			t.Error(err)
-		} else {
-			for k, sf := range frames {
-				t.Log(k)
-				t.Log(sf)
-				for term, slots := range sf.Fillings {
-					t.Log(term)
-					for _, slot := range slots {
-						for _, tree := range slot.Trees {
-							t.Log(tree.Semantic())
-						}
-					}
-				}
-			}
-		}
-		if err := g.FrameFMR(c); err != nil {
+		fmrs, err := g.FrameFMR(c)
+		if err != nil {
 			t.Error(err)
 		}
+		t.Log(c, fmrs)
 	}
 }

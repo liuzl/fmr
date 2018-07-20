@@ -4,13 +4,14 @@ import (
 	"fmt"
 )
 
-func (g *Grammar) FrameFMR(text string) error {
+func (g *Grammar) FrameFMR(text string) ([]string, error) {
 	frames, err := g.MatchFrames(text)
 	if err != nil {
-		return err
+		return nil, err
 	}
+	var ret []string
 	for k, v := range frames {
-		fmr := g.Frames[k.RuleName].Body[k.BodyId].F
+		f := g.Frames[k.RuleName].Body[k.BodyId].F
 		terms := g.Frames[k.RuleName].Body[k.BodyId].Terms
 		var children []*Node
 		for _, term := range terms {
@@ -21,13 +22,13 @@ func (g *Grammar) FrameFMR(text string) error {
 			}
 			children = append(children, slots[0].Trees[0])
 		}
-		str, err := fmrStr(fmr, children)
+		str, err := fmrStr(f, children)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		fmt.Println(text, str)
+		ret = append(ret, str)
 	}
-	return nil
+	return ret, nil
 }
 
 func (g *Grammar) MatchFrames(text string) (map[RbKey]*SlotFilling, error) {
