@@ -4,8 +4,26 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/liuzl/d"
+	"github.com/liuzl/dict"
 )
+
+func updateIndex(index map[string]map[string]interface{},
+	k string, v map[string]interface{}) error {
+	if index == nil {
+		return fmt.Errorf("nil grammar index")
+	}
+	if k == "" || v == nil {
+		return fmt.Errorf("empty k or v when updateIndex")
+	}
+	if index[k] == nil {
+		index[k] = v
+	} else {
+		for kk, vv := range v {
+			index[k][kk] = vv
+		}
+	}
+	return nil
+}
 
 func (g *Grammar) indexRules(rules map[string]*Rule, cate string) error {
 	var err error
@@ -15,14 +33,18 @@ func (g *Grammar) indexRules(rules map[string]*Rule, cate string) error {
 				v := map[string]interface{}{cate: RbKey{rule.Name, id}}
 				switch term.Type {
 				case Terminal:
-					if strings.TrimSpace(term.Value) == "" {
+					value := strings.TrimSpace(term.Value)
+					if value == "" {
 						continue
 					}
-					if err = g.matcher.Update(term.Value, v); err != nil {
+					if err = g.trie.SafeUpdate([]byte(value), 1); err != nil {
+						return err
+					}
+					if err = updateIndex(g.index, value, v); err != nil {
 						return err
 					}
 				case Nonterminal:
-					if err = g.kv.Update(term.Value, v); err != nil {
+					if err = updateIndex(g.ruleIndex, term.Value, v); err != nil {
 						return err
 					}
 				}
@@ -32,25 +54,19 @@ func (g *Grammar) indexRules(rules map[string]*Rule, cate string) error {
 	return nil
 }
 
-func (g *Grammar) index() error {
+func (g *Grammar) buildIndex() error {
 	if g.Refined {
 		return fmt.Errorf("should call Grammar.index before Grammar.refine")
 	}
-	var err error
-	if g.matcher, err = d.Load("g_matcher"); err != nil {
+	g.trie = dict.New()
+	g.index = make(map[string]map[string]interface{})
+	g.ruleIndex = make(map[string]map[string]interface{})
+
+	if err := g.indexRules(g.Frames, "frame"); err != nil {
 		return err
 	}
-	if g.kv, err = d.Load("g_kv"); err != nil {
+	if err := g.indexRules(g.Rules, "rule"); err != nil {
 		return err
 	}
-	if err = g.indexRules(g.Frames, "frame"); err != nil {
-		return err
-	}
-	if err = g.indexRules(g.Rules, "rule"); err != nil {
-		return err
-	}
-	if err = g.matcher.Save(); err != nil {
-		return err
-	}
-	return g.kv.Save()
+	return nil
 }

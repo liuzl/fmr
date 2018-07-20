@@ -3,7 +3,7 @@ package fmr
 import (
 	"encoding/gob"
 
-	"github.com/liuzl/d"
+	"github.com/liuzl/dict"
 )
 
 func init() {
@@ -17,7 +17,9 @@ type Grammar struct {
 	Frames  map[string]*Rule `json:"frames"`
 	Refined bool             `json:"refined"`
 
-	matcher, kv *d.Dictionary
+	trie      *dict.Cedar
+	index     map[string]map[string]interface{}
+	ruleIndex map[string]map[string]interface{}
 }
 
 // A RbKey identifies a specific RuleBody by name and id

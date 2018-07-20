@@ -512,7 +512,7 @@ func (p *parser) grammar() (*Grammar, error) {
 	if p.next() != eof {
 		return nil, fmt.Errorf("%s : format error", p.current)
 	}
-	if err := g.index(); err != nil {
+	if err := g.buildIndex(); err != nil {
 		return nil, err
 	}
 	if err := g.refine("g"); err != nil {

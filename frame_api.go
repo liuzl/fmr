@@ -50,12 +50,9 @@ func (g *Grammar) MatchFrames(text string) (map[RbKey]*SlotFilling, error) {
 
 			slot := &Slot{*pos, trees}
 
-			ret, err := g.kv.Get(tag)
-			if err != nil {
-				if err.Error() == "leveldb: not found" {
-					continue
-				}
-				return nil, err
+			ret := g.ruleIndex[tag]
+			if ret == nil {
+				continue
 			}
 			for cate, _rbKey := range ret {
 				if cate != "frame" {
@@ -83,17 +80,21 @@ func (g *Grammar) MatchFrames(text string) (map[RbKey]*SlotFilling, error) {
 func (g *Grammar) getCandidates(text string) (
 	map[RbKey]*SlotFilling, []string, error) {
 
-	matches, err := g.matcher.MultiMatch(text)
+	matches, err := g.trie.MultiMatch(text)
 	if err != nil {
 		return nil, nil, err
 	}
 	frames := map[RbKey]*SlotFilling{}
 	rules := map[string]bool{}
-	for word, v := range matches {
-		for cate, _rbKey := range v.Value {
+	for word, hits := range matches {
+		v := g.index[word]
+		if v == nil {
+			return nil, nil, fmt.Errorf("%s in trie but not in index", word)
+		}
+		for cate, _rbKey := range v {
 			rbKey, ok := _rbKey.(RbKey)
 			if !ok {
-				return nil, nil, fmt.Errorf("type error in grammar dict matcher")
+				return nil, nil, fmt.Errorf("type error in grammar index")
 			}
 			switch cate {
 			case "frame":
@@ -101,9 +102,9 @@ func (g *Grammar) getCandidates(text string) (
 					frames[rbKey] = &SlotFilling{make(map[Term][]*Slot), false}
 				}
 				t := Term{word, Terminal}
-				for _, hit := range v.Hits {
+				for _, hit := range hits {
 					frames[rbKey].Fillings[t] = append(frames[rbKey].Fillings[t],
-						&Slot{Pos{hit.Start, hit.End}, nil})
+						&Slot{Pos{hit.StartByte, hit.EndByte}, nil})
 				}
 				if len(frames[rbKey].Fillings) >=
 					len(g.Frames[rbKey.RuleName].Body[rbKey.BodyId].Terms) {
@@ -124,12 +125,10 @@ func (g *Grammar) getCandidates(text string) (
 		}
 		r := ruleList[0]
 		ruleList = ruleList[1:]
-		ret, err := g.kv.Get(r)
-		if err != nil {
-			if err.Error() == "leveldb: not found" {
-				continue
-			}
-			return nil, nil, err
+
+		ret := g.ruleIndex[r]
+		if ret == nil {
+			continue
 		}
 		for cate, _rbKey := range ret {
 			rbKey, ok := _rbKey.(RbKey)
