@@ -34,7 +34,35 @@ func (g *Grammar) EarleyParse(text string, starts ...string) (*Parse, error) {
 	if err != nil {
 		return nil, err
 	}
-	return g.earleyParse(text, tokens, l, starts...)
+	return g.earleyParse(true, text, tokens, l, starts...)
+}
+
+// EarleyParseMaxAll extracts all submatches in text for rule <start>
+func (g *Grammar) EarleyParseMaxAll(text string, starts ...string) ([]*Parse, error) {
+	tokens, l, err := extract(text)
+	if err != nil {
+		return nil, err
+	}
+	var ret []*Parse
+	for i := 0; i < len(tokens); {
+		p, err := g.earleyParse(true, text, tokens[i:], l, starts...)
+		if err != nil {
+			return nil, err
+		}
+		if p.finalStates != nil {
+			ret = append(ret, p)
+			max := 0
+			for _, finalState := range p.finalStates {
+				if finalState.End > max {
+					max = finalState.End
+				}
+			}
+			i += max
+		} else {
+			i++
+		}
+	}
+	return ret, nil
 }
 
 // EarleyParseAll extracts all submatches in text for rule <start>
@@ -45,7 +73,7 @@ func (g *Grammar) EarleyParseAll(text string, starts ...string) ([]*Parse, error
 	}
 	var ret []*Parse
 	for i := 0; i < len(tokens); i++ {
-		p, err := g.earleyParse(text, tokens[i:], l, starts...)
+		p, err := g.earleyParse(false, text, tokens[i:], l, starts...)
 		if err != nil {
 			return nil, err
 		}
@@ -57,7 +85,7 @@ func (g *Grammar) EarleyParseAll(text string, starts ...string) ([]*Parse, error
 	return ret, nil
 }
 
-func (g *Grammar) earleyParse(text string,
+func (g *Grammar) earleyParse(maxFlag bool, text string,
 	tokens []*ling.Token, l *Grammar, starts ...string) (*Parse, error) {
 	if len(starts) == 0 {
 		return nil, fmt.Errorf("no start rules")
@@ -79,7 +107,7 @@ func (g *Grammar) earleyParse(text string,
 				startByte: token.StartByte, endByte: token.EndByte,
 			})
 	}
-	parse.parse()
+	parse.parse(maxFlag)
 	return parse, nil
 }
 

@@ -84,7 +84,7 @@ func main() {
 		//TODO p.GetTrees for (any)
 		//p.GetTrees()
 
-		ps, err := g.EarleyParseAll(line, *start)
+		ps, err := g.EarleyParseMaxAll(line, *start)
 		if err != nil {
 			glog.Fatal(err)
 		}

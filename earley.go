@@ -78,7 +78,7 @@ func (col *TableColumn) insert(state *TableState) *TableState {
  * gamma rule span from the first column to the last one. return the final gamma
  * state, or null, if the parse failed.
  */
-func (p *Parse) parse() []*TableState {
+func (p *Parse) parse(maxFlag bool) []*TableState {
 	if len(p.starts) == 0 {
 		return nil
 	}
@@ -134,6 +134,10 @@ func (p *Parse) parse() []*TableState {
 		for _, state := range p.columns[i].states {
 			if state.Name == GAMMA_RULE && state.isCompleted() {
 				ret = append(ret, state)
+				if maxFlag {
+					p.finalStates = ret
+					return ret
+				}
 			}
 		}
 	}
