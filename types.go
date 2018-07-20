@@ -2,6 +2,7 @@ package fmr
 
 import (
 	"encoding/gob"
+	"fmt"
 
 	"github.com/liuzl/dict"
 )
@@ -18,8 +19,13 @@ type Grammar struct {
 	Refined bool             `json:"refined"`
 
 	trie      *dict.Cedar
-	index     map[string]map[string]interface{}
-	ruleIndex map[string]map[string]interface{}
+	index     map[string]*Index
+	ruleIndex map[string]*Index
+}
+
+type Index struct {
+	Frames map[RbKey]struct{}
+	Rules  map[RbKey]struct{}
 }
 
 // A RbKey identifies a specific RuleBody by name and id
@@ -41,6 +47,10 @@ type Slot struct {
 type SlotFilling struct {
 	Fillings map[Term][]*Slot
 	Complete bool
+}
+
+func (s *SlotFilling) String() string {
+	return fmt.Sprintf("Complete:%+v, %+v", s.Complete, s.Fillings)
 }
 
 // A Rule stores a set of production rules of Name

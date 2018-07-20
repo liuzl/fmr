@@ -7,20 +7,21 @@ import (
 	"github.com/liuzl/dict"
 )
 
-func updateIndex(index map[string]map[string]interface{},
-	k string, v map[string]interface{}) error {
+func updateIndex(index map[string]*Index, k string, cate string, v RbKey) error {
 	if index == nil {
 		return fmt.Errorf("nil grammar index")
 	}
-	if k == "" || v == nil {
-		return fmt.Errorf("empty k or v when updateIndex")
+	if cate != "frame" && cate != "rule" {
+		return fmt.Errorf("invalid cate %s", cate)
 	}
 	if index[k] == nil {
-		index[k] = v
-	} else {
-		for kk, vv := range v {
-			index[k][kk] = vv
-		}
+		index[k] = &Index{make(map[RbKey]struct{}), make(map[RbKey]struct{})}
+	}
+	switch cate {
+	case "frame":
+		index[k].Frames[v] = struct{}{}
+	case "rule":
+		index[k].Rules[v] = struct{}{}
 	}
 	return nil
 }
@@ -30,21 +31,21 @@ func (g *Grammar) indexRules(rules map[string]*Rule, cate string) error {
 	for _, rule := range rules {
 		for id, body := range rule.Body {
 			for _, term := range body.Terms {
-				v := map[string]interface{}{cate: RbKey{rule.Name, id}}
+				v := RbKey{rule.Name, id}
+				value := strings.TrimSpace(term.Value)
+				if value == "" {
+					continue
+				}
 				switch term.Type {
 				case Terminal:
-					value := strings.TrimSpace(term.Value)
-					if value == "" {
-						continue
-					}
 					if err = g.trie.SafeUpdate([]byte(value), 1); err != nil {
 						return err
 					}
-					if err = updateIndex(g.index, value, v); err != nil {
+					if err = updateIndex(g.index, value, cate, v); err != nil {
 						return err
 					}
 				case Nonterminal:
-					if err = updateIndex(g.ruleIndex, term.Value, v); err != nil {
+					if err = updateIndex(g.ruleIndex, value, cate, v); err != nil {
 						return err
 					}
 				}
@@ -59,8 +60,8 @@ func (g *Grammar) buildIndex() error {
 		return fmt.Errorf("should call Grammar.index before Grammar.refine")
 	}
 	g.trie = dict.New()
-	g.index = make(map[string]map[string]interface{})
-	g.ruleIndex = make(map[string]map[string]interface{})
+	g.index = make(map[string]*Index)
+	g.ruleIndex = make(map[string]*Index)
 
 	if err := g.indexRules(g.Frames, "frame"); err != nil {
 		return err

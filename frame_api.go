@@ -45,6 +45,7 @@ func (g *Grammar) MatchFrames(text string) (map[RbKey]*SlotFilling, error) {
 			tag := p.Tag(finalState)
 			pos := p.Boundary(finalState)
 			trees := p.GetTrees(finalState)
+
 			if tag == "" || pos == nil {
 				return nil, fmt.Errorf("invalid parse")
 			}
@@ -55,14 +56,7 @@ func (g *Grammar) MatchFrames(text string) (map[RbKey]*SlotFilling, error) {
 			if ret == nil {
 				continue
 			}
-			for cate, _rbKey := range ret {
-				if cate != "frame" {
-					continue
-				}
-				rbKey, ok := _rbKey.(RbKey)
-				if !ok {
-					return nil, fmt.Errorf("format error")
-				}
+			for rbKey, _ := range ret.Frames {
 				if frames[rbKey] == nil {
 					frames[rbKey] = &SlotFilling{make(map[Term][]*Slot), false}
 				}
@@ -92,28 +86,22 @@ func (g *Grammar) getCandidates(text string) (
 		if v == nil {
 			return nil, nil, fmt.Errorf("%s in trie but not in index", word)
 		}
-		for cate, _rbKey := range v {
-			rbKey, ok := _rbKey.(RbKey)
-			if !ok {
-				return nil, nil, fmt.Errorf("type error in grammar index")
+		for rbKey, _ := range v.Frames {
+			if frames[rbKey] == nil {
+				frames[rbKey] = &SlotFilling{make(map[Term][]*Slot), false}
 			}
-			switch cate {
-			case "frame":
-				if frames[rbKey] == nil {
-					frames[rbKey] = &SlotFilling{make(map[Term][]*Slot), false}
-				}
-				t := Term{word, Terminal}
-				for _, hit := range hits {
-					frames[rbKey].Fillings[t] = append(frames[rbKey].Fillings[t],
-						&Slot{Pos{hit.StartByte, hit.EndByte}, nil})
-				}
-				if len(frames[rbKey].Fillings) >=
-					len(g.Frames[rbKey.RuleName].Body[rbKey.BodyId].Terms) {
-					frames[rbKey].Complete = true
-				}
-			case "rule":
-				rules[rbKey.RuleName] = true
+			t := Term{word, Terminal}
+			for _, hit := range hits {
+				frames[rbKey].Fillings[t] = append(frames[rbKey].Fillings[t],
+					&Slot{Pos{hit.StartByte, hit.EndByte}, nil})
 			}
+			if len(frames[rbKey].Fillings) >=
+				len(g.Frames[rbKey.RuleName].Body[rbKey.BodyId].Terms) {
+				frames[rbKey].Complete = true
+			}
+		}
+		for rbKey, _ := range v.Rules {
+			rules[rbKey.RuleName] = true
 		}
 	}
 	var ruleList []string
@@ -131,12 +119,8 @@ func (g *Grammar) getCandidates(text string) (
 		if ret == nil {
 			continue
 		}
-		for cate, _rbKey := range ret {
-			rbKey, ok := _rbKey.(RbKey)
-			if !ok {
-				return nil, nil, fmt.Errorf("type error in grammar dicts")
-			}
-			if cate == "rule" && !rules[rbKey.RuleName] {
+		for rbKey, _ := range ret.Rules {
+			if !rules[rbKey.RuleName] {
 				ruleList = append(ruleList, rbKey.RuleName)
 				rules[rbKey.RuleName] = true
 			}
