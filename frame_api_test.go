@@ -8,7 +8,7 @@ import (
 func TestMatchFrames(t *testing.T) {
 	cases := []string{
 		`从北京飞上海`,
-		`飞上海 从北京`,
+		`飞上海，从北京，后天`,
 		`我要从北京走`,
 	}
 	b, err := ioutil.ReadFile("sf.grammar")
