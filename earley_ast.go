@@ -10,7 +10,7 @@ type Node struct {
 	Value    *TableState `json:"value"`
 	Children []*Node     `json:"children,omitempty"`
 
-	p *Parse `json:"-"`
+	p *Parse
 }
 
 func (p *Parse) GetFinalStates() []*TableState {
