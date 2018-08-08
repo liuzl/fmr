@@ -1,19 +1,25 @@
-# FMR in golang
+# FMR: A Formal Meaning Representation For Natural Language Semantic Parsing
 
-## Tasks that it could be used at
+## What is semantic parsing?
+Semantic parsing is the process of mapping a natural language sentence into an intermediate logical form which is a formal representation of its meaning.
 
-Grammars (and parsing) are key components in many applications.
+The formal representation should be a detailed representation of the complete meaning of the natural language sentence in a fully formal language that:
 
+* Has a rich ontology of types, properties, and relations.
+* Supports automated reasoning or execution.
+
+## Representation languages
+Early semantic parsers used highly domain-specific meaning representation languages, with later systems using more extensible languages like Prolog, lambda calculus, lambda dependancy-based compositional semantics (λ-DCS), SQL, Python, Java, and the Alexa Meaning Representation Language. Some work has used more exotic meaning representations, like query graphs or vector representations.
+
+## Tasks
 * Grammar checkers
 * Dialogue management
 * Question answering
 * Information extraction
 * Machine translation
 
-## Parsing
-
-Parsing is the process of taking a string and a grammar and returning a (or multiple) parse tree(s) for that string.
-
-It is completely analogous to running a finite-state transducer with a tape. It's just more powerful `-> ` there are languages we can capture with CFGs that we can't capture with finite-state machines.
-
-## Overgenerate
+## References
+* [Semantic Parsing: Past, Present, and Future](http://yoavartzi.com/sp14/slides/mooney.sp14.pdf), Raymond J. Mooney, 2014
+* [Introduction to semantic parsing](https://web.stanford.edu/class/cs224u/materials/cs224u-2016-intro-semparse.pdf), Bill MacCartney, 2016
+* [Bringing machine learning and compositional semantics together](https://web.stanford.edu/~cgpotts/manuscripts/liang-potts-semantics.pdf), Percy Liang and Christopher Potts, 2014
+* [SippyCup: A semantic parsing tutorial](https://github.com/wcmac/sippycup), Bill MacCartney, 2015
