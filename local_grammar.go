@@ -24,16 +24,26 @@ func localGrammar(d *ling.Document) (*Grammar, error) {
 			continue
 		}
 		terms := []*Term{&Term{span.String(), Terminal}}
-		rb := &RuleBody{terms, nil}
-		hash, err := hashstructure.Hash(rb, nil)
-		if err != nil {
-			return nil, err
-		}
-		for k, _ := range m {
-			if _, has := g.Rules[k]; has {
-				g.Rules[k].Body[hash] = rb
-			} else {
-				g.Rules[k] = &Rule{k, map[uint64]*RuleBody{hash: rb}}
+		for k, values := range m {
+			fvalues := []string{""}
+			switch values.(type) {
+			case []string:
+				fvalues = values.([]string)
+			}
+			for _, v := range fvalues {
+				rb := &RuleBody{terms, nil}
+				if v != "" {
+					rb.F = &FMR{"nf.I", []*Arg{&Arg{"string", v}}}
+				}
+				hash, err := hashstructure.Hash(rb, nil)
+				if err != nil {
+					return nil, err
+				}
+				if _, has := g.Rules[k]; has {
+					g.Rules[k].Body[hash] = rb
+				} else {
+					g.Rules[k] = &Rule{k, map[uint64]*RuleBody{hash: rb}}
+				}
 			}
 		}
 	}
