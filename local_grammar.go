@@ -25,25 +25,27 @@ func localGrammar(d *ling.Document) (*Grammar, error) {
 		}
 		terms := []*Term{&Term{span.String(), Terminal}}
 		for k, values := range m {
-			fvalues := []string{""}
+			rb := &RuleBody{terms, nil}
 			switch values.(type) {
 			case []string:
-				fvalues = values.([]string)
+				args := []*Arg{}
+				for _, v := range values.([]string) {
+					args = append(args, &Arg{"string", v})
+				}
+				list := &FMR{"nf.list", args}
+				rb.F = &FMR{
+					"nf.object",
+					[]*Arg{&Arg{"string", k}, &Arg{"func", list}},
+				}
 			}
-			for _, v := range fvalues {
-				rb := &RuleBody{terms, nil}
-				if v != "" {
-					rb.F = &FMR{"nf.I", []*Arg{&Arg{"string", v}}}
-				}
-				hash, err := hashstructure.Hash(rb, nil)
-				if err != nil {
-					return nil, err
-				}
-				if _, has := g.Rules[k]; has {
-					g.Rules[k].Body[hash] = rb
-				} else {
-					g.Rules[k] = &Rule{k, map[uint64]*RuleBody{hash: rb}}
-				}
+			hash, err := hashstructure.Hash(rb, nil)
+			if err != nil {
+				return nil, err
+			}
+			if _, has := g.Rules[k]; has {
+				g.Rules[k].Body[hash] = rb
+			} else {
+				g.Rules[k] = &Rule{k, map[uint64]*RuleBody{hash: rb}}
 			}
 		}
 	}
