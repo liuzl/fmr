@@ -34,7 +34,7 @@ func localGrammar(d *ling.Document) (*Grammar, error) {
 				}
 				list := &FMR{"nf.list", args}
 				rb.F = &FMR{
-					"nf.object",
+					"nf.entity",
 					[]*Arg{&Arg{"string", k}, &Arg{"func", list}},
 				}
 			}
