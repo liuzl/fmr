@@ -3,7 +3,7 @@
 
 <departure> = <from> <city> {nf.I($2)};
 
-<arrival> = <to> <city> {nf.I($2)};
+<arrival> = <to> <city> {nf.I($0)};
 [arrival] = <arrival> {nf.arrival($1)};
 
 <from> = "从" ;
