@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/liuzl/dict"
+	"github.com/mitchellh/hashstructure"
 )
 
 func init() {
@@ -45,7 +46,8 @@ type Slot struct {
 }
 
 type SlotFilling struct {
-	Fillings map[Term][]*Slot
+	//Fillings map[Term][]*Slot
+	Fillings map[uint64][]*Slot
 	Complete bool
 }
 
@@ -79,6 +81,14 @@ type Term struct {
 	Value string      `json:"value"`
 	Type  TermType    `json:"type"`
 	Meta  interface{} `json:"meta"`
+}
+
+func (t *Term) Key() uint64 {
+	hash, err := hashstructure.Hash(t, nil)
+	if err != nil {
+		return 0
+	}
+	return hash
 }
 
 // Arg is the type of argument for functions
