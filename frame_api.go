@@ -60,7 +60,7 @@ func (g *Grammar) MatchFrames(text string) (map[RbKey]*SlotFilling, error) {
 				if frames[rbKey] == nil {
 					frames[rbKey] = &SlotFilling{make(map[Term][]*Slot), false}
 				}
-				t := Term{tag, Nonterminal}
+				t := Term{Value: tag, Type: Nonterminal}
 				frames[rbKey].Fillings[t] = append(frames[rbKey].Fillings[t], slot)
 				if len(frames[rbKey].Fillings) >=
 					len(g.Frames[rbKey.RuleName].Body[rbKey.BodyId].Terms) {
@@ -90,7 +90,7 @@ func (g *Grammar) getCandidates(text string) (
 			if frames[rbKey] == nil {
 				frames[rbKey] = &SlotFilling{make(map[Term][]*Slot), false}
 			}
-			t := Term{word, Terminal}
+			t := Term{Value: word, Type: Terminal}
 			for _, hit := range hits {
 				frames[rbKey].Fillings[t] = append(frames[rbKey].Fillings[t],
 					&Slot{Pos{hit.StartByte, hit.EndByte}, nil})

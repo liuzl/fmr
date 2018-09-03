@@ -76,8 +76,9 @@ const (
 
 // A Term is the component of RuleBody
 type Term struct {
-	Value string   `json:"value"`
-	Type  TermType `json:"type"`
+	Value string      `json:"value"`
+	Type  TermType    `json:"type"`
+	Meta  interface{} `json:"meta"`
 }
 
 // Arg is the type of argument for functions
