@@ -1,5 +1,9 @@
 package fmr
 
+import (
+	"reflect"
+)
+
 // GAMMA_RULE is the name of the special "gamma" rule added by the algorithm
 // (this is unicode for 'LATIN SMALL LETTER GAMMA')
 const GAMMA_RULE = "\u0263" // "\u0194"
@@ -17,6 +21,7 @@ type TableState struct {
 	End   int       `json:"end"`
 	dot   int
 	isAny bool
+	meta  interface{}
 }
 
 // TableColumn is the TableState set
@@ -39,22 +44,28 @@ type Parse struct {
 
 func (s *TableState) isCompleted() bool {
 	if s.isAny {
-		if s.dot > 0 {
-			return true
+		if s.meta == nil {
+			if s.dot > 0 {
+				return true
+			}
+		} else {
+			if meta, ok := s.meta.(map[string]int); ok {
+				if s.dot >= meta["min"] && s.dot <= meta["max"] {
+					return true
+				}
+			}
 		}
 		return false
 	}
 	return s.dot >= len(s.Rb.Terms)
 }
 
-var anyTerm = &Term{Type: Any}
-
 func (s *TableState) getNextTerm() *Term {
-	if s.isAny {
-		return anyTerm
-	}
 	if s.isCompleted() {
 		return nil
+	}
+	if s.isAny {
+		return &Term{Type: Any, Meta: s.meta}
 	}
 	return s.Rb.Terms[s.dot]
 }
@@ -62,10 +73,11 @@ func (s *TableState) getNextTerm() *Term {
 func (col *TableColumn) insert(state *TableState) *TableState {
 	state.End = col.index
 	for _, s := range col.states {
-		if *state == *s {
+		if reflect.DeepEqual(state, s) {
 			return s
 		}
-		if state.isAny && s.isAny && state.Start == s.Start && state.End == s.End {
+		if state.isAny && s.isAny &&
+			state.Start == s.Start && state.End == s.End {
 			return s
 		}
 	}
@@ -87,31 +99,43 @@ func (p *Parse) parse(maxFlag bool) []*TableState {
 			[]*Term{&Term{Value: start, Type: Nonterminal}},
 			&FMR{"nf.I", []*Arg{&Arg{"index", 1}}},
 		}
-		begin := &TableState{GAMMA_RULE, rb, 0, 0, 0, false}
+		begin := &TableState{GAMMA_RULE, rb, 0, 0, 0, false, nil}
 		p.columns[0].states = append(p.columns[0].states, begin)
 	}
 	for i, col := range p.columns {
 		for j := 0; j < len(col.states); j++ {
-			state := col.states[j]
-
-			if state.isAny {
-				if state.dot > 0 {
-					p.complete(col, state)
-				}
-				if i+1 < len(p.columns) {
-					p.scan(p.columns[i+1], state, anyTerm)
+			st := col.states[j]
+			if st.isAny {
+				if st.meta == nil {
+					if st.dot > 0 {
+						p.complete(col, st)
+					}
+					if i+1 < len(p.columns) {
+						p.scan(p.columns[i+1], st,
+							&Term{Type: Any, Meta: st.meta})
+					}
+				} else {
+					if meta, ok := st.meta.(map[string]int); ok {
+						if st.dot >= meta["min"] && st.dot <= meta["max"] {
+							p.complete(col, st)
+						}
+						if i+1 < len(p.columns) && st.dot+1 <= meta["max"] {
+							p.scan(p.columns[i+1], st,
+								&Term{Type: Any, Meta: st.meta})
+						}
+					}
 				}
 			} else {
-				if state.isCompleted() {
-					p.complete(col, state)
+				if st.isCompleted() {
+					p.complete(col, st)
 				} else {
-					term := state.getNextTerm()
+					term := st.getNextTerm()
 					switch term.Type {
 					case Nonterminal, Any:
 						p.predict(col, term)
 					case Terminal:
 						if i+1 < len(p.columns) {
-							p.scan(p.columns[i+1], state, term)
+							p.scan(p.columns[i+1], st, term)
 						}
 					}
 				}
@@ -148,7 +172,7 @@ func (p *Parse) parse(maxFlag bool) []*TableState {
 func (*Parse) scan(col *TableColumn, st *TableState, term *Term) {
 	if term.Type == Any {
 		col.insert(&TableState{Name: "any", Rb: st.Rb,
-			dot: st.dot + 1, Start: st.Start, isAny: st.isAny})
+			dot: st.dot + 1, Start: st.Start, isAny: st.isAny, meta: term.Meta})
 		return
 	}
 	if term.Value == col.token {
@@ -180,7 +204,8 @@ func (p *Parse) predict(col *TableColumn, term *Term) bool {
 		}
 		return changed
 	case Any:
-		st := &TableState{Name: "any", Start: col.index, isAny: true}
+		st := &TableState{
+			Name: "any", Start: col.index, isAny: true, meta: term.Meta}
 		st2 := col.insert(st)
 		return st == st2
 	}

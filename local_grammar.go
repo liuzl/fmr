@@ -23,7 +23,7 @@ func localGrammar(d *ling.Document) (*Grammar, error) {
 		if !ok {
 			continue
 		}
-		terms := []*Term{&Term{span.String(), Terminal}}
+		terms := []*Term{&Term{Value: span.String(), Type: Terminal}}
 		for k, values := range m {
 			rb := &RuleBody{terms, nil}
 			switch values.(type) {

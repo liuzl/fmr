@@ -181,6 +181,7 @@ func (p *parser) any() (*Term, error) {
 	if err := p.eat('('); err != nil {
 		return nil, err
 	}
+	p.ws()
 	name, err := p.text()
 	if err != nil {
 		return nil, err
@@ -188,10 +189,37 @@ func (p *parser) any() (*Term, error) {
 	if name != "any" {
 		return nil, fmt.Errorf("%s: any rule:(%s) not supported", p.current, name)
 	}
-	if err := p.eat(')'); err != nil {
+	p.ws()
+	var meta map[string]int
+	if p.peek() == '{' {
+		// contains range
+		meta = make(map[string]int)
+		p.eat('{')
+		p.ws()
+		if meta["min"], err = p.getInt(); err != nil {
+			return nil, err
+		}
+		p.ws()
+		if err = p.eat(','); err != nil {
+			return nil, err
+		}
+		p.ws()
+		if meta["max"], err = p.getInt(); err != nil {
+			return nil, err
+		}
+		if meta["max"] < meta["min"] {
+			return nil, fmt.Errorf("%s : max:%d less than min:%d",
+				p.current, meta["max"], meta["min"])
+		}
+		if err = p.eat('}'); err != nil {
+			return nil, err
+		}
+	}
+	p.ws()
+	if err = p.eat(')'); err != nil {
 		return nil, err
 	}
-	return &Term{Type: Any}, nil
+	return &Term{Type: Any, Meta: meta}, nil
 }
 
 func (p *parser) term() (*Term, error) {
