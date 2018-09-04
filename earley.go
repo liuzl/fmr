@@ -24,6 +24,16 @@ type TableState struct {
 	meta  interface{}
 }
 
+func (t *TableState) metaEmpty() bool {
+	if t.meta == nil {
+		return true
+	}
+	if m, ok := t.meta.(map[string]int); ok && len(m) == 0 {
+		return true
+	}
+	return false
+}
+
 // TableColumn is the TableState set
 type TableColumn struct {
 	token     string
@@ -44,7 +54,7 @@ type Parse struct {
 
 func (s *TableState) isCompleted() bool {
 	if s.isAny {
-		if s.meta == nil {
+		if s.metaEmpty() {
 			if s.dot > 0 {
 				return true
 			}
@@ -106,13 +116,12 @@ func (p *Parse) parse(maxFlag bool) []*TableState {
 		for j := 0; j < len(col.states); j++ {
 			st := col.states[j]
 			if st.isAny {
-				if st.meta == nil {
+				if st.metaEmpty() {
 					if st.dot > 0 {
 						p.complete(col, st)
 					}
 					if i+1 < len(p.columns) {
-						p.scan(p.columns[i+1], st,
-							&Term{Type: Any, Meta: st.meta})
+						p.scan(p.columns[i+1], st, &Term{Type: Any})
 					}
 				} else {
 					if meta, ok := st.meta.(map[string]int); ok {
