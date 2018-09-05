@@ -43,8 +43,7 @@ func GrammarFromFile(file string) (*Grammar, error) {
 
 // CFGrammar constructs the Contex-Free Grammar from string d
 func CFGrammar(d string) (*Grammar, error) {
-	p := &parser{input: d, info: make(map[int]*position)}
-	return p.grammar()
+	return GrammarFromString(d, "")
 }
 
 // GrammarFromString constructs the Contex-Free Grammar from string d with name
@@ -560,7 +559,6 @@ func (p *parser) grammar() (*Grammar, error) {
 		} else {
 			rules[r.Name] = r
 		}
-		p.ws()
 	}
 	if p.next() != eof {
 		return nil, fmt.Errorf("%s : format error", p.posInfo())
