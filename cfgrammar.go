@@ -2,6 +2,7 @@ package fmr
 
 import (
 	"fmt"
+	"io/ioutil"
 	"math/big"
 	"strconv"
 	"strings"
@@ -29,6 +30,15 @@ func (p *position) String() string {
 }
 
 const eof = -1
+
+// GrammarFromFile constructs the Context-Free Grammar from file
+func GrammarFromFile(file string) (*Grammar, error) {
+	if b, err := ioutil.ReadFile(file); err != nil {
+		return nil, err
+	} else {
+		return CFGrammar(string(b))
+	}
+}
 
 // CFGrammar constructs the Contex-Free Grammar from string d
 func CFGrammar(d string) (*Grammar, error) {
