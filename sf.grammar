@@ -1,9 +1,9 @@
-<flight> = <departure> <arrival> {vf.fly($1, $2)};
-[flight] = <arrival> <departure> {vf.fly($2, $1)};
+<flight> = <departure> <arrival> {nf.flight($1, $2)};
+[flight] = <arrival> <departure> {nf.flight($2, $1)};
 
 <departure> = <from> <city> {nf.I($2)};
 
-<arrival> = <to> <city> {nf.I($0)};
+<arrival> = <to> <city> {nf.I($2)};
 [arrival] = <arrival> {nf.arrival($1)};
 
 <from> = "从" ;
