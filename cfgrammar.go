@@ -219,7 +219,10 @@ func (p *parser) any() (*Term, error) {
 	if err = p.eat(')'); err != nil {
 		return nil, err
 	}
-	return &Term{Type: Any, Meta: meta}, nil
+	if len(meta) > 0 {
+		return &Term{Type: Any, Meta: meta}, nil
+	}
+	return &Term{Type: Any}, nil
 }
 
 func (p *parser) term() (*Term, error) {
