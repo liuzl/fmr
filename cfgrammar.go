@@ -18,6 +18,7 @@ type parser struct {
 	width   int
 	current *position
 	info    map[int]*position
+	fname   string
 }
 
 type position struct {
@@ -36,7 +37,7 @@ func GrammarFromFile(file string) (*Grammar, error) {
 	if b, err := ioutil.ReadFile(file); err != nil {
 		return nil, err
 	} else {
-		return CFGrammar(string(b))
+		return GrammarFromString(string(b), file)
 	}
 }
 
@@ -44,6 +45,16 @@ func GrammarFromFile(file string) (*Grammar, error) {
 func CFGrammar(d string) (*Grammar, error) {
 	p := &parser{input: d, info: make(map[int]*position)}
 	return p.grammar()
+}
+
+// GrammarFromString constructs the Contex-Free Grammar from string d with name
+func GrammarFromString(d, name string) (*Grammar, error) {
+	p := &parser{fname: name, input: d, info: make(map[int]*position)}
+	return p.grammar()
+}
+
+func (p *parser) posInfo() string {
+	return fmt.Sprintf("%s%s", p.fname, p.current)
 }
 
 func (p *parser) next() rune {
@@ -76,7 +87,7 @@ func (p *parser) next() rune {
 
 func (p *parser) eat(expected rune) error {
 	if r := p.next(); r != expected {
-		return fmt.Errorf("%s :expected %s, got %s", p.current,
+		return fmt.Errorf("%s :expected %s, got %s", p.posInfo(),
 			strconv.Quote(string(expected)), strconv.Quote(string(r)))
 	}
 	return nil
@@ -119,7 +130,7 @@ Loop:
 		first = false
 	}
 	if len(ret) == 0 {
-		return "", fmt.Errorf("%s : no text", p.current)
+		return "", fmt.Errorf("%s : no text", p.posInfo())
 	}
 	return string(ret), nil
 }
@@ -133,7 +144,7 @@ func (p *parser) terminalText() (string, error) {
 			p.backup()
 			return string(ret), nil
 		case r == eof:
-			return "", fmt.Errorf("%s : unterminated string", p.current)
+			return "", fmt.Errorf("%s : unterminated string", p.posInfo())
 		case prev == '\\':
 			switch r {
 			case '\\':
@@ -145,7 +156,7 @@ func (p *parser) terminalText() (string, error) {
 			case '"':
 				ret = append(ret, '"')
 			default:
-				return "", fmt.Errorf("%s : unexpected escape string", p.current)
+				return "", fmt.Errorf("%s : unexpected escape string", p.posInfo())
 			}
 			prev = 0
 		case r == '\\':
@@ -197,7 +208,8 @@ func (p *parser) any() (*Term, error) {
 		return nil, err
 	}
 	if name != "any" {
-		return nil, fmt.Errorf("%s: any rule:(%s) not supported", p.current, name)
+		return nil, fmt.Errorf(
+			"%s: any rule:(%s) not supported", p.posInfo(), name)
 	}
 	p.ws()
 	var meta map[string]int
@@ -219,7 +231,7 @@ func (p *parser) any() (*Term, error) {
 		}
 		if meta["max"] < meta["min"] {
 			return nil, fmt.Errorf("%s : max:%d less than min:%d",
-				p.current, meta["max"], meta["min"])
+				p.posInfo(), meta["max"], meta["min"])
 		}
 		if err = p.eat('}'); err != nil {
 			return nil, err
@@ -252,7 +264,7 @@ func (p *parser) term() (*Term, error) {
 	case '(':
 		return p.any()
 	}
-	return nil, fmt.Errorf("%s :invalid term char", p.current)
+	return nil, fmt.Errorf("%s :invalid term char", p.posInfo())
 }
 
 func (p *parser) semanticFn() (f *FMR, err error) {
@@ -289,7 +301,7 @@ Loop:
 		prev = r
 	}
 	if len(ret) == 0 {
-		return "", fmt.Errorf("%s : no funcName", p.current)
+		return "", fmt.Errorf("%s : no funcName", p.posInfo())
 	}
 	p.ws()
 	return string(ret), nil
@@ -339,7 +351,7 @@ func (p *parser) funcArgs() (args []*Arg, err error) {
 			} else if r == ')' {
 				break
 			} else {
-				err = fmt.Errorf("%s : unexpected semantic args", p.current)
+				err = fmt.Errorf("%s : unexpected semantic args", p.posInfo())
 				return
 			}
 		}
@@ -362,7 +374,7 @@ func (p *parser) getInt() (idx int, err error) {
 		}
 	}
 	if idx == -1 {
-		err = fmt.Errorf("%s : number expected", p.current)
+		err = fmt.Errorf("%s : number expected", p.posInfo())
 		return
 	}
 	p.backup()
@@ -398,7 +410,7 @@ func (p *parser) numArg(neg bool) (*Arg, error) {
 			ret = append(ret, r)
 		} else if r == '.' {
 			if hasDot {
-				return nil, fmt.Errorf("%s : unexpected dot", p.current)
+				return nil, fmt.Errorf("%s : unexpected dot", p.posInfo())
 			}
 			hasDot = true
 			ret = append(ret, r)
@@ -407,7 +419,7 @@ func (p *parser) numArg(neg bool) (*Arg, error) {
 		}
 	}
 	if len(ret) == 0 {
-		return nil, fmt.Errorf("%s : number expected", p.current)
+		return nil, fmt.Errorf("%s : number expected", p.posInfo())
 	}
 	p.backup()
 	if neg {
@@ -503,7 +515,7 @@ func (p *parser) rule(c rune) (*Rule, error) {
 			return nil, err
 		}
 	default:
-		return nil, fmt.Errorf("%s : unexpected char", p.current)
+		return nil, fmt.Errorf("%s : unexpected char", p.posInfo())
 	}
 	p.ws()
 	if err = p.eat('='); err != nil {
@@ -551,7 +563,7 @@ func (p *parser) grammar() (*Grammar, error) {
 		p.ws()
 	}
 	if p.next() != eof {
-		return nil, fmt.Errorf("%s : format error", p.current)
+		return nil, fmt.Errorf("%s : format error", p.posInfo())
 	}
 	if err := g.buildIndex(); err != nil {
 		return nil, err
