@@ -37,7 +37,18 @@ func GrammarFromFile(file string) (*Grammar, error) {
 	if b, err := ioutil.ReadFile(file); err != nil {
 		return nil, err
 	} else {
-		return GrammarFromString(string(b), file)
+		return grammarFromString(string(b), file, map[string]int{file: 1})
+	}
+}
+
+func grammarFromFile(file string, files map[string]int) (*Grammar, error) {
+	if files[file] >= 2 {
+		return nil, nil
+	}
+	if b, err := ioutil.ReadFile(file); err != nil {
+		return nil, err
+	} else {
+		return grammarFromString(string(b), file, files)
 	}
 }
 
@@ -48,8 +59,26 @@ func CFGrammar(d string) (*Grammar, error) {
 
 // GrammarFromString constructs the Contex-Free Grammar from string d with name
 func GrammarFromString(d, name string) (*Grammar, error) {
+	return grammarFromString(d, name, make(map[string]int))
+}
+
+func grammarFromString(d, name string, files map[string]int) (*Grammar, error) {
+	if files[name] >= 2 {
+		return nil, nil
+	}
 	p := &parser{fname: name, input: d, info: make(map[int]*position)}
-	return p.grammar()
+	if Debug {
+		fmt.Println("loading ", name, files)
+	}
+	g, err := p.grammar(files)
+	if err != nil {
+		return nil, err
+	}
+	files[name] += 1
+	if Debug {
+		fmt.Println("loaded ", name, files)
+	}
+	return g, nil
 }
 
 func (p *parser) posInfo() string {
@@ -531,7 +560,7 @@ func (p *parser) rule(c rune) (*Rule, error) {
 	return &Rule{name, body}, nil
 }
 
-func (p *parser) grammar() (*Grammar, error) {
+func (p *parser) grammar(files map[string]int) (*Grammar, error) {
 	g := &Grammar{
 		Name:   p.fname,
 		Rules:  make(map[string]*Rule),
@@ -556,9 +585,13 @@ func (p *parser) grammar() (*Grammar, error) {
 		if err != nil {
 			return nil, err
 		}
-		ig, err := GrammarFromFile(ifile)
+		files[ifile] += 1
+		ig, err := grammarFromFile(ifile, files)
 		if err != nil {
 			return nil, err
+		}
+		if ig == nil {
+			continue
 		}
 		g.includes = append(g.includes, ig)
 		g.includes = append(g.includes, ig.includes...)
