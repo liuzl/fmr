@@ -95,6 +95,9 @@ func (g *Grammar) earleyParse(maxFlag bool, text string,
 	}
 
 	parse := &Parse{grammars: []*Grammar{g}, text: text, starts: starts}
+	if len(g.includes) > 0 {
+		parse.grammars = append(parse.grammars, g.includes...)
+	}
 	if l != nil {
 		parse.grammars = append(parse.grammars, l)
 	}
