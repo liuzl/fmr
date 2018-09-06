@@ -1,6 +1,7 @@
 package fmr
 
 import (
+	"fmt"
 	"reflect"
 )
 
@@ -115,7 +116,11 @@ func (p *Parse) parse(maxFlag bool) []*TableState {
 	for i, col := range p.columns {
 		for j := 0; j < len(col.states); j++ {
 			st := col.states[j]
+			if Debug {
+				fmt.Println("i:", i, "j:", j, st, "len(col.states):", len(col.states), "\n", col)
+			}
 			if st.isAny {
+				fmt.Println("Any")
 				if st.metaEmpty() {
 					if st.dot > 0 {
 						p.complete(col, st)
@@ -179,10 +184,16 @@ func (p *Parse) parse(maxFlag bool) []*TableState {
 }
 
 func (*Parse) scan(col *TableColumn, st *TableState, term *Term) {
+	if Debug {
+		fmt.Println("scan")
+	}
 	if term.Type == Any {
 		col.insert(&TableState{Name: "any", Rb: st.Rb,
 			dot: st.dot + 1, Start: st.Start, isAny: st.isAny, meta: term.Meta})
 		return
+	}
+	if Debug {
+		fmt.Println("scan", term.Value, col.token)
 	}
 	if term.Value == col.token {
 		col.insert(&TableState{Name: st.Name, Rb: st.Rb,
@@ -205,11 +216,14 @@ func predict(g *Grammar, col *TableColumn, term *Term) bool {
 }
 
 func (p *Parse) predict(col *TableColumn, term *Term) bool {
+	if Debug {
+		fmt.Println("predict", term.Value)
+	}
 	switch term.Type {
 	case Nonterminal:
 		changed := false
 		for _, g := range p.grammars {
-			changed = changed || predict(g, col, term)
+			changed = predict(g, col, term) || changed
 		}
 		return changed
 	case Any:
@@ -223,6 +237,9 @@ func (p *Parse) predict(col *TableColumn, term *Term) bool {
 
 // Earley complete. returns true if the table has been changed, false otherwise
 func (p *Parse) complete(col *TableColumn, state *TableState) bool {
+	if Debug {
+		fmt.Println("complete")
+	}
 	changed := false
 	for _, st := range p.columns[state.Start].states {
 		term := st.getNextTerm()
