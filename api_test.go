@@ -36,7 +36,7 @@ func TestGParse(t *testing.T) {
 		`柏乡位于河北省`,
 	}
 	grammar := `<loc> = <loc_province> {nf.loc($1)}| <loc_county> {nf.loc($1)};`
-	g, err := CFGrammar(grammar)
+	g, err := GrammarFromString(grammar, "loc")
 	if err != nil {
 		t.Error(err)
 	}
