@@ -21,12 +21,8 @@ var (
 
 func main() {
 	flag.Parse()
-	b, err := ioutil.ReadFile(*grammar)
-	if err != nil {
-		glog.Fatal(err)
-	}
 	//bnf.Debug = true
-	g, err := fmr.CFGrammar(string(b))
+	g, err := fmr.GrammarFromFile(*grammar)
 	if err != nil {
 		glog.Fatal(err)
 	}

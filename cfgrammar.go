@@ -52,11 +52,6 @@ func grammarFromFile(file string, files map[string]int) (*Grammar, error) {
 	}
 }
 
-// CFGrammar constructs the Contex-Free Grammar from string d
-func CFGrammar(d string) (*Grammar, error) {
-	return GrammarFromString(d, "")
-}
-
 // GrammarFromString constructs the Contex-Free Grammar from string d with name
 func GrammarFromString(d, name string) (*Grammar, error) {
 	return grammarFromString(d, name, make(map[string]int))
