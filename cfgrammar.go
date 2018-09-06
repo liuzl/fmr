@@ -533,9 +533,35 @@ func (p *parser) rule(c rune) (*Rule, error) {
 
 func (p *parser) grammar() (*Grammar, error) {
 	g := &Grammar{
-		Name:   "grammar",
+		Name:   p.fname,
 		Rules:  make(map[string]*Rule),
 		Frames: make(map[string]*Rule),
+	}
+	for {
+		p.ws()
+		if p.peek() != '#' {
+			break
+		}
+		p.eat('#')
+		name, err := p.text()
+		if err != nil {
+			return nil, err
+		}
+		if name != "include" {
+			return nil, fmt.Errorf(
+				"%s: directive:(%s) not suppported", p.posInfo(), name)
+		}
+		p.ws()
+		ifile, err := p.terminal()
+		if err != nil {
+			return nil, err
+		}
+		ig, err := GrammarFromFile(ifile)
+		if err != nil {
+			return nil, err
+		}
+		g.includes = append(g.includes, ig)
+		g.includes = append(g.includes, ig.includes...)
 	}
 	for {
 		p.ws()

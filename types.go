@@ -22,6 +22,8 @@ type Grammar struct {
 	trie      *dict.Cedar
 	index     map[string]*Index
 	ruleIndex map[string]*Index
+
+	includes []*Grammar
 }
 
 type Index struct {
