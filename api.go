@@ -111,6 +111,9 @@ func (g *Grammar) earleyParse(maxFlag bool, text string,
 			})
 	}
 	parse.parse(maxFlag)
+	if Debug {
+		fmt.Println(parse)
+	}
 	return parse, nil
 }
 
