@@ -477,12 +477,23 @@ func (p *parser) ruleBody() (*RuleBody, error) {
 		return nil, err
 	}
 	terms := []*Term{t}
-	p.ws()
-	for p.ws(); strings.ContainsRune(`<"(`, p.peek()); p.ws() {
+	if err = p.comments(); err != nil {
+		return nil, err
+	}
+	for {
+		if err = p.comments(); err != nil {
+			return nil, err
+		}
+		if !strings.ContainsRune(`<"(`, p.peek()) {
+			break
+		}
 		if t, err = p.term(); err != nil {
 			return nil, err
 		}
 		terms = append(terms, t)
+		if err = p.comments(); err != nil {
+			return nil, err
+		}
 	}
 	var f *FMR
 	if p.peek() == '{' {
@@ -493,7 +504,9 @@ func (p *parser) ruleBody() (*RuleBody, error) {
 		if err = p.eat('}'); err != nil {
 			return nil, err
 		}
-		p.ws()
+		if err = p.comments(); err != nil {
+			return nil, err
+		}
 	}
 	return &RuleBody{terms, f}, nil
 }
@@ -513,7 +526,9 @@ func (p *parser) ruleBodies() (map[uint64]*RuleBody, error) {
 			break
 		}
 		p.eat('|')
-		p.ws()
+		if err = p.comments(); err != nil {
+			return nil, err
+		}
 		if r, err = p.ruleBody(); err != nil {
 			return nil, err
 		}
@@ -540,11 +555,15 @@ func (p *parser) rule(c rune) (*Rule, error) {
 	default:
 		return nil, fmt.Errorf("%s : unexpected char", p.posInfo())
 	}
-	p.ws()
+	if err = p.comments(); err != nil {
+		return nil, err
+	}
 	if err = p.eat('='); err != nil {
 		return nil, err
 	}
-	p.ws()
+	if err = p.comments(); err != nil {
+		return nil, err
+	}
 	body, err := p.ruleBodies()
 	if err != nil {
 		return nil, err
@@ -562,11 +581,14 @@ func (p *parser) grammar(files map[string]int) (*Grammar, error) {
 		Frames: make(map[string]*Rule),
 	}
 	for {
-		p.ws()
+		if err := p.comments(); err != nil {
+			return nil, err
+		}
 		if p.peek() != '#' {
 			break
 		}
 		p.eat('#')
+		p.ws()
 		name, err := p.text()
 		if err != nil {
 			return nil, err
@@ -592,7 +614,10 @@ func (p *parser) grammar(files map[string]int) (*Grammar, error) {
 		g.includes = append(g.includes, ig.includes...)
 	}
 	for {
-		p.ws()
+		if err := p.comments(); err != nil {
+			return nil, err
+		}
+
 		c := p.peek()
 		if !strings.ContainsRune(`<[`, c) {
 			break
