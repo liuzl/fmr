@@ -120,7 +120,6 @@ func (p *Parse) parse(maxFlag bool) []*TableState {
 				fmt.Println("i:", i, "j:", j, st, "len(col.states):", len(col.states), "\n", col)
 			}
 			if st.isAny {
-				fmt.Println("Any")
 				if st.metaEmpty() {
 					if st.dot > 0 {
 						p.complete(col, st)
