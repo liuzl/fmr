@@ -1,4 +1,4 @@
-# FMR: A Formal Meaning Representation For Natural Language Semantic Parsing
+# FMR: Functional Meaning Representation & Semantic Parsing Framework
 
 ## What is semantic parsing?
 Semantic parsing is the process of mapping a natural language sentence into an intermediate logical form which is a formal representation of its meaning.
@@ -10,6 +10,11 @@ The formal representation should be a detailed representation of the complete me
 
 ## Representation languages
 Early semantic parsers used highly domain-specific meaning representation languages, with later systems using more extensible languages like Prolog, lambda calculus, lambda dependancy-based compositional semantics (λ-DCS), SQL, Python, Java, and the Alexa Meaning Representation Language. Some work has used more exotic meaning representations, like query graphs or vector representations.
+
+### FMR, a formal meaning representation language
+* FMR stands for  functional meaning representation
+* Context-Free Grammar for bridging NL and FMR
+* *[VIM Syntax highlighting for FMR grammar file](https://github.com/liuzl/vim-fmr)*
 
 ## Tasks
 * Grammar checkers
