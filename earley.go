@@ -38,8 +38,18 @@ func (t *TableState) Equal(ts *TableState) bool {
 			return true
 		}
 		if t.meta != nil && ts.meta != nil {
-			if fmt.Sprintf("%+v", t.meta) == fmt.Sprintf("%+v", ts.meta) {
-				return true
+			switch t.meta.(type) {
+			case map[string]int:
+				t1 := t.meta.(map[string]int)
+				t2, ok2 := ts.meta.(map[string]int)
+				if ok2 && len(t1) == len(t2) {
+					for k, v := range t1 {
+						if w, ok := t2[k]; !ok || v != w {
+							return false
+						}
+					}
+					return true
+				}
 			}
 		}
 	}
