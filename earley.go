@@ -154,7 +154,7 @@ func (p *Parse) parse(maxFlag bool) []*TableState {
 				}
 			}
 		}
-		p.handleEpsilons(col)
+		//p.handleEpsilons(col)
 	}
 
 	// find end state (return nil if not found)
