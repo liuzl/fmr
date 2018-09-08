@@ -2,7 +2,6 @@ package fmr
 
 import (
 	"fmt"
-	"reflect"
 )
 
 // GAMMA_RULE is the name of the special "gamma" rule added by the algorithm
@@ -23,6 +22,28 @@ type TableState struct {
 	dot   int
 	isAny bool
 	meta  interface{}
+}
+
+func (t *TableState) Equal(ts *TableState) bool {
+	if t == nil && ts == nil {
+		return true
+	}
+	if !(t != nil && ts != nil) {
+		return false
+	}
+	if t.Name == ts.Name && t.Rb == ts.Rb &&
+		t.Start == ts.Start && t.End == ts.End &&
+		t.dot == ts.dot && t.isAny == ts.isAny {
+		if t.meta == nil && ts.meta == nil {
+			return true
+		}
+		if t.meta != nil && ts.meta != nil {
+			if fmt.Sprintf("%+v", t.meta) == fmt.Sprintf("%+v", ts.meta) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (t *TableState) metaEmpty() bool {
@@ -84,11 +105,7 @@ func (s *TableState) getNextTerm() *Term {
 func (col *TableColumn) insert(state *TableState) *TableState {
 	state.End = col.index
 	for _, s := range col.states {
-		if reflect.DeepEqual(state, s) {
-			return s
-		}
-		if state.isAny && s.isAny &&
-			state.Start == s.Start && state.End == s.End {
+		if s.Equal(state) {
 			return s
 		}
 	}
