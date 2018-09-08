@@ -29,6 +29,9 @@ func (t *TableState) Equal(ts *TableState) bool {
 		return true
 	}
 	if !(t != nil && ts != nil) {
+		if Debug {
+			fmt.Println("only one is nil:", t, ts)
+		}
 		return false
 	}
 	if t.Name == ts.Name && t.Rb == ts.Rb &&
@@ -38,13 +41,22 @@ func (t *TableState) Equal(ts *TableState) bool {
 			return true
 		}
 		if t.meta != nil && ts.meta != nil {
+			if Debug {
+				fmt.Println("In Equal:", t.meta, ts.meta)
+			}
 			switch t.meta.(type) {
 			case map[string]int:
 				t1 := t.meta.(map[string]int)
 				t2, ok2 := ts.meta.(map[string]int)
 				if ok2 && len(t1) == len(t2) {
 					for k, v := range t1 {
+						if Debug {
+							fmt.Println(k, v)
+						}
 						if w, ok := t2[k]; !ok || v != w {
+							if Debug {
+								fmt.Println(v, w, ok)
+							}
 							return false
 						}
 					}
@@ -114,8 +126,12 @@ func (s *TableState) getNextTerm() *Term {
 
 func (col *TableColumn) insert(state *TableState) *TableState {
 	state.End = col.index
+	if state.isAny {
+		state.dot = state.End - state.Start
+	}
 	for _, s := range col.states {
 		if s.Equal(state) {
+			//if s.String() == state.String() {
 			return s
 		}
 	}
@@ -275,7 +291,7 @@ func (p *Parse) complete(col *TableColumn, state *TableState) bool {
 		if term.Type == Any ||
 			(term.Type == Nonterminal && term.Value == state.Name) {
 			st1 := &TableState{Name: st.Name, Rb: st.Rb,
-				dot: st.dot + 1, Start: st.Start, isAny: st.isAny}
+				dot: st.dot + 1, Start: st.Start, isAny: st.isAny, meta: term.Meta}
 			st2 := col.insert(st1)
 			changed = changed || (st1 == st2)
 		}
