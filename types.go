@@ -71,6 +71,8 @@ type RuleBody struct {
 
 type TermType byte
 
+//go:generate jsonenums -type=TermType
+
 const (
 	EOF TermType = iota
 	Nonterminal
