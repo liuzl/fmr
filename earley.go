@@ -34,36 +34,10 @@ func (t *TableState) Equal(ts *TableState) bool {
 		}
 		return false
 	}
-	if t.Name == ts.Name && t.Rb == ts.Rb &&
+	if t.Name == ts.Name && t.Rb.Equal(ts.Rb) &&
 		t.Start == ts.Start && t.End == ts.End &&
 		t.dot == ts.dot && t.isAny == ts.isAny {
-		if t.meta == nil && ts.meta == nil {
-			return true
-		}
-		if t.meta != nil && ts.meta != nil {
-			if Debug {
-				fmt.Println("In Equal:", t.meta, ts.meta)
-			}
-			switch t.meta.(type) {
-			case map[string]int:
-				t1 := t.meta.(map[string]int)
-				t2, ok2 := ts.meta.(map[string]int)
-				if ok2 && len(t1) == len(t2) {
-					for k, v := range t1 {
-						if Debug {
-							fmt.Println(k, v)
-						}
-						if w, ok := t2[k]; !ok || v != w {
-							if Debug {
-								fmt.Println(v, w, ok)
-							}
-							return false
-						}
-					}
-					return true
-				}
-			}
-		}
+		return metaEqual(t.meta, ts.meta)
 	}
 	return false
 }
