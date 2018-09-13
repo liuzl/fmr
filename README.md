@@ -1,5 +1,11 @@
 # FMR: Functional Meaning Representation & Semantic Parsing Framework
 
+## Projects that using FMR
+
+### mathsolver
+* codes: https://github.com/liuzl/mathsolver
+* demo: https://mathsolver.zliu.org/
+
 ## What is semantic parsing?
 Semantic parsing is the process of mapping a natural language sentence into an intermediate logical form which is a formal representation of its meaning.
 
