@@ -28,13 +28,31 @@ func NLP() *ling.Pipeline {
 	return nlp
 }
 
-// EarleyParse parses text for rule <start>
+// EarleyParse parses text for rule <start> at beginning
 func (g *Grammar) EarleyParse(text string, starts ...string) (*Parse, error) {
 	tokens, l, err := extract(text)
 	if err != nil {
 		return nil, err
 	}
 	return g.earleyParse(true, text, tokens, l, starts...)
+}
+
+// EarleyParseAny parses text for rule <start> at any position
+func (g *Grammar) EarleyParseAny(text string, starts ...string) (*Parse, error) {
+	tokens, l, err := extract(text)
+	if err != nil {
+		return nil, err
+	}
+	var p *Parse
+	for i := 0; i < len(tokens); i++ {
+		if p, err = g.earleyParse(true, text, tokens[i:], l, starts...); err != nil {
+			return nil, err
+		}
+		if p.finalStates != nil {
+			return p, nil
+		}
+	}
+	return p, nil
 }
 
 // EarleyParseMaxAll extracts all submatches in text for rule <start>
