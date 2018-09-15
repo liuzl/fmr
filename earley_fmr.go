@@ -9,9 +9,14 @@ import (
 	"github.com/liuzl/goutil"
 )
 
+// Pos returns the corresponding pos of Node n in original text
+func (n *Node) Pos() *Pos {
+	return n.p.Boundary(n.Value)
+}
+
 // OriginalText returns the original text of Node n
 func (n *Node) OriginalText() string {
-	pos := n.p.Boundary(n.Value)
+	pos := n.Pos()
 	return n.p.text[pos.StartByte:pos.EndByte]
 }
 
@@ -21,14 +26,12 @@ func (n *Node) NL() string {
 	for i := n.Value.Start + 1; i <= n.Value.End; i++ {
 		s = append(s, n.p.columns[i].token)
 	}
-	nl := strconv.Quote(goutil.Join(s))
-	return nl
+	return goutil.Join(s)
 }
 
 // Semantic returns the stringified FMR of Node n
 func (n *Node) Semantic() (string, error) {
-	nl := n.NL()
-
+	nl := strconv.Quote(n.NL())
 	if n.Value.Rb == nil || n.Value.Rb.F == nil {
 		if n.p == nil {
 			return "", nil
