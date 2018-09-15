@@ -48,7 +48,6 @@ type Slot struct {
 }
 
 type SlotFilling struct {
-	//Fillings map[Term][]*Slot
 	Fillings map[uint64][]*Slot
 	Complete bool
 }
@@ -70,6 +69,8 @@ type RuleBody struct {
 }
 
 type TermType byte
+
+//go:generate jsonenums -type=TermType
 
 const (
 	EOF TermType = iota
