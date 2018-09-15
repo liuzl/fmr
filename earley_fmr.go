@@ -9,13 +9,19 @@ import (
 	"github.com/liuzl/goutil"
 )
 
-// Semantic returns the stringified FMR of Node n
-func (n *Node) Semantic() (string, error) {
+// NL returns the natural language text of Node n
+func (n *Node) NL() string {
 	var s []string
 	for i := n.Value.Start + 1; i <= n.Value.End; i++ {
 		s = append(s, n.p.columns[i].token)
 	}
-	raw := strconv.Quote(goutil.Join(s))
+	nl := strconv.Quote(goutil.Join(s))
+	return nl
+}
+
+// Semantic returns the stringified FMR of Node n
+func (n *Node) Semantic() (string, error) {
+	raw := n.NL()
 
 	if n.Value.Rb == nil || n.Value.Rb.F == nil {
 		if n.p == nil {
