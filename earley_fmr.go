@@ -9,7 +9,13 @@ import (
 	"github.com/liuzl/goutil"
 )
 
-// NL returns the natural language text of Node n
+// OriginalText returns the original text of Node n
+func (n *Node) OriginalText() string {
+	pos := n.p.Boundary(n.Value)
+	return n.p.text[pos.StartByte:pos.EndByte]
+}
+
+// NL returns the normalized text of Node n
 func (n *Node) NL() string {
 	var s []string
 	for i := n.Value.Start + 1; i <= n.Value.End; i++ {
@@ -21,19 +27,19 @@ func (n *Node) NL() string {
 
 // Semantic returns the stringified FMR of Node n
 func (n *Node) Semantic() (string, error) {
-	raw := n.NL()
+	nl := n.NL()
 
 	if n.Value.Rb == nil || n.Value.Rb.F == nil {
 		if n.p == nil {
 			return "", nil
 		}
 		// by default, returns nf.I($0)
-		return raw, nil
+		return nl, nil
 	}
-	return fmrStr(n.Value.Rb.F, n.Children, raw)
+	return fmrStr(n.Value.Rb.F, n.Children, nl)
 }
 
-func fmrStr(f *FMR, children []*Node, raw string) (string, error) {
+func fmrStr(f *FMR, children []*Node, nl string) (string, error) {
 	if f == nil {
 		return "", nil
 	}
@@ -41,7 +47,7 @@ func fmrStr(f *FMR, children []*Node, raw string) (string, error) {
 		if len(f.Args) != 1 {
 			return "", fmt.Errorf("the length of Args of nf.I should be one")
 		}
-		s, err := semStr(f.Args[0], children, raw)
+		s, err := semStr(f.Args[0], children, nl)
 		if err != nil {
 			return "", err
 		}
@@ -50,7 +56,7 @@ func fmrStr(f *FMR, children []*Node, raw string) (string, error) {
 
 	var args []string
 	for _, arg := range f.Args {
-		s, err := semStr(arg, children, raw)
+		s, err := semStr(arg, children, nl)
 		if err != nil {
 			return "", err
 		}
@@ -59,7 +65,7 @@ func fmrStr(f *FMR, children []*Node, raw string) (string, error) {
 	return fmt.Sprintf("%s(%s)", f.Fn, strings.Join(args, ", ")), nil
 }
 
-func semStr(arg *Arg, nodes []*Node, raw string) (string, error) {
+func semStr(arg *Arg, nodes []*Node, nl string) (string, error) {
 	if arg == nil {
 		return "", fmt.Errorf("arg is nil")
 	}
@@ -81,7 +87,7 @@ func semStr(arg *Arg, nodes []*Node, raw string) (string, error) {
 		return "", fmt.Errorf("arg.Value: %+v is not float", arg.Value)
 	case "func":
 		if fmr, ok := arg.Value.(*FMR); ok {
-			return fmrStr(fmr, nodes, raw)
+			return fmrStr(fmr, nodes, nl)
 		}
 		return "", fmt.Errorf("arg.Value: %+v is not func", arg.Value)
 	case "index":
@@ -93,7 +99,7 @@ func semStr(arg *Arg, nodes []*Node, raw string) (string, error) {
 			return "", fmt.Errorf("i=%d not in range [0, %d]", i, len(nodes))
 		}
 		if i == 0 {
-			return raw, nil
+			return nl, nil
 		}
 		if nodes[i-1] == nil {
 			return "null", nil
