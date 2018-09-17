@@ -46,7 +46,8 @@ func (p *Parse) GetTrees(finalState *TableState) []*Node {
 
 func (p *Parse) buildTrees(state *TableState) []*Node {
 	if state.isAny {
-		n := &TableState{"any", nil, state.Start, state.End, state.End, true, state.meta}
+		n := &TableState{"any", nil, state.Start, state.End,
+			state.End, true, state.meta}
 		cld := []*Node{&Node{n, nil, p}}
 		return cld
 	}
@@ -139,7 +140,8 @@ func (p *Parse) buildTreesHelper(children *[]*Node, state *TableState,
 			cld := []*Node{subTree}
 			cld = append(cld, *children...)
 			// now try all options
-			for _, node := range p.buildTreesHelper(&cld, state, termIndex-1, st.Start) {
+			for _, node := range p.buildTreesHelper(&cld, state,
+				termIndex-1, st.Start) {
 				outputs = append(outputs, node)
 			}
 		}
