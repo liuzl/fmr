@@ -11,10 +11,34 @@ func localGrammar(d *ling.Document) (*Grammar, error) {
 	if d == nil {
 		return nil, fmt.Errorf("document is empty")
 	}
-	if len(d.Spans) == 0 {
+	if len(d.Spans) == 0 && len(d.Tokens) == 0 {
 		return nil, nil
 	}
 	g := &Grammar{Name: "local", Rules: make(map[string]*Rule)}
+	for _, token := range d.Tokens {
+		k := ""
+		switch token.Type {
+		case ling.Word:
+			k = "word"
+		case ling.Punct:
+			k = "punct"
+		case ling.Symbol:
+			k = "symbol"
+		}
+		if k != "" {
+			rb := &RuleBody{
+				[]*Term{&Term{Value: token.String(), Type: Terminal}}, nil}
+			hash, err := hashstructure.Hash(rb, nil)
+			if err != nil {
+				return nil, err
+			}
+			if _, has := g.Rules[k]; has {
+				g.Rules[k].Body[hash] = rb
+			} else {
+				g.Rules[k] = &Rule{k, map[uint64]*RuleBody{hash: rb}}
+			}
+		}
+	}
 	for _, span := range d.Spans {
 		if span.Annotations["value"] == nil {
 			continue
