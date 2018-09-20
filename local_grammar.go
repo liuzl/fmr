@@ -24,6 +24,8 @@ func localGrammar(d *ling.Document) (*Grammar, error) {
 			k = "punct"
 		case ling.Symbol:
 			k = "symbol"
+		case ling.Letters:
+			k = "letters"
 		}
 		if k != "" {
 			rb := &RuleBody{
