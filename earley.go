@@ -131,8 +131,8 @@ func (p *Parse) parse(maxFlag bool) []*TableState {
 	}
 	for _, start := range p.starts {
 		rb := &RuleBody{
-			[]*Term{&Term{Value: start, Type: Nonterminal}},
-			&FMR{"nf.I", []*Arg{&Arg{"index", 1}}},
+			[]*Term{{Value: start, Type: Nonterminal}},
+			&FMR{"nf.I", []*Arg{{"index", 1}}},
 		}
 		begin := &TableState{GAMMA_RULE, rb, 0, 0, 0, false, nil}
 		p.columns[0].states = append(p.columns[0].states, begin)
