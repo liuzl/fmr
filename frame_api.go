@@ -4,6 +4,7 @@ import (
 	"fmt"
 )
 
+// FrameFMR parses text to FMR
 func (g *Grammar) FrameFMR(text string) ([]string, error) {
 	frames, err := g.MatchFrames(text)
 	if err != nil {

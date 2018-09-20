@@ -24,6 +24,7 @@ type TableState struct {
 	meta  interface{}
 }
 
+// Equal func for TableState
 func (s *TableState) Equal(ts *TableState) bool {
 	if s == nil && ts == nil {
 		return true

@@ -13,10 +13,12 @@ type Node struct {
 	p *Parse
 }
 
+// GetFinalStates returns the final states of p
 func (p *Parse) GetFinalStates() []*TableState {
 	return p.finalStates
 }
 
+// Boundary returns the start, end position in NL for finalState
 func (p *Parse) Boundary(finalState *TableState) *Pos {
 	if finalState == nil {
 		return nil
@@ -26,6 +28,7 @@ func (p *Parse) Boundary(finalState *TableState) *Pos {
 	return &Pos{start, end}
 }
 
+// Tag returns the Nonterminal name of finalState
 func (p *Parse) Tag(finalState *TableState) string {
 	if finalState == nil {
 		return ""
