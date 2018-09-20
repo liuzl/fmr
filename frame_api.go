@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-// FrameFMR parses text to FMR
+// FrameFMR parses NL text to FMR
 func (g *Grammar) FrameFMR(text string) ([]string, error) {
 	frames, err := g.MatchFrames(text)
 	if err != nil {
@@ -32,6 +32,7 @@ func (g *Grammar) FrameFMR(text string) ([]string, error) {
 	return ret, nil
 }
 
+// MatchFrames returns the matched frames for NL text
 func (g *Grammar) MatchFrames(text string) (map[RbKey]*SlotFilling, error) {
 	frames, starts, err := g.getCandidates(text)
 	if err != nil {

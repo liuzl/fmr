@@ -26,6 +26,7 @@ type Grammar struct {
 	includes []*Grammar
 }
 
+// Index
 type Index struct {
 	Frames map[RbKey]struct{}
 	Rules  map[RbKey]struct{}
@@ -37,16 +38,19 @@ type RbKey struct {
 	BodyId   uint64 `json:"body_id"`
 }
 
+// Pos
 type Pos struct {
 	StartByte int `json:"start_byte"`
 	EndByte   int `json:"end_byte"`
 }
 
+// Slot
 type Slot struct {
 	Pos
 	Trees []*Node
 }
 
+// SlotFilling
 type SlotFilling struct {
 	Fillings map[uint64][]*Slot
 	Complete bool
@@ -68,6 +72,7 @@ type RuleBody struct {
 	F     *FMR    `json:"f,omitempty"`
 }
 
+// TermType of grammar terms
 type TermType byte
 
 //go:generate jsonenums -type=TermType
@@ -86,6 +91,7 @@ type Term struct {
 	Meta  interface{} `json:"meta"`
 }
 
+// Key returns a unique key for Term t
 func (t *Term) Key() uint64 {
 	hash, err := hashstructure.Hash(t, nil)
 	if err != nil {
