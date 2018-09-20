@@ -24,29 +24,29 @@ type TableState struct {
 	meta  interface{}
 }
 
-func (t *TableState) Equal(ts *TableState) bool {
-	if t == nil && ts == nil {
+func (s *TableState) Equal(ts *TableState) bool {
+	if s == nil && ts == nil {
 		return true
 	}
-	if !(t != nil && ts != nil) {
+	if !(s != nil && ts != nil) {
 		if Debug {
-			fmt.Println("only one is nil:", t, ts)
+			fmt.Println("only one is nil:", s, ts)
 		}
 		return false
 	}
-	if t.Name == ts.Name && t.Rb.Equal(ts.Rb) &&
-		t.Start == ts.Start && t.End == ts.End &&
-		t.dot == ts.dot && t.isAny == ts.isAny {
-		return metaEqual(t.meta, ts.meta)
+	if s.Name == ts.Name && s.Rb.Equal(ts.Rb) &&
+		s.Start == ts.Start && s.End == ts.End &&
+		s.dot == ts.dot && s.isAny == ts.isAny {
+		return metaEqual(s.meta, ts.meta)
 	}
 	return false
 }
 
-func (t *TableState) metaEmpty() bool {
-	if t.meta == nil {
+func (s *TableState) metaEmpty() bool {
+	if s.meta == nil {
 		return true
 	}
-	if m, ok := t.meta.(map[string]int); ok && len(m) == 0 {
+	if m, ok := s.meta.(map[string]int); ok && len(m) == 0 {
 		return true
 	}
 	return false
