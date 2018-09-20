@@ -99,13 +99,20 @@ func (s *TableState) getNextTerm() *Term {
 }
 
 func (col *TableColumn) insert(state *TableState) *TableState {
+	return col.insertToEnd(state, false)
+}
+
+func (col *TableColumn) insertToEnd(state *TableState, end bool) *TableState {
 	state.End = col.index
 	if state.isAny {
 		state.dot = state.End - state.Start
 	}
-	for _, s := range col.states {
+	for i, s := range col.states {
 		if s.Equal(state) {
-			//if s.String() == state.String() {
+			if end {
+				col.states = append(col.states[:i], col.states[i+1:]...)
+				col.states = append(col.states, s)
+			}
 			return s
 		}
 	}
@@ -134,7 +141,8 @@ func (p *Parse) parse(maxFlag bool) []*TableState {
 		for j := 0; j < len(col.states); j++ {
 			st := col.states[j]
 			if Debug {
-				fmt.Println("i:", i, "j:", j, st, "len(col.states):", len(col.states), "\n", col)
+				fmt.Println("i:", i, "j:", j, st,
+					"len(col.states):", len(col.states), "\n", col)
 			}
 			if st.isAny {
 				if st.metaEmpty() {
@@ -266,7 +274,7 @@ func (p *Parse) complete(col *TableColumn, state *TableState) bool {
 			(term.Type == Nonterminal && term.Value == state.Name) {
 			st1 := &TableState{Name: st.Name, Rb: st.Rb,
 				dot: st.dot + 1, Start: st.Start, isAny: st.isAny, meta: term.Meta}
-			st2 := col.insert(st1)
+			st2 := col.insertToEnd(st1, true)
 			changed = changed || (st1 == st2)
 		}
 	}
@@ -279,11 +287,11 @@ func (p *Parse) handleEpsilons(col *TableColumn) {
 		changed = false
 		for _, state := range col.states {
 			if state.isCompleted() {
-				changed = changed || p.complete(col, state)
+				changed = p.complete(col, state) || changed
 			}
 			term := state.getNextTerm()
 			if term != nil && term.Type == Nonterminal {
-				changed = changed || p.predict(col, term)
+				changed = p.predict(col, term) || changed
 			}
 		}
 	}

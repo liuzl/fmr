@@ -87,7 +87,6 @@ func (p *Parse) buildTreesHelper(children *[]*Node, state *TableState,
 	}
 	term := state.Rb.Terms[termIndex]
 
-	//if !term.IsRule {
 	if term.Type == Terminal {
 		n := &TableState{term.Value, nil,
 			state.Start + termIndex, state.Start + termIndex + 1, 0, false, nil}
@@ -112,22 +111,19 @@ func (p *Parse) buildTreesHelper(children *[]*Node, state *TableState,
 			// this prevents an endless recursion: since the states are filled in
 			// order of completion, we know that X cannot depend on state Y that
 			// comes after it X in chronological order
+			if Debug {
+				fmt.Println("st==state", st, state)
+				fmt.Println(p.columns[end])
+			}
 			break
 		}
-
 		if !st.isCompleted() || st.Name != value {
 			// this state is out of the question -- either not completed or does not
 			// match the name
-			if Debug {
-				//fmt.Printf("\tN st:%+v, term:%+v\n", st, term)
-			}
 			continue
 		}
 		if start != -1 && st.Start != start {
 			// if start isn't nil, this state must span from start to end
-			if Debug {
-				//fmt.Printf("\tN st:%+v, term:%+v\n", st, term)
-			}
 			continue
 		}
 		if Debug {
