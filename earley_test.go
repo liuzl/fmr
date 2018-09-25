@@ -8,10 +8,7 @@ import (
 )
 
 func TestEarleyParse(t *testing.T) {
-	grammar := `<sym> = "a";
-	<op> = "+";
-	<expr> = <sym> | <expr> <op> <expr>;`
-	grammar = `<expr> = "a" | "a" "+" <expr> {nf.math.sum($1, $3)};`
+	var grammar = `<expr> = "a" | "a" "+" <expr> {nf.math.sum($1, $3)};`
 	//grammar = `<expr> = "a";`
 	strs := []string{
 		"a",

@@ -305,8 +305,9 @@ func (p *parser) semanticFn() (f *FMR, err error) {
 
 func (p *parser) funcName() (string, error) {
 	var ret []rune
+	var prev rune = eof
+	var r rune
 	first := true
-	var prev, r rune = eof, eof
 Loop:
 	for {
 		switch r = p.next(); {
