@@ -24,10 +24,12 @@ func localGrammar(d *ling.Document) (*Grammar, error) {
 			k = "punct"
 		case ling.Symbol:
 			k = "symbol"
+		case ling.Letters:
+			k = "letters"
 		}
 		if k != "" {
 			rb := &RuleBody{
-				[]*Term{&Term{Value: token.String(), Type: Terminal}}, nil}
+				[]*Term{{Value: token.String(), Type: Terminal}}, nil}
 			hash, err := hashstructure.Hash(rb, nil)
 			if err != nil {
 				return nil, err
@@ -47,7 +49,7 @@ func localGrammar(d *ling.Document) (*Grammar, error) {
 		if !ok {
 			continue
 		}
-		terms := []*Term{&Term{Value: span.String(), Type: Terminal}}
+		terms := []*Term{{Value: span.String(), Type: Terminal}}
 		for k, values := range m {
 			rb := &RuleBody{terms, nil}
 			switch values.(type) {
@@ -59,7 +61,7 @@ func localGrammar(d *ling.Document) (*Grammar, error) {
 				list := &FMR{"nf.list", args}
 				rb.F = &FMR{
 					"nf.entity",
-					[]*Arg{&Arg{"string", k}, &Arg{"func", list}},
+					[]*Arg{{"string", k}, {"func", list}},
 				}
 			}
 			hash, err := hashstructure.Hash(rb, nil)

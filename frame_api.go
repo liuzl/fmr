@@ -4,6 +4,7 @@ import (
 	"fmt"
 )
 
+// FrameFMR parses NL text to FMR
 func (g *Grammar) FrameFMR(text string) ([]string, error) {
 	frames, err := g.MatchFrames(text)
 	if err != nil {
@@ -31,6 +32,7 @@ func (g *Grammar) FrameFMR(text string) ([]string, error) {
 	return ret, nil
 }
 
+// MatchFrames returns the matched frames for NL text
 func (g *Grammar) MatchFrames(text string) (map[RbKey]*SlotFilling, error) {
 	frames, starts, err := g.getCandidates(text)
 	if err != nil {
@@ -56,7 +58,7 @@ func (g *Grammar) MatchFrames(text string) (map[RbKey]*SlotFilling, error) {
 			if ret == nil {
 				continue
 			}
-			for rbKey, _ := range ret.Frames {
+			for rbKey := range ret.Frames {
 				if frames[rbKey] == nil {
 					frames[rbKey] = &SlotFilling{make(map[uint64][]*Slot), false}
 				}
@@ -86,7 +88,7 @@ func (g *Grammar) getCandidates(text string) (
 		if v == nil {
 			return nil, nil, fmt.Errorf("%s in trie but not in index", word)
 		}
-		for rbKey, _ := range v.Frames {
+		for rbKey := range v.Frames {
 			if frames[rbKey] == nil {
 				frames[rbKey] = &SlotFilling{make(map[uint64][]*Slot), false}
 			}
@@ -100,12 +102,12 @@ func (g *Grammar) getCandidates(text string) (
 				frames[rbKey].Complete = true
 			}
 		}
-		for rbKey, _ := range v.Rules {
+		for rbKey := range v.Rules {
 			rules[rbKey.RuleName] = true
 		}
 	}
 	var ruleList []string
-	for k, _ := range rules {
+	for k := range rules {
 		ruleList = append(ruleList, k)
 	}
 	for {
@@ -119,7 +121,7 @@ func (g *Grammar) getCandidates(text string) (
 		if ret == nil {
 			continue
 		}
-		for rbKey, _ := range ret.Rules {
+		for rbKey := range ret.Rules {
 			if !rules[rbKey.RuleName] {
 				ruleList = append(ruleList, rbKey.RuleName)
 				rules[rbKey.RuleName] = true
@@ -127,7 +129,7 @@ func (g *Grammar) getCandidates(text string) (
 		}
 	}
 	var starts []string
-	for k, _ := range rules {
+	for k := range rules {
 		starts = append(starts, k)
 	}
 	return frames, starts, nil

@@ -2,8 +2,10 @@ package fmr
 
 import (
 	"fmt"
+	"math/big"
 	"os"
 	"strconv"
+	"strings"
 )
 
 func (ts *TableState) String() string {
@@ -25,7 +27,8 @@ func (ts *TableState) String() string {
 		if ts.dot == len(ts.Rb.Terms) {
 			s += DOT
 		}
-		return fmt.Sprintf("%s -> %s [%d-%d]", ts.Name, s, ts.Start, ts.End)
+		return fmt.Sprintf("%s -> %s [%d-%d] {%s}",
+			ts.Name, s, ts.Start, ts.End, ts.Rb.F)
 	}
 	if ts.isAny {
 		for i := ts.Start; i < ts.End; i++ {
@@ -76,4 +79,49 @@ func (n *Node) String() string {
 		return fmt.Sprintf("%+v %+v", n.Value, n.Children)
 	}
 	return fmt.Sprintf("%+v", n.Value)
+}
+
+func (f *FMR) String() string {
+	if f == nil {
+		return "nf.I($0)"
+	}
+	var args []string
+	invalid := "invalid_fmr"
+	for _, arg := range f.Args {
+		switch arg.Type {
+		case "string":
+			if s, ok := arg.Value.(string); ok {
+				args = append(args, strconv.Quote(s))
+			} else {
+				return invalid
+			}
+		case "int":
+			if i, ok := arg.Value.(*big.Int); ok {
+				args = append(args, i.String())
+			} else {
+				return invalid
+			}
+		case "float":
+			if f, ok := arg.Value.(*big.Float); ok {
+				args = append(args, f.String())
+			} else {
+				return invalid
+			}
+		case "func":
+			if fmr, ok := arg.Value.(*FMR); ok {
+				args = append(args, fmr.String())
+			} else {
+				return invalid
+			}
+		case "index":
+			if i, ok := arg.Value.(int); ok {
+				args = append(args, fmt.Sprintf("$%d", i))
+			} else {
+				return invalid
+			}
+		default:
+			return invalid
+		}
+	}
+	return fmt.Sprintf("%s(%s)", f.Fn, strings.Join(args, ","))
 }

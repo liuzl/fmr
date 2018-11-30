@@ -34,22 +34,22 @@ const eof = -1
 
 // GrammarFromFile constructs the Context-Free Grammar from file
 func GrammarFromFile(file string) (*Grammar, error) {
-	if b, err := ioutil.ReadFile(file); err != nil {
+	b, err := ioutil.ReadFile(file)
+	if err != nil {
 		return nil, err
-	} else {
-		return grammarFromString(string(b), file, map[string]int{file: 1})
 	}
+	return grammarFromString(string(b), file, map[string]int{file: 1})
 }
 
 func grammarFromFile(file string, files map[string]int) (*Grammar, error) {
 	if files[file] >= 2 {
 		return nil, nil
 	}
-	if b, err := ioutil.ReadFile(file); err != nil {
+	b, err := ioutil.ReadFile(file)
+	if err != nil {
 		return nil, err
-	} else {
-		return grammarFromString(string(b), file, files)
 	}
+	return grammarFromString(string(b), file, files)
 }
 
 // GrammarFromString constructs the Contex-Free Grammar from string d with name
@@ -305,8 +305,9 @@ func (p *parser) semanticFn() (f *FMR, err error) {
 
 func (p *parser) funcName() (string, error) {
 	var ret []rune
+	var prev rune = eof
+	var r rune
 	first := true
-	var prev, r rune = eof, eof
 Loop:
 	for {
 		switch r = p.next(); {

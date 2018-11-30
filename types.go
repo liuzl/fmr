@@ -26,6 +26,7 @@ type Grammar struct {
 	includes []*Grammar
 }
 
+// An Index contains two sets for frames' names and rules' names
 type Index struct {
 	Frames map[RbKey]struct{}
 	Rules  map[RbKey]struct{}
@@ -37,16 +38,19 @@ type RbKey struct {
 	BodyId   uint64 `json:"body_id"`
 }
 
+// A Pos specifies the start and end positions
 type Pos struct {
 	StartByte int `json:"start_byte"`
 	EndByte   int `json:"end_byte"`
 }
 
+// A Slot contains the Pos and its corresponding parse trees
 type Slot struct {
 	Pos
 	Trees []*Node
 }
 
+// A SlotFilling is a frame consists of Slots
 type SlotFilling struct {
 	Fillings map[uint64][]*Slot
 	Complete bool
@@ -68,10 +72,12 @@ type RuleBody struct {
 	F     *FMR    `json:"f,omitempty"`
 }
 
+// TermType of grammar terms
 type TermType byte
 
 //go:generate jsonenums -type=TermType
 
+// definition of TermTypes
 const (
 	EOF TermType = iota
 	Nonterminal
@@ -86,6 +92,7 @@ type Term struct {
 	Meta  interface{} `json:"meta"`
 }
 
+// Key returns a unique key for Term t
 func (t *Term) Key() uint64 {
 	hash, err := hashstructure.Hash(t, nil)
 	if err != nil {

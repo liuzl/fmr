@@ -36,6 +36,7 @@ func metaEqual(m1, m2 interface{}) bool {
 	return false
 }
 
+// Equal func for RuleBody
 func (r *RuleBody) Equal(rb *RuleBody) bool {
 	if rb == nil && r == nil {
 		return true
@@ -55,6 +56,7 @@ func (r *RuleBody) Equal(rb *RuleBody) bool {
 	return r.F.Equal(rb.F)
 }
 
+// Equal func for FMR
 func (f *FMR) Equal(fmr *FMR) bool {
 	if f == nil && fmr == nil {
 		return true

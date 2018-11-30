@@ -11,6 +11,7 @@ import (
 var nlp *ling.Pipeline
 var once sync.Once
 
+// NLP returns handler for the ling nlp toolkit
 func NLP() *ling.Pipeline {
 	once.Do(func() {
 		var err error
