@@ -2,6 +2,8 @@ package fmr
 
 import (
 	"fmt"
+
+	"github.com/liuzl/ling"
 )
 
 // GAMMA_RULE is the name of the special "gamma" rule added by the algorithm
@@ -22,6 +24,24 @@ type TableState struct {
 	dot   int
 	isAny bool
 	meta  interface{}
+}
+
+// TableColumn is the TableState set
+type TableColumn struct {
+	token     *ling.Token
+	startByte int
+	endByte   int
+	index     int
+	states    []*TableState
+}
+
+// Parse stores a parse chart by grammars
+type Parse struct {
+	grammars    []*Grammar
+	text        string
+	starts      []string
+	columns     []*TableColumn
+	finalStates []*TableState
 }
 
 // Equal func for TableState
@@ -51,24 +71,6 @@ func (s *TableState) metaEmpty() bool {
 		return true
 	}
 	return false
-}
-
-// TableColumn is the TableState set
-type TableColumn struct {
-	token     string
-	startByte int
-	endByte   int
-	index     int
-	states    []*TableState
-}
-
-// Parse stores a parse chart by grammars
-type Parse struct {
-	grammars    []*Grammar
-	text        string
-	starts      []string
-	columns     []*TableColumn
-	finalStates []*TableState
 }
 
 func (s *TableState) isCompleted() bool {
@@ -220,7 +222,7 @@ func (*Parse) scan(col *TableColumn, st *TableState, term *Term) {
 	if Debug {
 		fmt.Println("scan", term.Value, col.token)
 	}
-	if term.Value == col.token {
+	if term.Value == col.token.Text {
 		col.insert(&TableState{Name: st.Name, Rb: st.Rb,
 			dot: st.dot + 1, Start: st.Start})
 	}

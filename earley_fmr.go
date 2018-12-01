@@ -24,7 +24,7 @@ func (n *Node) OriginalText() string {
 func (n *Node) NL() string {
 	var s []string
 	for i := n.Value.Start + 1; i <= n.Value.End; i++ {
-		s = append(s, n.p.columns[i].token)
+		s = append(s, n.p.columns[i].token.Text)
 	}
 	return goutil.Join(s)
 }
