@@ -49,7 +49,7 @@ func (g *Grammar) refine(prefix string) error {
 							tname += "_" + ascii
 						}
 						rb.Terms = append(rb.Terms,
-							&Term{Value: token.Text, Type: Terminal})
+							&Term{Value: token.Text, Type: Terminal, Meta: term.Meta})
 					}
 					for name, n = tname, 0; ; name, n =
 						fmt.Sprintf("%s_%d", tname, n), n+1 {
