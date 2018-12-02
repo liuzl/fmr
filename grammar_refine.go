@@ -13,10 +13,7 @@ func (g *Grammar) refine(prefix string) error {
 	if g.Refined {
 		return nil
 	}
-	nlp, err := ling.NLP(ling.Norm)
-	if err != nil {
-		return err
-	}
+	var err error
 	var terminalRules []*Rule
 	var terminals = make(map[string]string)
 	var names = make(map[string]bool)
@@ -33,7 +30,7 @@ func (g *Grammar) refine(prefix string) error {
 					term.Value = t
 				} else {
 					d := ling.NewDocument(term.Value)
-					err = nlp.Annotate(d)
+					err = NLP().Annotate(d)
 					if err != nil {
 						return err
 					}
