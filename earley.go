@@ -247,7 +247,9 @@ func predict(g *Grammar, col *TableColumn, term *Term) bool {
 	for _, prod := range r.Body {
 		st := &TableState{Name: r.Name, Rb: prod, dot: 0, Start: col.index}
 		st2 := col.insert(st)
-		fmt.Printf("\t\tinsert: %+v\n", st)
+		if Debug {
+			fmt.Printf("\t\tinsert: %+v\n", st)
+		}
 		changed = changed || (st == st2)
 	}
 	return changed
