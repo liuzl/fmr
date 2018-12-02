@@ -28,11 +28,9 @@ type TableState struct {
 
 // TableColumn is the TableState set
 type TableColumn struct {
-	token     *ling.Token
-	startByte int
-	endByte   int
-	index     int
-	states    []*TableState
+	token  *ling.Token
+	index  int
+	states []*TableState
 }
 
 // Parse stores a parse chart by grammars
@@ -141,11 +139,13 @@ func (p *Parse) parse(maxFlag bool) []*TableState {
 		p.columns[0].states = append(p.columns[0].states, begin)
 	}
 	for i, col := range p.columns {
+		if Debug {
+			fmt.Printf("Column %d[%s]:\n", i, col.token)
+		}
 		for j := 0; j < len(col.states); j++ {
 			st := col.states[j]
 			if Debug {
-				fmt.Println("i:", i, "j:", j, st,
-					"len(col.states):", len(col.states), "\n", col)
+				fmt.Printf("\tRow %d: %+v, len:%d\n", j, st, len(col.states))
 			}
 			if st.isAny {
 				if st.metaEmpty() {
@@ -181,6 +181,12 @@ func (p *Parse) parse(maxFlag bool) []*TableState {
 					}
 				}
 			}
+			if Debug {
+				fmt.Println()
+			}
+		}
+		if Debug {
+			fmt.Println()
 		}
 		//p.handleEpsilons(col)
 	}
@@ -211,20 +217,27 @@ func (p *Parse) parse(maxFlag bool) []*TableState {
 }
 
 func (*Parse) scan(col *TableColumn, st *TableState, term *Term) {
-	if Debug {
-		fmt.Println("scan")
-	}
 	if term.Type == Any {
-		col.insert(&TableState{Name: "any", Rb: st.Rb,
-			dot: st.dot + 1, Start: st.Start, isAny: st.isAny, meta: term.Meta})
+		newSt := &TableState{Name: "any", Rb: st.Rb,
+			dot: st.dot + 1, Start: st.Start, isAny: st.isAny, meta: term.Meta}
+		col.insert(newSt)
+		if Debug {
+			fmt.Println("\tscan Any")
+			fmt.Printf("\t\tinsert to next: %+v\n", newSt)
+		}
 		return
 	}
 	if Debug {
 		fmt.Println("scan", term.Value, col.token)
 	}
 	if term.Value == col.token.Text {
-		col.insert(&TableState{Name: st.Name, Rb: st.Rb,
-			dot: st.dot + 1, Start: st.Start})
+		newSt := &TableState{Name: st.Name, Rb: st.Rb,
+			dot: st.dot + 1, Start: st.Start}
+		col.insert(newSt)
+		if Debug {
+			fmt.Println("\tscan", term.Value, col.token)
+			fmt.Printf("\t\tinsert to next: %+v\n", newSt)
+		}
 	}
 }
 
@@ -237,6 +250,9 @@ func predict(g *Grammar, col *TableColumn, term *Term) bool {
 	for _, prod := range r.Body {
 		st := &TableState{Name: r.Name, Rb: prod, dot: 0, Start: col.index}
 		st2 := col.insert(st)
+		if Debug {
+			fmt.Printf("\t\tinsert: %+v\n", st)
+		}
 		changed = changed || (st == st2)
 	}
 	return changed
@@ -244,7 +260,7 @@ func predict(g *Grammar, col *TableColumn, term *Term) bool {
 
 func (p *Parse) predict(col *TableColumn, term *Term) bool {
 	if Debug {
-		fmt.Println("predict", term.Value)
+		fmt.Println("\tpredict", term.Type, term.Value)
 	}
 	switch term.Type {
 	case Nonterminal:
@@ -257,6 +273,7 @@ func (p *Parse) predict(col *TableColumn, term *Term) bool {
 		st := &TableState{
 			Name: "any", Start: col.index, isAny: true, meta: term.Meta}
 		st2 := col.insert(st)
+		fmt.Printf("\t\tinsert: %+v\n", st)
 		return st == st2
 	}
 	return false
@@ -265,19 +282,23 @@ func (p *Parse) predict(col *TableColumn, term *Term) bool {
 // Earley complete. returns true if the table has been changed, false otherwise
 func (p *Parse) complete(col *TableColumn, state *TableState) bool {
 	if Debug {
-		fmt.Println("complete")
+		fmt.Println("\tcomplete")
 	}
 	changed := false
 	for _, st := range p.columns[state.Start].states {
-		term := st.getNextTerm()
-		if term == nil {
+		next := st.getNextTerm()
+		if next == nil {
 			continue
 		}
-		if term.Type == Any ||
-			(term.Type == Nonterminal && term.Value == state.Name) {
+		if (next.Type == Any && state.isAny) ||
+			(next.Type == Nonterminal && next.Value == state.Name) {
 			st1 := &TableState{Name: st.Name, Rb: st.Rb,
-				dot: st.dot + 1, Start: st.Start, isAny: st.isAny, meta: term.Meta}
-			st2 := col.insertToEnd(st1, true)
+				dot: st.dot + 1, Start: st.Start, isAny: st.isAny, meta: next.Meta}
+			//st2 := col.insertToEnd(st1, true)
+			st2 := col.insertToEnd(st1, false)
+			if Debug {
+				fmt.Printf("\t\tinsert: %+v\n", st1)
+			}
 			changed = changed || (st1 == st2)
 		}
 	}

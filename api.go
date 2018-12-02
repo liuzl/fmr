@@ -123,11 +123,7 @@ func (g *Grammar) earleyParse(maxFlag bool, text string,
 	parse.columns = append(parse.columns, &TableColumn{index: 0, token: nil})
 	for _, token := range tokens {
 		parse.columns = append(parse.columns,
-			&TableColumn{
-				index:     len(parse.columns),
-				token:     token,
-				startByte: token.StartByte, endByte: token.EndByte,
-			})
+			&TableColumn{index: len(parse.columns), token: token})
 	}
 	parse.parse(maxFlag)
 	if Debug {
