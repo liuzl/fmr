@@ -178,6 +178,8 @@ func (p *parser) terminalText() (string, error) {
 				ret = append(ret, '\t')
 			case '"':
 				ret = append(ret, '"')
+			case '(':
+				ret = append(ret, '(')
 			default:
 				return "", fmt.Errorf("%s : unexpected escape string", p.posInfo())
 			}
@@ -191,9 +193,24 @@ func (p *parser) terminalText() (string, error) {
 	}
 }
 
-func (p *parser) terminal() (text string, err error) {
+func (p *parser) terminal() (flags, text string, err error) {
 	if err = p.eat('"'); err != nil {
 		return
+	}
+	p.ws()
+	if p.peek() == '(' {
+		p.eat('(')
+		p.ws()
+		if err = p.eat('?'); err != nil {
+			return
+		}
+		p.ws()
+		if flags, err = p.text(); err != nil {
+			return
+		}
+		if err = p.eat(')'); err != nil {
+			return
+		}
 	}
 	if text, err = p.terminalText(); err != nil {
 		return
@@ -279,11 +296,11 @@ func (p *parser) term() (*Term, error) {
 		}
 		return &Term{Value: name, Type: Nonterminal}, nil
 	case '"':
-		text, err := p.terminal()
+		flags, text, err := p.terminal()
 		if err != nil {
 			return nil, err
 		}
-		return &Term{Value: text, Type: Terminal}, nil
+		return &Term{Value: text, Type: Terminal, Meta: flags}, nil
 	case '(':
 		return p.any()
 	}
@@ -420,7 +437,7 @@ func (p *parser) idxArg() (arg *Arg, err error) {
 func (p *parser) strArg() (*Arg, error) {
 	var text string
 	var err error
-	if text, err = p.terminal(); err != nil {
+	if _, text, err = p.terminal(); err != nil {
 		return nil, err
 	}
 	return &Arg{"string", text}, nil
@@ -599,7 +616,7 @@ func (p *parser) grammar(files map[string]int) (*Grammar, error) {
 				"%s: directive:(%s) not suppported", p.posInfo(), name)
 		}
 		p.ws()
-		ifile, err := p.terminal()
+		_, ifile, err := p.terminal()
 		if err != nil {
 			return nil, err
 		}
