@@ -273,7 +273,9 @@ func (p *Parse) predict(col *TableColumn, term *Term) bool {
 		st := &TableState{
 			Name: "any", Start: col.index, isAny: true, meta: term.Meta}
 		st2 := col.insert(st)
-		fmt.Printf("\t\tinsert: %+v\n", st)
+		if Debug {
+			fmt.Printf("\t\tinsert: %+v\n", st)
+		}
 		return st == st2
 	}
 	return false
