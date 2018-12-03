@@ -13,10 +13,6 @@ func (g *Grammar) refine(prefix string) error {
 	if g.Refined {
 		return nil
 	}
-	nlp, err := ling.NLP(ling.Norm)
-	if err != nil {
-		return err
-	}
 	var terminalRules []*Rule
 	var terminals = make(map[string]string)
 	var names = make(map[string]bool)
@@ -33,8 +29,7 @@ func (g *Grammar) refine(prefix string) error {
 					term.Value = t
 				} else {
 					d := ling.NewDocument(term.Value)
-					err = nlp.Annotate(d)
-					if err != nil {
+					if err := NLP().Annotate(d); err != nil {
 						return err
 					}
 					tname := prefix + "_t"
@@ -49,7 +44,10 @@ func (g *Grammar) refine(prefix string) error {
 							tname += "_" + ascii
 						}
 						rb.Terms = append(rb.Terms,
-							&Term{Value: token.Text, Type: Terminal})
+							&Term{Value: token.Text, Type: Terminal, Meta: term.Meta})
+						if gTokens.get(token.Text) == nil {
+							gTokens.put(token.Text, token)
+						}
 					}
 					for name, n = tname, 0; ; name, n =
 						fmt.Sprintf("%s_%d", tname, n), n+1 {

@@ -14,7 +14,7 @@ func (n *Node) Eval() (string, error) {
 		}
 		var s []string
 		for i := n.Value.Start + 1; i <= n.Value.End; i++ {
-			s = append(s, n.p.columns[i].token)
+			s = append(s, n.p.columns[i].token.Text)
 		}
 		return strings.Join(s, " "), nil
 

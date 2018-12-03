@@ -2,6 +2,8 @@ package fmr
 
 import (
 	"fmt"
+
+	"github.com/liuzl/ling"
 )
 
 // GAMMA_RULE is the name of the special "gamma" rule added by the algorithm
@@ -22,6 +24,22 @@ type TableState struct {
 	dot   int
 	isAny bool
 	meta  interface{}
+}
+
+// TableColumn is the TableState set
+type TableColumn struct {
+	token  *ling.Token
+	index  int
+	states []*TableState
+}
+
+// Parse stores a parse chart by grammars
+type Parse struct {
+	grammars    []*Grammar
+	text        string
+	starts      []string
+	columns     []*TableColumn
+	finalStates []*TableState
 }
 
 // Equal func for TableState
@@ -51,24 +69,6 @@ func (s *TableState) metaEmpty() bool {
 		return true
 	}
 	return false
-}
-
-// TableColumn is the TableState set
-type TableColumn struct {
-	token     string
-	startByte int
-	endByte   int
-	index     int
-	states    []*TableState
-}
-
-// Parse stores a parse chart by grammars
-type Parse struct {
-	grammars    []*Grammar
-	text        string
-	starts      []string
-	columns     []*TableColumn
-	finalStates []*TableState
 }
 
 func (s *TableState) isCompleted() bool {
@@ -227,7 +227,10 @@ func (*Parse) scan(col *TableColumn, st *TableState, term *Term) {
 		}
 		return
 	}
-	if term.Value == col.token {
+	if Debug {
+		fmt.Println("scan", term.Value, col.token)
+	}
+	if terminalMatch(term, col.token) {
 		newSt := &TableState{Name: st.Name, Rb: st.Rb,
 			dot: st.dot + 1, Start: st.Start}
 		col.insert(newSt)
@@ -270,7 +273,9 @@ func (p *Parse) predict(col *TableColumn, term *Term) bool {
 		st := &TableState{
 			Name: "any", Start: col.index, isAny: true, meta: term.Meta}
 		st2 := col.insert(st)
-		fmt.Printf("\t\tinsert: %+v\n", st)
+		if Debug {
+			fmt.Printf("\t\tinsert: %+v\n", st)
+		}
 		return st == st2
 	}
 	return false
