@@ -230,7 +230,7 @@ func (*Parse) scan(col *TableColumn, st *TableState, term *Term) {
 	if Debug {
 		fmt.Println("scan", term.Value, col.token)
 	}
-	if term.Value == col.token.Text {
+	if terminalMatch(term, col.token) {
 		newSt := &TableState{Name: st.Name, Rb: st.Rb,
 			dot: st.dot + 1, Start: st.Start}
 		col.insert(newSt)
