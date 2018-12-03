@@ -300,6 +300,9 @@ func (p *parser) term() (*Term, error) {
 		if err != nil {
 			return nil, err
 		}
+		if flags == "" {
+			return &Term{Value: text, Type: Terminal}, nil
+		}
 		return &Term{Value: text, Type: Terminal, Meta: flags}, nil
 	case '(':
 		return p.any()
