@@ -11,6 +11,7 @@ func (g *Grammar) localGrammar(d *ling.Document) (*Grammar, error) {
 	if d == nil {
 		return nil, fmt.Errorf("document is empty")
 	}
+	g.regexpTag(d)
 	if len(d.Spans) == 0 && len(d.Tokens) == 0 {
 		return nil, nil
 	}
