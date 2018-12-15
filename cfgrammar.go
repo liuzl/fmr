@@ -294,10 +294,11 @@ func (p *parser) regex(g *Grammar) (*Term, error) {
 	}
 	p.ws()
 	var ret []rune
+OUT:
 	for {
 		switch r := p.next(); {
 		case r == '`':
-			break
+			break OUT
 		case r == eof:
 			return nil, fmt.Errorf("%s : unterminated string", p.posInfo())
 		default:
