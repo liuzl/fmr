@@ -9,6 +9,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/liuzl/goutil"
 	"github.com/mitchellh/hashstructure"
 )
 
@@ -287,7 +288,35 @@ func (p *parser) any() (*Term, error) {
 	return &Term{Type: Any}, nil
 }
 
-func (p *parser) term() (*Term, error) {
+func (p *parser) regex(g *Grammar) (*Term, error) {
+	if err := p.eat('`'); err != nil {
+		return nil, err
+	}
+	p.ws()
+	var ret []rune
+	for {
+		switch r := p.next(); {
+		case r == '`':
+			break
+		case r == eof:
+			return nil, fmt.Errorf("%s : unterminated string", p.posInfo())
+		default:
+			ret = append(ret, r)
+		}
+	}
+	if len(ret) == 0 {
+		return nil, fmt.Errorf("%s : empty regexp string", p.posInfo())
+	}
+	s := string(ret)
+	if _, err := goutil.Regexp(s); err != nil {
+		return nil, fmt.Errorf("%s : `%s` is not a valid regexp", p.posInfo(), s)
+	}
+	md5 := goutil.MD5(s)
+	g.Regexps[md5] = s
+	return &Term{Value: md5, Type: Nonterminal}, nil
+}
+
+func (p *parser) term(g *Grammar) (*Term, error) {
 	switch p.peek() {
 	case '<':
 		name, err := p.nonterminal()
@@ -306,6 +335,8 @@ func (p *parser) term() (*Term, error) {
 		return &Term{Value: text, Type: Terminal, Meta: flags}, nil
 	case '(':
 		return p.any()
+	case '`':
+		return p.regex(g)
 	}
 	return nil, fmt.Errorf("%s :invalid term char", p.posInfo())
 }
@@ -492,8 +523,8 @@ func (p *parser) fArg() (*Arg, error) {
 	return &Arg{"func", f}, nil
 }
 
-func (p *parser) ruleBody() (*RuleBody, error) {
-	t, err := p.term()
+func (p *parser) ruleBody(g *Grammar) (*RuleBody, error) {
+	t, err := p.term(g)
 	if err != nil {
 		return nil, err
 	}
@@ -505,10 +536,10 @@ func (p *parser) ruleBody() (*RuleBody, error) {
 		if err = p.comments(); err != nil {
 			return nil, err
 		}
-		if !strings.ContainsRune(`<"(`, p.peek()) {
+		if !strings.ContainsRune("<\"(`", p.peek()) {
 			break
 		}
-		if t, err = p.term(); err != nil {
+		if t, err = p.term(g); err != nil {
 			return nil, err
 		}
 		terms = append(terms, t)
@@ -532,8 +563,8 @@ func (p *parser) ruleBody() (*RuleBody, error) {
 	return &RuleBody{terms, f}, nil
 }
 
-func (p *parser) ruleBodies() (map[uint64]*RuleBody, error) {
-	r, err := p.ruleBody()
+func (p *parser) ruleBodies(g *Grammar) (map[uint64]*RuleBody, error) {
+	r, err := p.ruleBody(g)
 	if err != nil {
 		return nil, err
 	}
@@ -550,7 +581,7 @@ func (p *parser) ruleBodies() (map[uint64]*RuleBody, error) {
 		if err = p.comments(); err != nil {
 			return nil, err
 		}
-		if r, err = p.ruleBody(); err != nil {
+		if r, err = p.ruleBody(g); err != nil {
 			return nil, err
 		}
 		if hash, err = hashstructure.Hash(r, nil); err != nil {
@@ -561,7 +592,7 @@ func (p *parser) ruleBodies() (map[uint64]*RuleBody, error) {
 	return rules, nil
 }
 
-func (p *parser) rule(c rune) (*Rule, error) {
+func (p *parser) rule(c rune, g *Grammar) (*Rule, error) {
 	var name string
 	var err error
 	switch c {
@@ -585,7 +616,7 @@ func (p *parser) rule(c rune) (*Rule, error) {
 	if err = p.comments(); err != nil {
 		return nil, err
 	}
-	body, err := p.ruleBodies()
+	body, err := p.ruleBodies(g)
 	if err != nil {
 		return nil, err
 	}
@@ -597,9 +628,10 @@ func (p *parser) rule(c rune) (*Rule, error) {
 
 func (p *parser) grammar(files map[string]int) (*Grammar, error) {
 	g := &Grammar{
-		Name:   p.fname,
-		Rules:  make(map[string]*Rule),
-		Frames: make(map[string]*Rule),
+		Name:    p.fname,
+		Rules:   make(map[string]*Rule),
+		Frames:  make(map[string]*Rule),
+		Regexps: make(map[string]string),
 	}
 	for {
 		if err := p.comments(); err != nil {
@@ -643,7 +675,7 @@ func (p *parser) grammar(files map[string]int) (*Grammar, error) {
 		if !strings.ContainsRune(`<[`, c) {
 			break
 		}
-		r, err := p.rule(c)
+		r, err := p.rule(c, g)
 		if err != nil {
 			return nil, err
 

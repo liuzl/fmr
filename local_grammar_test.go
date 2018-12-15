@@ -18,11 +18,12 @@ func TestLocalGrammar(t *testing.T) {
 		if err := NLP().Annotate(d); err != nil {
 			t.Error(err)
 		}
-		g, err := localGrammar(d)
+		g := Grammar{}
+		l, err := g.localGrammar(d)
 		if err != nil {
 			t.Error(err)
 		}
-		b, err := goutil.JsonMarshalIndent(g, "", "  ")
+		b, err := goutil.JsonMarshalIndent(l, "", "  ")
 		if err != nil {
 			t.Error(err)
 		}
