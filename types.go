@@ -14,10 +14,11 @@ func init() {
 
 // A Grammar stores a Context-Free Grammar
 type Grammar struct {
-	Name    string           `json:"name"`
-	Rules   map[string]*Rule `json:"rules"`
-	Frames  map[string]*Rule `json:"frames"`
-	Refined bool             `json:"refined"`
+	Name    string            `json:"name"`
+	Rules   map[string]*Rule  `json:"rules"`
+	Frames  map[string]*Rule  `json:"frames"`
+	Regexps map[string]string `json:"regexps"`
+	Refined bool              `json:"refined"`
 
 	trie      *dict.Cedar
 	index     map[string]*Index

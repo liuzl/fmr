@@ -7,14 +7,15 @@ import (
 	"github.com/mitchellh/hashstructure"
 )
 
-func localGrammar(d *ling.Document) (*Grammar, error) {
+func (g *Grammar) localGrammar(d *ling.Document) (*Grammar, error) {
 	if d == nil {
 		return nil, fmt.Errorf("document is empty")
 	}
+	g.regexpTag(d)
 	if len(d.Spans) == 0 && len(d.Tokens) == 0 {
 		return nil, nil
 	}
-	g := &Grammar{Name: "local", Rules: make(map[string]*Rule)}
+	l := &Grammar{Name: "local", Rules: make(map[string]*Rule)}
 	for _, token := range d.Tokens {
 		k := ""
 		switch token.Type {
@@ -34,10 +35,10 @@ func localGrammar(d *ling.Document) (*Grammar, error) {
 			if err != nil {
 				return nil, err
 			}
-			if _, has := g.Rules[k]; has {
-				g.Rules[k].Body[hash] = rb
+			if _, has := l.Rules[k]; has {
+				l.Rules[k].Body[hash] = rb
 			} else {
-				g.Rules[k] = &Rule{k, map[uint64]*RuleBody{hash: rb}}
+				l.Rules[k] = &Rule{k, map[uint64]*RuleBody{hash: rb}}
 			}
 		}
 	}
@@ -68,18 +69,18 @@ func localGrammar(d *ling.Document) (*Grammar, error) {
 			if err != nil {
 				return nil, err
 			}
-			if _, has := g.Rules[k]; has {
-				g.Rules[k].Body[hash] = rb
+			if _, has := l.Rules[k]; has {
+				l.Rules[k].Body[hash] = rb
 			} else {
-				g.Rules[k] = &Rule{k, map[uint64]*RuleBody{hash: rb}}
+				l.Rules[k] = &Rule{k, map[uint64]*RuleBody{hash: rb}}
 			}
 		}
 	}
-	if len(g.Rules) == 0 {
+	if len(l.Rules) == 0 {
 		return nil, nil
 	}
-	if err := g.refine("l"); err != nil {
+	if err := l.refine("l"); err != nil {
 		return nil, err
 	}
-	return g, nil
+	return l, nil
 }
