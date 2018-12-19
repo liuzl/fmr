@@ -239,7 +239,7 @@ func (p *parser) frame() (string, error) {
 	return p.token('[', ']')
 }
 
-func (p *parser) any() (*Term, error) {
+func (p *parser) special() (*Term, error) {
 	if err := p.eat('('); err != nil {
 		return nil, err
 	}
@@ -248,11 +248,32 @@ func (p *parser) any() (*Term, error) {
 	if err != nil {
 		return nil, err
 	}
-	if name != "any" {
+	p.ws()
+	switch name {
+	case "any":
+		return p.any()
+	case "list":
+		return p.list()
+	default:
 		return nil, fmt.Errorf(
-			"%s: any rule:(%s) not supported", p.posInfo(), name)
+			"%s: special rule:(%s) not supported", p.posInfo(), name)
+	}
+}
+
+func (p *parser) list() (*Term, error) {
+	name, err := p.nonterminal()
+	if err != nil {
+		return nil, err
 	}
 	p.ws()
+	if err = p.eat(')'); err != nil {
+		return nil, err
+	}
+	return &Term{Type: List, Value: name}, nil
+}
+
+func (p *parser) any() (*Term, error) {
+	var err error
 	var meta map[string]int
 	if p.peek() == '{' {
 		// contains range
@@ -335,7 +356,7 @@ func (p *parser) term(g *Grammar) (*Term, error) {
 		}
 		return &Term{Value: text, Type: Terminal, Meta: flags}, nil
 	case '(':
-		return p.any()
+		return p.special()
 	case '`':
 		return p.regex(g)
 	}

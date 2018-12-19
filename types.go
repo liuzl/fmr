@@ -84,6 +84,7 @@ const (
 	Nonterminal
 	Terminal
 	Any
+	List
 )
 
 // A Term is the component of RuleBody
