@@ -48,9 +48,9 @@ func (p *Parse) GetTrees(finalState *TableState) []*Node {
 }
 
 func (p *Parse) buildTrees(state *TableState) []*Node {
-	if state.isAny {
+	if state.termType == Any {
 		n := &TableState{"any", nil, state.Start, state.End,
-			state.End, true, state.meta}
+			state.End, Any, state.meta}
 		cld := []*Node{{n, nil, p}}
 		return cld
 	}
@@ -92,7 +92,7 @@ func (p *Parse) buildTreesHelper(children *[]*Node, state *TableState,
 
 	if term.Type == Terminal {
 		n := &TableState{term.Value, nil,
-			state.Start + termIndex, state.Start + termIndex + 1, 0, false, nil}
+			state.Start + termIndex, state.Start + termIndex + 1, 0, Terminal, nil}
 		cld := []*Node{{n, nil, p}}
 		cld = append(cld, *children...)
 		for _, node := range p.buildTreesHelper(&cld, state, termIndex-1, end-1) {

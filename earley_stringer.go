@@ -30,7 +30,7 @@ func (ts *TableState) String() string {
 		return fmt.Sprintf("%s -> %s [%d-%d] {%s}",
 			ts.Name, s, ts.Start, ts.End, ts.Rb.F)
 	}
-	if ts.isAny {
+	if ts.termType == Any {
 		for i := ts.Start; i < ts.End; i++ {
 			s += "# "
 		}
