@@ -15,3 +15,4 @@
        | "上海" {nf.I("ShangHai")}
        ;
 
+<cities> = (list<city>);
