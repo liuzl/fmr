@@ -47,7 +47,7 @@ func (s *TableState) Equal(ts *TableState) bool {
 	if s == nil && ts == nil {
 		return true
 	}
-	if !(s != nil && ts != nil) {
+	if s == nil || ts == nil {
 		if Debug {
 			fmt.Println("only one is nil:", s, ts)
 		}
@@ -72,31 +72,39 @@ func (s *TableState) metaEmpty() bool {
 }
 
 func (s *TableState) isCompleted() bool {
-	if s.termType == Any {
-		if s.metaEmpty() {
-			if s.dot > 0 {
-				return true
-			}
-		} else {
+	switch s.termType {
+	case Any, List:
+		if !s.metaEmpty() {
 			if meta, ok := s.meta.(map[string]int); ok {
 				if s.dot >= meta["min"] && s.dot <= meta["max"] {
 					return true
 				}
 			}
 		}
+		if s.dot > 0 {
+			return true
+		}
 		return false
+	default:
+		return s.dot >= len(s.Rb.Terms)
 	}
-	return s.dot >= len(s.Rb.Terms)
 }
 
 func (s *TableState) getNextTerm() *Term {
-	if s.isCompleted() {
-		return nil
+	switch s.termType {
+	case Any, List:
+		if !s.metaEmpty() {
+			if meta, ok := s.meta.(map[string]int); ok && s.dot >= meta["max"] {
+				return nil
+			}
+		}
+		return &Term{Value: s.Name, Type: s.termType, Meta: s.meta}
+	default:
+		if s.isCompleted() {
+			return nil
+		}
+		return s.Rb.Terms[s.dot]
 	}
-	if s.termType == Any {
-		return &Term{Type: Any, Meta: s.meta}
-	}
-	return s.Rb.Terms[s.dot]
 }
 
 func (col *TableColumn) insert(state *TableState) *TableState {
