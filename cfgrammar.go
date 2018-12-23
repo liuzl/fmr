@@ -284,6 +284,7 @@ func (p *parser) specialMeta() (map[string]int, error) {
 			return nil, fmt.Errorf("%s : max:%d less than min:%d",
 				p.posInfo(), meta["max"], meta["min"])
 		}
+		p.ws()
 		if err = p.eat('}'); err != nil {
 			return nil, err
 		}
