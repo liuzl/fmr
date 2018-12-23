@@ -266,8 +266,37 @@ func (p *parser) list() (*Term, error) {
 		return nil, err
 	}
 	p.ws()
+	var meta map[string]int
+	if p.peek() == '{' {
+		// contains range
+		meta = make(map[string]int)
+		p.eat('{')
+		p.ws()
+		if meta["min"], err = p.getInt(); err != nil {
+			return nil, err
+		}
+		p.ws()
+		if err = p.eat(','); err != nil {
+			return nil, err
+		}
+		p.ws()
+		if meta["max"], err = p.getInt(); err != nil {
+			return nil, err
+		}
+		if meta["max"] < meta["min"] {
+			return nil, fmt.Errorf("%s : max:%d less than min:%d",
+				p.posInfo(), meta["max"], meta["min"])
+		}
+		if err = p.eat('}'); err != nil {
+			return nil, err
+		}
+	}
+	p.ws()
 	if err = p.eat(')'); err != nil {
 		return nil, err
+	}
+	if len(meta) > 0 {
+		return &Term{Type: List, Value: name, Meta: meta}, nil
 	}
 	return &Term{Type: List, Value: name}, nil
 }
