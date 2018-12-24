@@ -147,12 +147,12 @@ func (p *Parse) parse(maxFlag bool) []*TableState {
 	}
 	for i, col := range p.columns {
 		if Debug {
-			fmt.Printf("Column %d[%s]:\n", i, col.token)
+			fmt.Printf("Column %d[%s]:", i, col.token)
 		}
 		for j := 0; j < len(col.states); j++ {
 			st := col.states[j]
 			if Debug {
-				fmt.Printf("\tRow %d: %+v, len:%d\n", j, st, len(col.states))
+				fmt.Printf("\n\tRow %d: %+v, len:%d\n", j, st, len(col.states))
 			}
 			if st.isCompleted() {
 				p.complete(col, st)
@@ -173,9 +173,6 @@ func (p *Parse) parse(maxFlag bool) []*TableState {
 						}
 					}
 				}
-			}
-			if Debug {
-				fmt.Println()
 			}
 		}
 		if Debug {
