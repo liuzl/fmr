@@ -154,30 +154,16 @@ func (p *Parse) parse(maxFlag bool) []*TableState {
 			if Debug {
 				fmt.Printf("\tRow %d: %+v, len:%d\n", j, st, len(col.states))
 			}
-			if st.termType == Any {
-				if st.metaEmpty() {
-					if st.dot > 0 {
-						p.complete(col, st)
-					}
+			if st.isCompleted() {
+				p.complete(col, st)
+			}
+			term := st.getNextTerm()
+			if term != nil {
+				if st.termType == Any {
 					if i+1 < len(p.columns) {
-						p.scan(p.columns[i+1], st, &Term{Type: Any})
+						p.scan(p.columns[i+1], st, term)
 					}
 				} else {
-					if meta, ok := st.meta.(map[string]int); ok {
-						if st.dot >= meta["min"] && st.dot <= meta["max"] {
-							p.complete(col, st)
-						}
-						if i+1 < len(p.columns) && st.dot+1 <= meta["max"] {
-							p.scan(p.columns[i+1], st,
-								&Term{Type: Any, Meta: st.meta})
-						}
-					}
-				}
-			} else {
-				if st.isCompleted() {
-					p.complete(col, st)
-				} else {
-					term := st.getNextTerm()
 					switch term.Type {
 					case Nonterminal, Any:
 						p.predict(col, term)
