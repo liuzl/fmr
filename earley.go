@@ -80,8 +80,7 @@ func (s *TableState) isCompleted() bool {
 					return true
 				}
 			}
-		}
-		if s.dot > 0 {
+		} else if s.dot > 0 {
 			return true
 		}
 		return false
