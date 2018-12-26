@@ -6,9 +6,9 @@ import (
 	"github.com/liuzl/ling"
 )
 
-// GAMMA_RULE is the name of the special "gamma" rule added by the algorithm
+// GammaRule is the name of the special "gamma" rule added by the algorithm
 // (this is unicode for 'LATIN SMALL LETTER GAMMA')
-const GAMMA_RULE = "\u0263" // "\u0194"
+const GammaRule = "\u0263" // "\u0194"
 
 // DOT indicates the current position inside a TableState
 const DOT = "\u2022" // "\u00B7"
@@ -149,7 +149,7 @@ func (p *Parse) parse(maxFlag bool) []*TableState {
 			[]*Term{{Value: start, Type: Nonterminal}},
 			&FMR{"nf.I", []*Arg{{"index", 1}}},
 		}
-		begin := &TableState{GAMMA_RULE, rb, 0, 0, 0, Nonterminal, nil}
+		begin := &TableState{GammaRule, rb, 0, 0, 0, Nonterminal, nil}
 		p.columns[0].states = append(p.columns[0].states, begin)
 	}
 	for i, col := range p.columns {
@@ -200,7 +200,7 @@ func (p *Parse) parse(maxFlag bool) []*TableState {
 	var ret []*TableState
 	for i := len(p.columns) - 1; i >= 0; i-- {
 		for _, state := range p.columns[i].states {
-			if state.Name == GAMMA_RULE && state.isCompleted() {
+			if state.Name == GammaRule && state.isCompleted() {
 				ret = append(ret, state)
 				if maxFlag {
 					p.finalStates = ret

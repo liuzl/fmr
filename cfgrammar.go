@@ -70,7 +70,7 @@ func grammarFromString(d, name string, files map[string]int) (*Grammar, error) {
 	if err != nil {
 		return nil, err
 	}
-	files[name] += 1
+	files[name]++
 	if Debug {
 		fmt.Println("loaded ", name, files)
 	}
@@ -693,7 +693,7 @@ func (p *parser) grammar(files map[string]int) (*Grammar, error) {
 		if err != nil {
 			return nil, err
 		}
-		files[ifile] += 1
+		files[ifile]++
 		ig, err := grammarFromFile(ifile, files)
 		if err != nil {
 			return nil, err

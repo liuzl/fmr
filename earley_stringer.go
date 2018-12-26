@@ -45,7 +45,7 @@ func (ts *TableState) String() string {
 			s += "<" + ts.Name + "> "
 		}
 		s += DOT + " * "
-		return fmt.Sprintf("(list<%s>) -> %s [%d-%d]", ts.Name, s, ts.Start, ts.End)
+		return fmt.Sprintf("(list<%s>) -> %s [%d-%d] {fmr.list(...)}", ts.Name, s, ts.Start, ts.End)
 	}
 	return fmt.Sprintf("%s [%d-%d]", strconv.Quote(ts.Name), ts.Start, ts.End)
 }
