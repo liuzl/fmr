@@ -320,9 +320,9 @@ func (p *parser) any() (*Term, error) {
 		return nil, err
 	}
 	if len(meta) > 0 {
-		return &Term{Type: Any, Meta: meta}, nil
+		return &Term{Value: "any", Type: Any, Meta: meta}, nil
 	}
-	return &Term{Type: Any}, nil
+	return &Term{Value: "any", Type: Any}, nil
 }
 
 func (p *parser) regex(g *Grammar) (*Term, error) {

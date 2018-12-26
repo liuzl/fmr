@@ -126,7 +126,7 @@ func (p *Parse) buildTreesHelper(children *[]*Node, state *TableState,
 			}
 			break
 		}
-		if !st.isCompleted() || st.Name != value {
+		if !st.isCompleted() || st.Name != value || st.termType != term.Type {
 			// this state is out of the question -- either not completed or does not
 			// match the name
 			continue

@@ -1,13 +1,14 @@
 package fmr
 
 import (
+	"os"
 	"testing"
 )
 
 func TestList(t *testing.T) {
 	//Debug = true
 	cases := []string{
-		`直辖市：北京天津`,
+		`直辖市：北京上海天津`,
 	}
 	g, err := GrammarFromFile("sf.grammar")
 	if err != nil {
@@ -25,7 +26,7 @@ func TestList(t *testing.T) {
 			for _, f := range states {
 				trees := p.GetTrees(f)
 				for _, tree := range trees {
-					t.Log(tree)
+					tree.Print(os.Stdout)
 					sem, err := tree.Semantic()
 					if err != nil {
 						t.Error(err)
