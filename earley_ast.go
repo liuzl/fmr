@@ -54,6 +54,12 @@ func (p *Parse) buildTrees(state *TableState) []*Node {
 		cld := []*Node{{n, nil, p}}
 		return cld
 	}
+	if state.termType == List {
+		state.Rb = &RuleBody{}
+		for i := 0; i < state.dot; i++ {
+			state.Rb.Terms = append(state.Rb.Terms, &Term{state.Name, Nonterminal, nil})
+		}
+	}
 	return p.buildTreesHelper(
 		&[]*Node{}, state, len(state.Rb.Terms)-1, state.End)
 }
