@@ -2,8 +2,8 @@ package fmr
 
 import (
 	"fmt"
+	"io"
 	"math/big"
-	"os"
 	"strconv"
 	"strings"
 )
@@ -73,11 +73,11 @@ func (p *Parse) String() string {
 }
 
 // Print this tree to out
-func (n *Node) Print(out *os.File) {
+func (n *Node) Print(out io.Writer) {
 	n.printLevel(out, 0)
 }
 
-func (n *Node) printLevel(out *os.File, level int) {
+func (n *Node) printLevel(out io.Writer, level int) {
 	indentation := ""
 	for i := 0; i < level; i++ {
 		indentation += "  "

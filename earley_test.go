@@ -1,7 +1,7 @@
 package fmr
 
 import (
-	"os"
+	"bytes"
 	"testing"
 
 	"github.com/liuzl/goutil"
@@ -39,7 +39,9 @@ func TestEarleyParse(t *testing.T) {
 			trees := p.GetTrees(finalState)
 			t.Log("tree number:", len(trees))
 			for _, tree := range trees {
-				tree.Print(os.Stdout)
+				var buf bytes.Buffer
+				tree.Print(&buf)
+				t.Log(buf.String())
 				b, err := goutil.JsonMarshalIndent(tree, "", " ")
 				if err != nil {
 					t.Error(err)

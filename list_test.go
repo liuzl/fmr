@@ -1,7 +1,7 @@
 package fmr
 
 import (
-	"os"
+	"bytes"
 	"testing"
 )
 
@@ -26,7 +26,9 @@ func TestList(t *testing.T) {
 			for _, f := range states {
 				trees := p.GetTrees(f)
 				for _, tree := range trees {
-					tree.Print(os.Stdout)
+					var buf bytes.Buffer
+					tree.Print(&buf)
+					t.Log(buf.String())
 					sem, err := tree.Semantic()
 					if err != nil {
 						t.Error(err)
