@@ -56,9 +56,12 @@ func (p *Parse) buildTrees(state *TableState) []*Node {
 	}
 	if state.termType == List {
 		state.Rb = &RuleBody{}
+		var args []*Arg
 		for i := 0; i < state.dot; i++ {
 			state.Rb.Terms = append(state.Rb.Terms, &Term{state.Name, Nonterminal, nil})
+			args = append(args, &Arg{"index", i + 1})
 		}
+		state.Rb.F = &FMR{"fmr.list", args}
 	}
 	return p.buildTreesHelper(
 		&[]*Node{}, state, len(state.Rb.Terms)-1, state.End)

@@ -41,11 +41,17 @@ func (ts *TableState) String() string {
 		s += DOT + " * "
 		return fmt.Sprintf("(any) -> %s [%d-%d]", s, ts.Start, ts.End)
 	case List:
+		f := "fmr.list("
 		for i := 0; i < ts.dot; i++ {
 			s += "<" + ts.Name + "> "
+			f += fmt.Sprintf("$%d", i+1)
+			if i != ts.dot-1 {
+				f += ","
+			}
 		}
+		f += ")"
 		s += DOT + " * "
-		return fmt.Sprintf("(list<%s>) -> %s [%d-%d] {fmr.list(...)}", ts.Name, s, ts.Start, ts.End)
+		return fmt.Sprintf("(list<%s>) -> %s [%d-%d] {%s}", ts.Name, s, ts.Start, ts.End, f)
 	}
 	return fmt.Sprintf("%s [%d-%d]", strconv.Quote(ts.Name), ts.Start, ts.End)
 }
