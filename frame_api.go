@@ -12,8 +12,8 @@ func (g *Grammar) FrameFMR(text string) ([]string, error) {
 	}
 	var ret []string
 	for k, v := range frames {
-		f := g.Frames[k.RuleName].Body[k.BodyId].F
-		terms := g.Frames[k.RuleName].Body[k.BodyId].Terms
+		f := g.Frames[k.RuleName].Body[k.BodyID].F
+		terms := g.Frames[k.RuleName].Body[k.BodyID].Terms
 		var children []*Node
 		for _, term := range terms {
 			slots := v.Fillings[term.Key()]
@@ -65,7 +65,7 @@ func (g *Grammar) MatchFrames(text string) (map[RbKey]*SlotFilling, error) {
 				t := Term{Value: tag, Type: Nonterminal}
 				frames[rbKey].Fillings[t.Key()] = append(frames[rbKey].Fillings[t.Key()], slot)
 				if len(frames[rbKey].Fillings) >=
-					len(g.Frames[rbKey.RuleName].Body[rbKey.BodyId].Terms) {
+					len(g.Frames[rbKey.RuleName].Body[rbKey.BodyID].Terms) {
 					frames[rbKey].Complete = true
 				}
 			}
@@ -98,7 +98,7 @@ func (g *Grammar) getCandidates(text string) (
 					&Slot{Pos{hit.StartByte, hit.EndByte}, nil})
 			}
 			if len(frames[rbKey].Fillings) >=
-				len(g.Frames[rbKey.RuleName].Body[rbKey.BodyId].Terms) {
+				len(g.Frames[rbKey.RuleName].Body[rbKey.BodyID].Terms) {
 				frames[rbKey].Complete = true
 			}
 		}

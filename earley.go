@@ -6,9 +6,9 @@ import (
 	"github.com/liuzl/ling"
 )
 
-// GAMMA_RULE is the name of the special "gamma" rule added by the algorithm
+// GammaRule is the name of the special "gamma" rule added by the algorithm
 // (this is unicode for 'LATIN SMALL LETTER GAMMA')
-const GAMMA_RULE = "\u0263" // "\u0194"
+const GammaRule = "\u0263" // "\u0194"
 
 // DOT indicates the current position inside a TableState
 const DOT = "\u2022" // "\u00B7"
@@ -17,13 +17,13 @@ const DOT = "\u2022" // "\u00B7"
 // the notation X → α • β represents a condition in which α has already
 // been parsed and β is expected.
 type TableState struct {
-	Name  string    `json:"name"`
-	Rb    *RuleBody `json:"rb,omitempty"`
-	Start int       `json:"start"`
-	End   int       `json:"end"`
-	dot   int
-	isAny bool
-	meta  interface{}
+	Name     string    `json:"name"`
+	Rb       *RuleBody `json:"rb,omitempty"`
+	Start    int       `json:"start"`
+	End      int       `json:"end"`
+	dot      int
+	termType TermType
+	meta     interface{}
 }
 
 // TableColumn is the TableState set
@@ -47,7 +47,7 @@ func (s *TableState) Equal(ts *TableState) bool {
 	if s == nil && ts == nil {
 		return true
 	}
-	if !(s != nil && ts != nil) {
+	if s == nil || ts == nil {
 		if Debug {
 			fmt.Println("only one is nil:", s, ts)
 		}
@@ -55,7 +55,7 @@ func (s *TableState) Equal(ts *TableState) bool {
 	}
 	if s.Name == ts.Name && s.Rb.Equal(ts.Rb) &&
 		s.Start == ts.Start && s.End == ts.End &&
-		s.dot == ts.dot && s.isAny == ts.isAny {
+		s.dot == ts.dot && s.termType == ts.termType {
 		return metaEqual(s.meta, ts.meta)
 	}
 	return false
@@ -72,31 +72,45 @@ func (s *TableState) metaEmpty() bool {
 }
 
 func (s *TableState) isCompleted() bool {
-	if s.isAny {
-		if s.metaEmpty() {
-			if s.dot > 0 {
-				return true
-			}
-		} else {
+	switch s.termType {
+	case Any, List:
+		if !s.metaEmpty() {
 			if meta, ok := s.meta.(map[string]int); ok {
 				if s.dot >= meta["min"] && s.dot <= meta["max"] {
 					return true
 				}
 			}
+		} else if s.dot > 0 {
+			return true
 		}
 		return false
+	default:
+		return s.dot >= len(s.Rb.Terms)
 	}
-	return s.dot >= len(s.Rb.Terms)
 }
 
 func (s *TableState) getNextTerm() *Term {
-	if s.isCompleted() {
-		return nil
+	switch s.termType {
+	case Any:
+		if !s.metaEmpty() {
+			if meta, ok := s.meta.(map[string]int); ok && s.dot >= meta["max"] {
+				return nil
+			}
+		}
+		return &Term{Value: s.Name, Type: s.termType, Meta: s.meta}
+	case List:
+		if !s.metaEmpty() {
+			if meta, ok := s.meta.(map[string]int); ok && s.dot >= meta["max"] {
+				return nil
+			}
+		}
+		return &Term{Value: s.Name, Type: Nonterminal, Meta: s.meta}
+	default:
+		if s.isCompleted() {
+			return nil
+		}
+		return s.Rb.Terms[s.dot]
 	}
-	if s.isAny {
-		return &Term{Type: Any, Meta: s.meta}
-	}
-	return s.Rb.Terms[s.dot]
 }
 
 func (col *TableColumn) insert(state *TableState) *TableState {
@@ -105,7 +119,7 @@ func (col *TableColumn) insert(state *TableState) *TableState {
 
 func (col *TableColumn) insertToEnd(state *TableState, end bool) *TableState {
 	state.End = col.index
-	if state.isAny {
+	if state.termType == Any {
 		state.dot = state.End - state.Start
 	}
 	for i, s := range col.states {
@@ -135,44 +149,30 @@ func (p *Parse) parse(maxFlag bool) []*TableState {
 			[]*Term{{Value: start, Type: Nonterminal}},
 			&FMR{"nf.I", []*Arg{{"index", 1}}},
 		}
-		begin := &TableState{GAMMA_RULE, rb, 0, 0, 0, false, nil}
+		begin := &TableState{GammaRule, rb, 0, 0, 0, Nonterminal, nil}
 		p.columns[0].states = append(p.columns[0].states, begin)
 	}
 	for i, col := range p.columns {
 		if Debug {
-			fmt.Printf("Column %d[%s]:\n", i, col.token)
+			fmt.Printf("Column %d[%s]:", i, col.token)
 		}
 		for j := 0; j < len(col.states); j++ {
 			st := col.states[j]
 			if Debug {
-				fmt.Printf("\tRow %d: %+v, len:%d\n", j, st, len(col.states))
+				fmt.Printf("\n\tRow %d: %+v, len:%d\n", j, st, len(col.states))
 			}
-			if st.isAny {
-				if st.metaEmpty() {
-					if st.dot > 0 {
-						p.complete(col, st)
-					}
+			if st.isCompleted() {
+				p.complete(col, st)
+			}
+			term := st.getNextTerm()
+			if term != nil {
+				if st.termType == Any {
 					if i+1 < len(p.columns) {
-						p.scan(p.columns[i+1], st, &Term{Type: Any})
+						p.scan(p.columns[i+1], st, term)
 					}
 				} else {
-					if meta, ok := st.meta.(map[string]int); ok {
-						if st.dot >= meta["min"] && st.dot <= meta["max"] {
-							p.complete(col, st)
-						}
-						if i+1 < len(p.columns) && st.dot+1 <= meta["max"] {
-							p.scan(p.columns[i+1], st,
-								&Term{Type: Any, Meta: st.meta})
-						}
-					}
-				}
-			} else {
-				if st.isCompleted() {
-					p.complete(col, st)
-				} else {
-					term := st.getNextTerm()
 					switch term.Type {
-					case Nonterminal, Any:
+					case Nonterminal, Any, List:
 						p.predict(col, term)
 					case Terminal:
 						if i+1 < len(p.columns) {
@@ -180,9 +180,6 @@ func (p *Parse) parse(maxFlag bool) []*TableState {
 						}
 					}
 				}
-			}
-			if Debug {
-				fmt.Println()
 			}
 		}
 		if Debug {
@@ -203,7 +200,7 @@ func (p *Parse) parse(maxFlag bool) []*TableState {
 	var ret []*TableState
 	for i := len(p.columns) - 1; i >= 0; i-- {
 		for _, state := range p.columns[i].states {
-			if state.Name == GAMMA_RULE && state.isCompleted() {
+			if state.Name == GammaRule && state.isCompleted() {
 				ret = append(ret, state)
 				if maxFlag {
 					p.finalStates = ret
@@ -219,7 +216,7 @@ func (p *Parse) parse(maxFlag bool) []*TableState {
 func (*Parse) scan(col *TableColumn, st *TableState, term *Term) {
 	if term.Type == Any {
 		newSt := &TableState{Name: "any", Rb: st.Rb,
-			dot: st.dot + 1, Start: st.Start, isAny: st.isAny, meta: term.Meta}
+			dot: st.dot + 1, Start: st.Start, termType: Any, meta: term.Meta}
 		col.insert(newSt)
 		if Debug {
 			fmt.Println("\tscan Any")
@@ -227,12 +224,9 @@ func (*Parse) scan(col *TableColumn, st *TableState, term *Term) {
 		}
 		return
 	}
-	if Debug {
-		fmt.Println("scan", term.Value, col.token)
-	}
 	if terminalMatch(term, col.token) {
 		newSt := &TableState{Name: st.Name, Rb: st.Rb,
-			dot: st.dot + 1, Start: st.Start}
+			dot: st.dot + 1, Start: st.Start, termType: st.termType}
 		col.insert(newSt)
 		if Debug {
 			fmt.Println("\tscan", term.Value, col.token)
@@ -248,10 +242,11 @@ func predict(g *Grammar, col *TableColumn, term *Term) bool {
 	}
 	changed := false
 	for _, prod := range r.Body {
-		st := &TableState{Name: r.Name, Rb: prod, dot: 0, Start: col.index}
+		//st := &TableState{Name: r.Name, Rb: prod, dot: 0, Start: col.index, termType: term.Type}
+		st := &TableState{Name: r.Name, Rb: prod, dot: 0, Start: col.index, termType: Nonterminal}
 		st2 := col.insert(st)
 		if Debug {
-			fmt.Printf("\t\tinsert: %+v\n", st)
+			fmt.Printf("\t\t%+v insert: %+v\n", term.Type, st)
 		}
 		changed = changed || (st == st2)
 	}
@@ -269,9 +264,9 @@ func (p *Parse) predict(col *TableColumn, term *Term) bool {
 			changed = predict(g, col, term) || changed
 		}
 		return changed
-	case Any:
+	case Any, List:
 		st := &TableState{
-			Name: "any", Start: col.index, isAny: true, meta: term.Meta}
+			Name: term.Value, Start: col.index, termType: term.Type, meta: term.Meta}
 		st2 := col.insert(st)
 		if Debug {
 			fmt.Printf("\t\tinsert: %+v\n", st)
@@ -284,7 +279,7 @@ func (p *Parse) predict(col *TableColumn, term *Term) bool {
 // Earley complete. returns true if the table has been changed, false otherwise
 func (p *Parse) complete(col *TableColumn, state *TableState) bool {
 	if Debug {
-		fmt.Println("\tcomplete")
+		fmt.Printf("\tcomplete: %+v\n", state)
 	}
 	changed := false
 	for _, st := range p.columns[state.Start].states {
@@ -292,10 +287,11 @@ func (p *Parse) complete(col *TableColumn, state *TableState) bool {
 		if next == nil {
 			continue
 		}
-		if (next.Type == Any && state.isAny) ||
-			(next.Type == Nonterminal && next.Value == state.Name) {
+		if (next.Type == Any && state.termType == Any) ||
+			(next.Type == Nonterminal && next.Value == state.Name) ||
+			(next.Type == List && next.Value == state.Name) {
 			st1 := &TableState{Name: st.Name, Rb: st.Rb,
-				dot: st.dot + 1, Start: st.Start, isAny: st.isAny, meta: next.Meta}
+				dot: st.dot + 1, Start: st.Start, termType: st.termType, meta: next.Meta}
 			//st2 := col.insertToEnd(st1, true)
 			st2 := col.insertToEnd(st1, false)
 			if Debug {

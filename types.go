@@ -36,7 +36,7 @@ type Index struct {
 // A RbKey identifies a specific RuleBody by name and id
 type RbKey struct {
 	RuleName string `json:"rule_name"`
-	BodyId   uint64 `json:"body_id"`
+	BodyID   uint64 `json:"body_id"`
 }
 
 // A Pos specifies the start and end positions
@@ -84,6 +84,7 @@ const (
 	Nonterminal
 	Terminal
 	Any
+	List
 )
 
 // A Term is the component of RuleBody

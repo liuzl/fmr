@@ -13,6 +13,9 @@ var tests = []string{
 	<item>  =  "(?ilfw)f    \\uoo\n" | "bar\t" | "baz"|"好吧"         ;
 	<name> = "\(" (any) ")" ;
 	`,
+	`<datetimes> = (list<datetime>);
+	<datetime>="20181219"|"20181218";
+	`,
 }
 
 func TestLex(t *testing.T) {

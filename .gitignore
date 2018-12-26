@@ -20,3 +20,5 @@ examples/arithmetic/arithmetic
 examples/builtin/builtin
 
 *.swp
+
+.vscode/
