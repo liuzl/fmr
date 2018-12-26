@@ -5,7 +5,7 @@ import (
 )
 
 func TestList(t *testing.T) {
-	Debug = true
+	//Debug = true
 	cases := []string{
 		`北京上海天津`,
 	}
