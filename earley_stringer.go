@@ -17,17 +17,19 @@ func (ts *TableState) String() string {
 			}
 			switch term.Type {
 			case Nonterminal:
-				s += term.Value + " "
+				s += "<" + term.Value + "> "
 			case Terminal:
 				s += strconv.Quote(term.Value) + " "
 			case Any:
 				s += "(any) "
+			case List:
+				s += "(list<" + term.Value + ">) "
 			}
 		}
 		if ts.dot == len(ts.Rb.Terms) {
 			s += DOT
 		}
-		return fmt.Sprintf("%s -> %s [%d-%d] {%s}",
+		return fmt.Sprintf("<%s> -> %s [%d-%d] {%s}",
 			ts.Name, s, ts.Start, ts.End, ts.Rb.F)
 	}
 	if ts.termType == Any {
@@ -37,6 +39,14 @@ func (ts *TableState) String() string {
 		s += DOT + " * "
 		return fmt.Sprintf("(any) -> %s [%d-%d]", s, ts.Start, ts.End)
 	}
+	if ts.termType == List {
+		for i := 0; i < ts.dot; i++ {
+			s += "<" + ts.Name + "> "
+		}
+		s += DOT + " * "
+		return fmt.Sprintf("(list<%s>) -> %s [%d-%d]", ts.Name, s, ts.Start, ts.End)
+	}
+
 	return fmt.Sprintf("%s [%d-%d]", strconv.Quote(ts.Name), ts.Start, ts.End)
 }
 

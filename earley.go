@@ -91,13 +91,20 @@ func (s *TableState) isCompleted() bool {
 
 func (s *TableState) getNextTerm() *Term {
 	switch s.termType {
-	case Any, List:
+	case Any:
 		if !s.metaEmpty() {
 			if meta, ok := s.meta.(map[string]int); ok && s.dot >= meta["max"] {
 				return nil
 			}
 		}
 		return &Term{Value: s.Name, Type: s.termType, Meta: s.meta}
+	case List:
+		if !s.metaEmpty() {
+			if meta, ok := s.meta.(map[string]int); ok && s.dot >= meta["max"] {
+				return nil
+			}
+		}
+		return &Term{Value: s.Name, Type: Nonterminal, Meta: s.meta}
 	default:
 		if s.isCompleted() {
 			return nil
@@ -165,7 +172,7 @@ func (p *Parse) parse(maxFlag bool) []*TableState {
 					}
 				} else {
 					switch term.Type {
-					case Nonterminal, Any:
+					case Nonterminal, Any, List:
 						p.predict(col, term)
 					case Terminal:
 						if i+1 < len(p.columns) {
@@ -217,12 +224,9 @@ func (*Parse) scan(col *TableColumn, st *TableState, term *Term) {
 		}
 		return
 	}
-	if Debug {
-		fmt.Println("scan", term.Value, col.token)
-	}
 	if terminalMatch(term, col.token) {
 		newSt := &TableState{Name: st.Name, Rb: st.Rb,
-			dot: st.dot + 1, Start: st.Start}
+			dot: st.dot + 1, Start: st.Start, termType: st.termType}
 		col.insert(newSt)
 		if Debug {
 			fmt.Println("\tscan", term.Value, col.token)
@@ -238,10 +242,11 @@ func predict(g *Grammar, col *TableColumn, term *Term) bool {
 	}
 	changed := false
 	for _, prod := range r.Body {
-		st := &TableState{Name: r.Name, Rb: prod, dot: 0, Start: col.index}
+		//st := &TableState{Name: r.Name, Rb: prod, dot: 0, Start: col.index, termType: term.Type}
+		st := &TableState{Name: r.Name, Rb: prod, dot: 0, Start: col.index, termType: Nonterminal}
 		st2 := col.insert(st)
 		if Debug {
-			fmt.Printf("\t\tinsert: %+v\n", st)
+			fmt.Printf("\t\t%+v insert: %+v\n", term.Type, st)
 		}
 		changed = changed || (st == st2)
 	}
@@ -259,6 +264,14 @@ func (p *Parse) predict(col *TableColumn, term *Term) bool {
 			changed = predict(g, col, term) || changed
 		}
 		return changed
+	case List:
+		st := &TableState{
+			Name: term.Value, Start: col.index, termType: List, meta: term.Meta}
+		st2 := col.insert(st)
+		if Debug {
+			fmt.Printf("\t\tinsert: %+v\n", st)
+		}
+		return st == st2
 	case Any:
 		st := &TableState{
 			Name: "any", Start: col.index, termType: Any, meta: term.Meta}
@@ -274,7 +287,7 @@ func (p *Parse) predict(col *TableColumn, term *Term) bool {
 // Earley complete. returns true if the table has been changed, false otherwise
 func (p *Parse) complete(col *TableColumn, state *TableState) bool {
 	if Debug {
-		fmt.Println("\tcomplete")
+		fmt.Printf("\tcomplete: %+v\n", state)
 	}
 	changed := false
 	for _, st := range p.columns[state.Start].states {
@@ -283,7 +296,8 @@ func (p *Parse) complete(col *TableColumn, state *TableState) bool {
 			continue
 		}
 		if (next.Type == Any && state.termType == Any) ||
-			(next.Type == Nonterminal && next.Value == state.Name) {
+			(next.Type == Nonterminal && next.Value == state.Name) ||
+			(next.Type == List && next.Value == state.Name) {
 			st1 := &TableState{Name: st.Name, Rb: st.Rb,
 				dot: st.dot + 1, Start: st.Start, termType: st.termType, meta: next.Meta}
 			//st2 := col.insertToEnd(st1, true)
