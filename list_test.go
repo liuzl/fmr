@@ -18,6 +18,8 @@ func TestList(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
+
+		t.Logf("%+v\n", p)
 		states := p.GetFinalStates()
 		if len(states) > 0 {
 			t.Logf("%s\n%+v\n", c, states)
