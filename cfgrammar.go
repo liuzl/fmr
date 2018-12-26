@@ -70,7 +70,7 @@ func grammarFromString(d, name string, files map[string]int) (*Grammar, error) {
 	if err != nil {
 		return nil, err
 	}
-	files[name] += 1
+	files[name]++
 	if Debug {
 		fmt.Println("loaded ", name, files)
 	}
@@ -239,7 +239,7 @@ func (p *parser) frame() (string, error) {
 	return p.token('[', ']')
 }
 
-func (p *parser) any() (*Term, error) {
+func (p *parser) special() (*Term, error) {
 	if err := p.eat('('); err != nil {
 		return nil, err
 	}
@@ -248,11 +248,21 @@ func (p *parser) any() (*Term, error) {
 	if err != nil {
 		return nil, err
 	}
-	if name != "any" {
-		return nil, fmt.Errorf(
-			"%s: any rule:(%s) not supported", p.posInfo(), name)
-	}
 	p.ws()
+	switch name {
+	case "any":
+		return p.any()
+	case "list":
+		return p.list()
+	default:
+		return nil, fmt.Errorf(
+			"%s: special rule:(%s) not supported", p.posInfo(), name)
+	}
+}
+
+func (p *parser) specialMeta() (map[string]int, error) {
+	p.ws()
+	var err error
 	var meta map[string]int
 	if p.peek() == '{' {
 		// contains range
@@ -274,18 +284,45 @@ func (p *parser) any() (*Term, error) {
 			return nil, fmt.Errorf("%s : max:%d less than min:%d",
 				p.posInfo(), meta["max"], meta["min"])
 		}
+		p.ws()
 		if err = p.eat('}'); err != nil {
 			return nil, err
 		}
 	}
 	p.ws()
+	return meta, nil
+}
+
+func (p *parser) list() (*Term, error) {
+	name, err := p.nonterminal()
+	if err != nil {
+		return nil, err
+	}
+	meta, err := p.specialMeta()
+	if err != nil {
+		return nil, err
+	}
 	if err = p.eat(')'); err != nil {
 		return nil, err
 	}
 	if len(meta) > 0 {
-		return &Term{Type: Any, Meta: meta}, nil
+		return &Term{Type: List, Value: name, Meta: meta}, nil
 	}
-	return &Term{Type: Any}, nil
+	return &Term{Type: List, Value: name}, nil
+}
+
+func (p *parser) any() (*Term, error) {
+	meta, err := p.specialMeta()
+	if err != nil {
+		return nil, err
+	}
+	if err = p.eat(')'); err != nil {
+		return nil, err
+	}
+	if len(meta) > 0 {
+		return &Term{Value: "any", Type: Any, Meta: meta}, nil
+	}
+	return &Term{Value: "any", Type: Any}, nil
 }
 
 func (p *parser) regex(g *Grammar) (*Term, error) {
@@ -335,7 +372,7 @@ func (p *parser) term(g *Grammar) (*Term, error) {
 		}
 		return &Term{Value: text, Type: Terminal, Meta: flags}, nil
 	case '(':
-		return p.any()
+		return p.special()
 	case '`':
 		return p.regex(g)
 	}
@@ -656,7 +693,7 @@ func (p *parser) grammar(files map[string]int) (*Grammar, error) {
 		if err != nil {
 			return nil, err
 		}
-		files[ifile] += 1
+		files[ifile]++
 		ig, err := grammarFromFile(ifile, files)
 		if err != nil {
 			return nil, err

@@ -48,11 +48,20 @@ func (p *Parse) GetTrees(finalState *TableState) []*Node {
 }
 
 func (p *Parse) buildTrees(state *TableState) []*Node {
-	if state.isAny {
+	if state.termType == Any {
 		n := &TableState{"any", nil, state.Start, state.End,
-			state.End, true, state.meta}
+			state.End, Any, state.meta}
 		cld := []*Node{{n, nil, p}}
 		return cld
+	}
+	if state.termType == List {
+		state.Rb = &RuleBody{}
+		var args []*Arg
+		for i := 0; i < state.dot; i++ {
+			state.Rb.Terms = append(state.Rb.Terms, &Term{state.Name, Nonterminal, nil})
+			args = append(args, &Arg{"index", i + 1})
+		}
+		state.Rb.F = &FMR{"fmr.list", args}
 	}
 	return p.buildTreesHelper(
 		&[]*Node{}, state, len(state.Rb.Terms)-1, state.End)
@@ -92,7 +101,7 @@ func (p *Parse) buildTreesHelper(children *[]*Node, state *TableState,
 
 	if term.Type == Terminal {
 		n := &TableState{term.Value, nil,
-			state.Start + termIndex, state.Start + termIndex + 1, 0, false, nil}
+			state.Start + termIndex, state.Start + termIndex + 1, 0, Terminal, nil}
 		cld := []*Node{{n, nil, p}}
 		cld = append(cld, *children...)
 		for _, node := range p.buildTreesHelper(&cld, state, termIndex-1, end-1) {
@@ -120,7 +129,7 @@ func (p *Parse) buildTreesHelper(children *[]*Node, state *TableState,
 			}
 			break
 		}
-		if !st.isCompleted() || st.Name != value {
+		if !st.isCompleted() || st.Name != value || st.termType != term.Type {
 			// this state is out of the question -- either not completed or does not
 			// match the name
 			continue

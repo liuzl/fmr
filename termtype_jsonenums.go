@@ -13,6 +13,7 @@ var (
 		"Nonterminal": Nonterminal,
 		"Terminal":    Terminal,
 		"Any":         Any,
+		"List":        List,
 	}
 
 	_TermTypeValueToName = map[TermType]string{
@@ -20,6 +21,7 @@ var (
 		Nonterminal: "Nonterminal",
 		Terminal:    "Terminal",
 		Any:         "Any",
+		List:        "List",
 	}
 )
 
@@ -31,6 +33,7 @@ func init() {
 			interface{}(Nonterminal).(fmt.Stringer).String(): Nonterminal,
 			interface{}(Terminal).(fmt.Stringer).String():    Terminal,
 			interface{}(Any).(fmt.Stringer).String():         Any,
+			interface{}(List).(fmt.Stringer).String():        List,
 		}
 	}
 }
