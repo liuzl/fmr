@@ -264,17 +264,9 @@ func (p *Parse) predict(col *TableColumn, term *Term) bool {
 			changed = predict(g, col, term) || changed
 		}
 		return changed
-	case List:
+	case Any, List:
 		st := &TableState{
-			Name: term.Value, Start: col.index, termType: List, meta: term.Meta}
-		st2 := col.insert(st)
-		if Debug {
-			fmt.Printf("\t\tinsert: %+v\n", st)
-		}
-		return st == st2
-	case Any:
-		st := &TableState{
-			Name: "any", Start: col.index, termType: Any, meta: term.Meta}
+			Name: term.Value, Start: col.index, termType: term.Type, meta: term.Meta}
 		st2 := col.insert(st)
 		if Debug {
 			fmt.Printf("\t\tinsert: %+v\n", st)
