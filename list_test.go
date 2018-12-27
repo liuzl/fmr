@@ -34,6 +34,11 @@ func TestList(t *testing.T) {
 						t.Error(err)
 					}
 					t.Log(sem)
+					s, err := tree.Eval()
+					if err != nil {
+						t.Error(err)
+					}
+					t.Log(s)
 				}
 			}
 		} else {
