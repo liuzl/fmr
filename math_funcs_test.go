@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestSum(t *testing.T) {
+func TestMathFunc(t *testing.T) {
 	t.Log(sum("34", "987"))
 	t.Log(sub("34", "987"))
 	t.Log(div("399", "987"))

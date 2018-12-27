@@ -8,6 +8,10 @@ import (
 
 var builtinFuncs = make(map[string]interface{})
 
+func init() {
+	builtinFuncs["fmr.list"] = fmrList
+}
+
 // Call funcs by name fn and args
 func Call(fn string, args ...interface{}) (string, error) {
 	ret, err := goutil.Call(builtinFuncs, fn, args...)
@@ -18,4 +22,8 @@ func Call(fn string, args ...interface{}) (string, error) {
 		return "", nil
 	}
 	return fmt.Sprintf("%+v", ret[0]), nil
+}
+
+func fmrList(items ...interface{}) []interface{} {
+	return items
 }
