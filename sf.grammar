@@ -15,4 +15,8 @@
        | "上海" {nf.I("ShangHai")}
        ;
 
-<cities> = "直辖市：" (list<city>) {nf.I($2)};
+<city_ext> = <city>            {nf.I($1)}
+           | (any{1,1}) <city> {nf.I($2)}
+           ;
+
+<cities> = "直辖市：" (list<city_ext>) {nf.I($2)};
