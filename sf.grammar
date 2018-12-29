@@ -13,6 +13,11 @@
 <city> = "北京" {nf.I("BeiJing")}
        | "天津" {nf.I("TianJin")}
        | "上海" {nf.I("ShangHai")}
+       | `.(?:城|都)`
        ;
 
-<cities> = "直辖市：" (list<city>) {nf.I($2)};
+<city_ext> = <city>            {nf.I($1)}
+           | (any{1,1}) <city> {nf.I($2)}
+           ;
+
+<cities> = "直辖市：" (list<city_ext>) {nf.I($2)};
