@@ -59,7 +59,7 @@ func (g *Grammar) localGrammar(d *ling.Document) (*Grammar, error) {
 				for _, v := range values.([]string) {
 					args = append(args, &Arg{"string", v})
 				}
-				list := &FMR{"nf.list", args}
+				list := &FMR{"fmr.list", args}
 				rb.F = &FMR{
 					"nf.entity",
 					[]*Arg{{"string", k}, {"func", list}},
