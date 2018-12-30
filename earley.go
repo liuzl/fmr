@@ -288,8 +288,7 @@ func (p *Parse) complete(col *TableColumn, state *TableState) bool {
 			continue
 		}
 		if (next.Type == Any && state.termType == Any) ||
-			(next.Type == Nonterminal && next.Value == state.Name) ||
-			(next.Type == List && next.Value == state.Name) {
+			(next.Type == state.termType && next.Value == state.Name) {
 			st1 := &TableState{Name: st.Name, Rb: st.Rb,
 				dot: st.dot + 1, Start: st.Start, termType: st.termType, meta: next.Meta}
 			//st2 := col.insertToEnd(st1, true)
