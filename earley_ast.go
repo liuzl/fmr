@@ -39,7 +39,8 @@ func (p *Parse) Tag(finalState *TableState) string {
 // GetTrees returns all possible parse results
 func (p *Parse) GetTrees(finalState *TableState) []*Node {
 	if Debug {
-		fmt.Printf("%+v\n", p)
+		fmt.Printf("chart:\n%+v\n", p)
+		fmt.Println("finalState:\n", finalState)
 	}
 	if finalState != nil {
 		return p.buildTrees(finalState)
