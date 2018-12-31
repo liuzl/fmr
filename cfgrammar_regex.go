@@ -30,7 +30,7 @@ OUT:
 	if _, err := goutil.Regexp(s); err != nil {
 		return nil, fmt.Errorf("%s : `%s` is not a valid regexp", p.posInfo(), s)
 	}
-	md5 := goutil.MD5(s)
-	g.Regexps[md5] = s
-	return &Term{Value: md5, Type: Nonterminal}, nil
+	h := goutil.MD5(s)[:16]
+	g.Regexps[h] = s
+	return &Term{Value: h, Type: Nonterminal}, nil
 }
