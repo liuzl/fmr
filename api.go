@@ -31,7 +31,7 @@ func NLP() *ling.Pipeline {
 
 // EarleyParse parses text for rule <start> at beginning
 func (g *Grammar) EarleyParse(text string, starts ...string) (*Parse, error) {
-	tokens, l, err := g.extract(text)
+	tokens, l, err := g.process(text)
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +40,7 @@ func (g *Grammar) EarleyParse(text string, starts ...string) (*Parse, error) {
 
 // EarleyParseAny parses text for rule <start> at any position
 func (g *Grammar) EarleyParseAny(text string, starts ...string) (*Parse, error) {
-	tokens, l, err := g.extract(text)
+	tokens, l, err := g.process(text)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +58,7 @@ func (g *Grammar) EarleyParseAny(text string, starts ...string) (*Parse, error) 
 
 // EarleyParseMaxAll extracts all submatches in text for rule <start>
 func (g *Grammar) EarleyParseMaxAll(text string, starts ...string) ([]*Parse, error) {
-	tokens, l, err := g.extract(text)
+	tokens, l, err := g.process(text)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +86,7 @@ func (g *Grammar) EarleyParseMaxAll(text string, starts ...string) ([]*Parse, er
 
 // EarleyParseAll extracts all submatches in text for rule <start>
 func (g *Grammar) EarleyParseAll(text string, starts ...string) ([]*Parse, error) {
-	tokens, l, err := g.extract(text)
+	tokens, l, err := g.process(text)
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +132,7 @@ func (g *Grammar) earleyParse(maxFlag bool, text string,
 	return parse, nil
 }
 
-func (g *Grammar) extract(text string) ([]*ling.Token, *Grammar, error) {
+func (g *Grammar) process(text string) ([]*ling.Token, *Grammar, error) {
 	if text = strings.TrimSpace(text); text == "" {
 		return nil, nil, fmt.Errorf("text is empty")
 	}
