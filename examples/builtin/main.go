@@ -38,7 +38,7 @@ func main() {
 		glog.Fatal(err)
 	}
 	if *debug {
-		b, err := goutil.JsonMarshalIndent(g, "", "    ")
+		b, err := goutil.JSONMarshalIndent(g, "", "    ")
 		if err != nil {
 			glog.Fatal(err)
 		}
