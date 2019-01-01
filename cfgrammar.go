@@ -365,6 +365,9 @@ func (p *parser) grammar(files map[string]int) (*Grammar, error) {
 		}
 		g.includes = append(g.includes, ig)
 		g.includes = append(g.includes, ig.includes...)
+		for k, v := range ig.Regexps {
+			g.Regexps[k] = v
+		}
 	}
 	for {
 		if err := p.comments(); err != nil {

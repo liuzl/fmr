@@ -24,7 +24,7 @@ func TestEarleyParse(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	_, err = goutil.JsonMarshalIndent(g, "", " ")
+	_, err = goutil.JSONMarshalIndent(g, "", " ")
 	if err != nil {
 		t.Error(err)
 	}
@@ -42,7 +42,7 @@ func TestEarleyParse(t *testing.T) {
 				var buf bytes.Buffer
 				tree.Print(&buf)
 				t.Log(buf.String())
-				b, err := goutil.JsonMarshalIndent(tree, "", " ")
+				b, err := goutil.JSONMarshalIndent(tree, "", " ")
 				if err != nil {
 					t.Error(err)
 				}
