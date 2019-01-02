@@ -111,13 +111,8 @@ func (p *Parse) buildTreesHelper(children *[]*Node, state *TableState,
 		return outputs
 	}
 
-	value := term.Value
-	if term.Type == Any {
-		value = "any"
-	}
-
 	if Debug {
-		fmt.Println("\nend:", end, "term.value:", value, state)
+		fmt.Println("\nend:", end, "term.value:", term.Value, state)
 	}
 	for _, st := range p.columns[end].states {
 		if st == state {
@@ -130,7 +125,7 @@ func (p *Parse) buildTreesHelper(children *[]*Node, state *TableState,
 			}
 			break
 		}
-		if !st.isCompleted() || st.Name != value || st.termType != term.Type {
+		if !st.isCompleted() || st.Name != term.Value || st.termType != term.Type {
 			// this state is out of the question -- either not completed or does not
 			// match the name
 			continue
