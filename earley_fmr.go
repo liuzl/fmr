@@ -14,6 +14,16 @@ func (n *Node) Pos() *Pos {
 	return n.p.Boundary(n.Value)
 }
 
+// Term returns the root Term of tree node
+func (n *Node) Term() *Term {
+	if n.Value == nil || n.Value.Rb == nil || len(n.Value.Rb.Terms) < 1 {
+		return nil
+	}
+	//fmt.Println(n.Children[0].Value.Rb.F)
+	//fmt.Println(n.Value.Name)
+	return n.Value.Rb.Terms[0]
+}
+
 // OriginalText returns the original text of Node n
 func (n *Node) OriginalText() string {
 	pos := n.Pos()
