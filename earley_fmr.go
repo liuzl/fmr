@@ -21,7 +21,10 @@ func (n *Node) Term() *Term {
 	}
 	//fmt.Println(n.Children[0].Value.Rb.F)
 	//fmt.Println(n.Value.Name)
-	return n.Value.Rb.Terms[0]
+	if n.Value.Term.Value == GammaRule {
+		return n.Value.Rb.Terms[0]
+	}
+	return n.Value.Term
 }
 
 // OriginalText returns the original text of Node n

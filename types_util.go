@@ -44,20 +44,33 @@ func metaEqual(m1, m2 interface{}) bool {
 	return false
 }
 
+// Equal func for Term
+func (t *Term) Equal(t1 *Term) bool {
+	if t == nil && t1 == nil {
+		return true
+	}
+	if t == nil || t1 == nil {
+		return false
+	}
+	if t.Value != t1.Value || t.Type != t1.Type {
+		return false
+	}
+	return metaEqual(t.Meta, t1.Meta)
+}
+
 // Equal func for RuleBody
 func (r *RuleBody) Equal(rb *RuleBody) bool {
 	if rb == nil && r == nil {
 		return true
 	}
-	if !(rb != nil && r != nil) {
+	if rb == nil || r == nil {
 		return false
 	}
 	if len(rb.Terms) != len(r.Terms) {
 		return false
 	}
 	for i, term := range rb.Terms {
-		if term.Value != r.Terms[i].Value || term.Type != r.Terms[i].Type ||
-			!metaEqual(term.Meta, r.Terms[i].Meta) {
+		if !term.Equal(r.Terms[i]) {
 			return false
 		}
 	}

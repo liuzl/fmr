@@ -17,13 +17,11 @@ const DOT = "\u2022" // "\u00B7"
 // the notation X → α • β represents a condition in which α has already
 // been parsed and β is expected.
 type TableState struct {
-	Name     string    `json:"name"`
-	Rb       *RuleBody `json:"rb,omitempty"`
-	Start    int       `json:"start"`
-	End      int       `json:"end"`
-	dot      int
-	termType TermType
-	meta     interface{}
+	Term  *Term     `json:"term"`
+	Rb    *RuleBody `json:"rb,omitempty"`
+	Start int       `json:"start"`
+	End   int       `json:"end"`
+	Dot   int       `json:"dot"`
 }
 
 // TableColumn is the TableState set
@@ -53,63 +51,62 @@ func (s *TableState) Equal(ts *TableState) bool {
 		}
 		return false
 	}
-	if s.Name == ts.Name && s.Rb.Equal(ts.Rb) &&
-		s.Start == ts.Start && s.End == ts.End &&
-		s.dot == ts.dot && s.termType == ts.termType {
-		return metaEqual(s.meta, ts.meta)
+	if s.Start != ts.Start || s.End != ts.End || s.Dot != ts.Dot ||
+		!s.Rb.Equal(ts.Rb) {
+		return false
 	}
-	return false
+	return s.Term.Equal(ts.Term)
 }
 
 func (s *TableState) metaEmpty() bool {
-	if s.meta == nil {
+	if s.Term.Meta == nil {
 		return true
 	}
-	if m, ok := s.meta.(map[string]int); ok && len(m) == 0 {
+	if m, ok := s.Term.Meta.(map[string]int); ok && len(m) == 0 {
 		return true
 	}
 	return false
 }
 
 func (s *TableState) isCompleted() bool {
-	switch s.termType {
+	switch s.Term.Type {
 	case Any, List:
 		if !s.metaEmpty() {
-			if meta, ok := s.meta.(map[string]int); ok {
-				if s.dot >= meta["min"] && s.dot <= meta["max"] {
+			if meta, ok := s.Term.Meta.(map[string]int); ok {
+				if s.Dot >= meta["min"] && s.Dot <= meta["max"] {
 					return true
 				}
 			}
-		} else if s.dot > 0 {
+		} else if s.Dot > 0 {
 			return true
 		}
 		return false
 	default:
-		return s.dot >= len(s.Rb.Terms)
+		return s.Dot >= len(s.Rb.Terms)
 	}
 }
 
 func (s *TableState) getNextTerm() *Term {
-	switch s.termType {
+	switch s.Term.Type {
 	case Any:
 		if !s.metaEmpty() {
-			if meta, ok := s.meta.(map[string]int); ok && s.dot >= meta["max"] {
+			if meta, ok := s.Term.Meta.(map[string]int); ok && s.Dot >= meta["max"] {
 				return nil
 			}
 		}
-		return &Term{Value: s.Name, Type: s.termType, Meta: s.meta}
+		return s.Term
 	case List:
 		if !s.metaEmpty() {
-			if meta, ok := s.meta.(map[string]int); ok && s.dot >= meta["max"] {
+			if meta, ok := s.Term.Meta.(map[string]int); ok && s.Dot >= meta["max"] {
 				return nil
 			}
 		}
-		return &Term{Value: s.Name, Type: Nonterminal, Meta: s.meta}
+		return &Term{Value: s.Term.Value, Type: Nonterminal, Meta: s.Term.Meta}
 	default:
 		if s.isCompleted() {
 			return nil
 		}
-		return s.Rb.Terms[s.dot]
+		return s.Rb.Terms[s.Dot]
 	}
 }
 
@@ -119,8 +116,8 @@ func (col *TableColumn) insert(state *TableState) *TableState {
 
 func (col *TableColumn) insertToEnd(state *TableState, end bool) *TableState {
 	state.End = col.index
-	if state.termType == Any {
-		state.dot = state.End - state.Start
+	if state.Term.Type == Any {
+		state.Dot = state.End - state.Start
 	}
 	for i, s := range col.states {
 		if s.Equal(state) {
@@ -149,7 +146,7 @@ func (p *Parse) parse(maxFlag bool) []*TableState {
 			[]*Term{{Value: start, Type: Nonterminal}},
 			&FMR{"nf.I", []*Arg{{"index", 1}}},
 		}
-		begin := &TableState{GammaRule, rb, 0, 0, 0, Nonterminal, nil}
+		begin := &TableState{&Term{GammaRule, Nonterminal, nil}, rb, 0, 0, 0}
 		p.columns[0].states = append(p.columns[0].states, begin)
 	}
 	for i, col := range p.columns {
@@ -166,7 +163,7 @@ func (p *Parse) parse(maxFlag bool) []*TableState {
 			}
 			term := st.getNextTerm()
 			if term != nil {
-				if st.termType == Any {
+				if st.Term.Type == Any {
 					if i+1 < len(p.columns) {
 						p.scan(p.columns[i+1], st, term)
 					}
@@ -200,7 +197,7 @@ func (p *Parse) parse(maxFlag bool) []*TableState {
 	var ret []*TableState
 	for i := len(p.columns) - 1; i >= 0; i-- {
 		for _, state := range p.columns[i].states {
-			if state.Name == GammaRule && state.isCompleted() {
+			if state.Term.Value == GammaRule && state.isCompleted() {
 				ret = append(ret, state)
 				if maxFlag {
 					p.finalStates = ret
@@ -215,8 +212,8 @@ func (p *Parse) parse(maxFlag bool) []*TableState {
 
 func (*Parse) scan(col *TableColumn, st *TableState, term *Term) {
 	if term.Type == Any {
-		newSt := &TableState{Name: "any", Rb: st.Rb,
-			dot: st.dot + 1, Start: st.Start, termType: Any, meta: term.Meta}
+		newSt := &TableState{Term: &Term{"any", Any, term.Meta}, Rb: st.Rb,
+			Dot: st.Dot + 1, Start: st.Start}
 		col.insert(newSt)
 		if Debug {
 			fmt.Println("\tscan Any")
@@ -225,8 +222,8 @@ func (*Parse) scan(col *TableColumn, st *TableState, term *Term) {
 		return
 	}
 	if terminalMatch(term, col.token) {
-		newSt := &TableState{Name: st.Name, Rb: st.Rb,
-			dot: st.dot + 1, Start: st.Start, termType: st.termType}
+		newSt := &TableState{Term: st.Term, Rb: st.Rb,
+			Dot: st.Dot + 1, Start: st.Start}
 		col.insert(newSt)
 		if Debug {
 			fmt.Println("\tscan", term.Value, col.token)
@@ -243,7 +240,8 @@ func predict(g *Grammar, col *TableColumn, term *Term) bool {
 	changed := false
 	for _, prod := range r.Body {
 		//st := &TableState{Name: r.Name, Rb: prod, dot: 0, Start: col.index, termType: term.Type}
-		st := &TableState{Name: r.Name, Rb: prod, dot: 0, Start: col.index, termType: Nonterminal}
+		st := &TableState{Term: &Term{Value: r.Name, Type: Nonterminal}, Rb: prod,
+			Dot: 0, Start: col.index}
 		st2 := col.insert(st)
 		if Debug {
 			fmt.Printf("\t\t%+v insert: %+v\n", term.Type, st)
@@ -265,8 +263,7 @@ func (p *Parse) predict(col *TableColumn, term *Term) bool {
 		}
 		return changed
 	case Any, List:
-		st := &TableState{
-			Name: term.Value, Start: col.index, termType: term.Type, meta: term.Meta}
+		st := &TableState{Term: term, Start: col.index}
 		st2 := col.insert(st)
 		if Debug {
 			fmt.Printf("\t\tinsert: %+v\n", st)
@@ -287,10 +284,10 @@ func (p *Parse) complete(col *TableColumn, state *TableState) bool {
 		if next == nil {
 			continue
 		}
-		if (next.Type == Any && state.termType == Any) ||
-			(next.Type == state.termType && next.Value == state.Name) {
-			st1 := &TableState{Name: st.Name, Rb: st.Rb,
-				dot: st.dot + 1, Start: st.Start, termType: st.termType, meta: next.Meta}
+		if (next.Type == Any && state.Term.Type == Any) ||
+			(next.Type == state.Term.Type && next.Value == state.Term.Value) {
+			st1 := &TableState{Term: &Term{st.Term.Value, st.Term.Type, next.Meta},
+				Rb: st.Rb, Dot: st.Dot + 1, Start: st.Start}
 			//st2 := col.insertToEnd(st1, true)
 			st2 := col.insertToEnd(st1, false)
 			if Debug {
