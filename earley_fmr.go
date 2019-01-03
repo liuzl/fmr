@@ -19,9 +19,21 @@ func (n *Node) Term() *Term {
 	if n.Value == nil || n.Value.Rb == nil || len(n.Value.Rb.Terms) < 1 {
 		return nil
 	}
-	//fmt.Println(n.Children[0].Value.Rb.F)
-	//fmt.Println(n.Value.Name)
-	return n.Value.Rb.Terms[0]
+	if n.Value.Term.Value == GammaRule {
+		return n.Value.Rb.Terms[0]
+	}
+	return n.Value.Term
+}
+
+// F returns the FMR signature of node
+func (n *Node) F() *FMR {
+	if n.Value == nil || n.Value.Rb == nil || len(n.Value.Rb.Terms) < 1 {
+		return nil
+	}
+	if n.Value.Term.Value == GammaRule {
+		return n.Children[0].Value.Rb.F
+	}
+	return n.Value.Rb.F
 }
 
 // OriginalText returns the original text of Node n

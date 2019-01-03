@@ -10,11 +10,11 @@ import (
 
 func (ts *TableState) String() string {
 	s := ""
-	switch ts.termType {
+	switch ts.Term.Type {
 	case Nonterminal:
 		if ts.Rb != nil {
 			for i, term := range ts.Rb.Terms {
-				if i == ts.dot {
+				if i == ts.Dot {
 					s += DOT + " "
 				}
 				switch term.Type {
@@ -28,11 +28,11 @@ func (ts *TableState) String() string {
 					s += "(list<" + term.Value + ">) "
 				}
 			}
-			if ts.dot == len(ts.Rb.Terms) {
+			if ts.Dot == len(ts.Rb.Terms) {
 				s += DOT
 			}
 			return fmt.Sprintf("<%s> -> %s [%d-%d] {%s}",
-				ts.Name, s, ts.Start, ts.End, ts.Rb.F)
+				ts.Term.Value, s, ts.Start, ts.End, ts.Rb.F)
 		}
 	case Any:
 		for i := ts.Start; i < ts.End; i++ {
@@ -42,18 +42,18 @@ func (ts *TableState) String() string {
 		return fmt.Sprintf("(any) -> %s [%d-%d]", s, ts.Start, ts.End)
 	case List:
 		f := "fmr.list("
-		for i := 0; i < ts.dot; i++ {
-			s += "<" + ts.Name + "> "
+		for i := 0; i < ts.Dot; i++ {
+			s += "<" + ts.Term.Value + "> "
 			f += fmt.Sprintf("$%d", i+1)
-			if i != ts.dot-1 {
+			if i != ts.Dot-1 {
 				f += ","
 			}
 		}
 		f += ")"
 		s += DOT + " * "
-		return fmt.Sprintf("(list<%s>) -> %s [%d-%d] {%s}", ts.Name, s, ts.Start, ts.End, f)
+		return fmt.Sprintf("(list<%s>) -> %s [%d-%d] {%s}", ts.Term.Value, s, ts.Start, ts.End, f)
 	}
-	return fmt.Sprintf("%s [%d-%d]", strconv.Quote(ts.Name), ts.Start, ts.End)
+	return fmt.Sprintf("%s [%d-%d]", strconv.Quote(ts.Term.Value), ts.Start, ts.End)
 }
 
 func (tc *TableColumn) String() (out string) {
