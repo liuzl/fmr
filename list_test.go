@@ -19,6 +19,7 @@ func TestList(t *testing.T) {
 		t.Error(err)
 	}
 	for _, c := range cases {
+		t.Log(c)
 		trees, err := g.Parse(c, "cities")
 		if err != nil {
 			t.Error(err)

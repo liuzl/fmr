@@ -1,8 +1,6 @@
 package fmr
 
 import (
-	"fmt"
-
 	"github.com/liuzl/goutil"
 )
 
@@ -13,15 +11,15 @@ func init() {
 }
 
 // Call funcs by name fn and args
-func Call(fn string, args ...interface{}) (string, error) {
+func Call(fn string, args ...interface{}) (interface{}, error) {
 	ret, err := goutil.Call(builtinFuncs, fn, args...)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	if len(ret) == 0 {
-		return "", nil
+		return nil, nil
 	}
-	return fmt.Sprintf("%+v", ret[0]), nil
+	return ret[0].Interface(), nil
 }
 
 func fmrList(items ...interface{}) []interface{} {

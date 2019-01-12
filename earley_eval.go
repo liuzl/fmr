@@ -3,26 +3,22 @@ package fmr
 import (
 	"fmt"
 	"math/big"
-	"strings"
 )
 
 // Eval returns the denotation of Node n
-func (n *Node) Eval() (string, error) {
+func (n *Node) Eval() (interface{}, error) {
 	if n.Value.Rb == nil || n.Value.Rb.F == nil {
 		if n.p == nil {
 			return "", nil
 		}
-		var s []string
-		for i := n.Value.Start + 1; i <= n.Value.End; i++ {
-			s = append(s, n.p.columns[i].token.Text)
-		}
-		return strings.Join(s, " "), nil
-
+		start := n.p.columns[n.Value.Start+1].token.StartByte
+		end := n.p.columns[n.Value.End].token.EndByte
+		return n.p.text[start:end], nil
 	}
 	return fmrEval(n.Value.Rb.F, n.Children)
 }
 
-func fmrEval(f *FMR, children []*Node) (string, error) {
+func fmrEval(f *FMR, children []*Node) (interface{}, error) {
 	if f == nil {
 		return "", nil
 	}
@@ -51,7 +47,7 @@ func fmrEval(f *FMR, children []*Node) (string, error) {
 	return Call(f.Fn, args...)
 }
 
-func semEval(arg *Arg, nodes []*Node) (string, error) {
+func semEval(arg *Arg, nodes []*Node) (interface{}, error) {
 	if arg == nil {
 		return "", fmt.Errorf("arg is nil")
 	}
