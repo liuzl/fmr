@@ -19,34 +19,25 @@ func TestList(t *testing.T) {
 		t.Error(err)
 	}
 	for _, c := range cases {
-		p, err := g.EarleyParse(c, "cities")
+		t.Log(c)
+		trees, err := g.Parse(c, "cities")
 		if err != nil {
 			t.Error(err)
 		}
-
-		t.Logf("%+v\n", p)
-		states := p.GetFinalStates()
-		if len(states) > 0 {
-			for _, f := range states {
-				trees := p.GetTrees(f)
-				for _, tree := range trees {
-					var buf bytes.Buffer
-					tree.Print(&buf)
-					t.Log(buf.String())
-					sem, err := tree.Semantic()
-					if err != nil {
-						t.Error(err)
-					}
-					t.Log(sem)
-					s, err := tree.Eval()
-					if err != nil {
-						t.Error(err)
-					}
-					t.Log(s)
-				}
+		for _, tree := range trees {
+			var buf bytes.Buffer
+			tree.Print(&buf)
+			t.Log(buf.String())
+			sem, err := tree.Semantic()
+			if err != nil {
+				t.Error(err)
 			}
-		} else {
-			t.Logf("%s\nno result\n", c)
+			t.Log(sem)
+			s, err := tree.Eval()
+			if err != nil {
+				t.Error(err)
+			}
+			t.Log(s)
 		}
 	}
 }
