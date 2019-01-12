@@ -61,7 +61,7 @@ func (g *Grammar) localGrammar(d *ling.Document) (*Grammar, error) {
 				}
 				list := &FMR{"fmr.list", args}
 				rb.F = &FMR{
-					"nf.entity",
+					"fmr.entity",
 					[]*Arg{{"string", k}, {"func", list}},
 				}
 			}
