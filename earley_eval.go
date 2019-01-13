@@ -11,9 +11,7 @@ func (n *Node) Eval() (interface{}, error) {
 		if n.p == nil {
 			return "", nil
 		}
-		start := n.p.columns[n.Value.Start+1].token.StartByte
-		end := n.p.columns[n.Value.End].token.EndByte
-		return n.p.text[start:end], nil
+		return n.OriginalText(), nil
 	}
 	return fmrEval(n.Value.Rb.F, n.Children)
 }
