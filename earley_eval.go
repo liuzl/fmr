@@ -13,10 +13,10 @@ func (n *Node) Eval() (interface{}, error) {
 		}
 		return n.OriginalText(), nil
 	}
-	return fmrEval(n.Value.Rb.F, n.Children)
+	return n.fmrEval(n.Value.Rb.F, n.Children)
 }
 
-func fmrEval(f *FMR, children []*Node) (interface{}, error) {
+func (n *Node) fmrEval(f *FMR, children []*Node) (interface{}, error) {
 	if f == nil {
 		return "", nil
 	}
@@ -24,7 +24,7 @@ func fmrEval(f *FMR, children []*Node) (interface{}, error) {
 		if len(f.Args) != 1 {
 			return "", fmt.Errorf("the length of Args of nf.I should be one")
 		}
-		s, err := semEval(f.Args[0], children)
+		s, err := n.semEval(f.Args[0], children)
 		if err != nil {
 			return "", err
 		}
@@ -33,7 +33,7 @@ func fmrEval(f *FMR, children []*Node) (interface{}, error) {
 
 	var args []interface{}
 	for _, arg := range f.Args {
-		s, err := semEval(arg, children)
+		s, err := n.semEval(arg, children)
 		if err != nil {
 			return "", err
 		}
@@ -45,7 +45,7 @@ func fmrEval(f *FMR, children []*Node) (interface{}, error) {
 	return Call(f.Fn, args...)
 }
 
-func semEval(arg *Arg, nodes []*Node) (interface{}, error) {
+func (n *Node) semEval(arg *Arg, nodes []*Node) (interface{}, error) {
 	if arg == nil {
 		return "", fmt.Errorf("arg is nil")
 	}
@@ -67,7 +67,7 @@ func semEval(arg *Arg, nodes []*Node) (interface{}, error) {
 		return "", fmt.Errorf("arg.Value: %+v is not float", arg.Value)
 	case "func":
 		if fmr, ok := arg.Value.(*FMR); ok {
-			return fmrEval(fmr, nodes)
+			return n.fmrEval(fmr, nodes)
 		}
 		return "", fmt.Errorf("arg.Value: %+v is not func", arg.Value)
 	case "index":
@@ -83,6 +83,17 @@ func semEval(arg *Arg, nodes []*Node) (interface{}, error) {
 			return "", err
 		}
 		return s, nil
+	case "context":
+		types := []string{}
+		for _, node := range nodes {
+			types = append(types, node.Term().Value)
+		}
+		ret := map[string]interface{}{
+			"type":  n.Term().Value,
+			"text":  n.OriginalText(),
+			"types": types,
+		}
+		return ret, nil
 	default:
 		return "", fmt.Errorf("arg.Type: %s invalid", arg.Type)
 	}
