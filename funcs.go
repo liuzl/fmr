@@ -27,6 +27,6 @@ func fmrList(items ...interface{}) []interface{} {
 	return items
 }
 
-func fmrEntity(items ...interface{}) map[string]interface{} {
-	return nil
+func fmrEntity(items ...interface{}) []interface{} {
+	return items
 }

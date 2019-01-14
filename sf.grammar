@@ -20,4 +20,4 @@
            | (any{1,1}) <city> {nf.I($2)}
            ;
 
-<cities> = "直辖市：" (list<city_ext>) {nf.I($2)};
+<cities> = "直辖市：" (list<city_ext>) {fmr.entity($@)};//{nf.I($2)};

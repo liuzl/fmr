@@ -3,6 +3,8 @@ package fmr
 import (
 	"bytes"
 	"testing"
+
+	"github.com/liuzl/goutil"
 )
 
 func TestList(t *testing.T) {
@@ -38,6 +40,8 @@ func TestList(t *testing.T) {
 				t.Error(err)
 			}
 			t.Log(s)
+			b, _ := goutil.JSONMarshal(s)
+			t.Log(string(b))
 		}
 	}
 }

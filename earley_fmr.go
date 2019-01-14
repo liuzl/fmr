@@ -134,6 +134,8 @@ func semStr(arg *Arg, nodes []*Node, nl string) (string, error) {
 			return "", err
 		}
 		return s, nil
+	case "context":
+		return "@", nil
 	default:
 		return "", fmt.Errorf("arg.Type: %s invalid", arg.Type)
 	}
