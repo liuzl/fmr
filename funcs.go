@@ -8,6 +8,7 @@ var builtinFuncs = make(map[string]interface{})
 
 func init() {
 	builtinFuncs["fmr.list"] = fmrList
+	builtinFuncs["fmr.entity"] = fmrList
 }
 
 // Call funcs by name fn and args

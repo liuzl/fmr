@@ -103,6 +103,11 @@ func (p *parser) idxArg() (arg *Arg, err error) {
 	if err = p.eat('$'); err != nil {
 		return
 	}
+	if p.peek() == '@' {
+		p.eat('@')
+		arg = &Arg{"context", "@"}
+		return
+	}
 	var idx int
 	if idx, err = p.getInt(); err != nil {
 		return

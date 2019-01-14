@@ -11,14 +11,12 @@ func (n *Node) Eval() (interface{}, error) {
 		if n.p == nil {
 			return "", nil
 		}
-		start := n.p.columns[n.Value.Start+1].token.StartByte
-		end := n.p.columns[n.Value.End].token.EndByte
-		return n.p.text[start:end], nil
+		return n.OriginalText(), nil
 	}
-	return fmrEval(n.Value.Rb.F, n.Children)
+	return n.fmrEval(n.Value.Rb.F, n.Children)
 }
 
-func fmrEval(f *FMR, children []*Node) (interface{}, error) {
+func (n *Node) fmrEval(f *FMR, children []*Node) (interface{}, error) {
 	if f == nil {
 		return "", nil
 	}
@@ -26,7 +24,7 @@ func fmrEval(f *FMR, children []*Node) (interface{}, error) {
 		if len(f.Args) != 1 {
 			return "", fmt.Errorf("the length of Args of nf.I should be one")
 		}
-		s, err := semEval(f.Args[0], children)
+		s, err := n.semEval(f.Args[0], children)
 		if err != nil {
 			return "", err
 		}
@@ -35,7 +33,7 @@ func fmrEval(f *FMR, children []*Node) (interface{}, error) {
 
 	var args []interface{}
 	for _, arg := range f.Args {
-		s, err := semEval(arg, children)
+		s, err := n.semEval(arg, children)
 		if err != nil {
 			return "", err
 		}
@@ -47,7 +45,7 @@ func fmrEval(f *FMR, children []*Node) (interface{}, error) {
 	return Call(f.Fn, args...)
 }
 
-func semEval(arg *Arg, nodes []*Node) (interface{}, error) {
+func (n *Node) semEval(arg *Arg, nodes []*Node) (interface{}, error) {
 	if arg == nil {
 		return "", fmt.Errorf("arg is nil")
 	}
@@ -69,7 +67,7 @@ func semEval(arg *Arg, nodes []*Node) (interface{}, error) {
 		return "", fmt.Errorf("arg.Value: %+v is not float", arg.Value)
 	case "func":
 		if fmr, ok := arg.Value.(*FMR); ok {
-			return fmrEval(fmr, nodes)
+			return n.fmrEval(fmr, nodes)
 		}
 		return "", fmt.Errorf("arg.Value: %+v is not func", arg.Value)
 	case "index":
@@ -85,6 +83,21 @@ func semEval(arg *Arg, nodes []*Node) (interface{}, error) {
 			return "", err
 		}
 		return s, nil
+	case "context":
+		attrs := []map[string]interface{}{}
+		for _, node := range nodes {
+			ni, err := node.Eval()
+			if err != nil {
+				ni = node.OriginalText()
+			}
+			attrs = append(attrs, map[string]interface{}{node.Term().Value: ni})
+		}
+		ret := map[string]interface{}{
+			"type":  n.Term().Value,
+			"text":  n.OriginalText(),
+			"attrs": attrs,
+		}
+		return ret, nil
 	default:
 		return "", fmt.Errorf("arg.Type: %s invalid", arg.Type)
 	}

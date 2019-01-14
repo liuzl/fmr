@@ -1,6 +1,7 @@
 package fmr
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"strconv"
@@ -61,10 +62,10 @@ func (n *Node) Semantic() (string, error) {
 		// by default, returns nf.I($0)
 		return nl, nil
 	}
-	return fmrStr(n.Value.Rb.F, n.Children, nl)
+	return n.fmrStr(n.Value.Rb.F, n.Children, nl)
 }
 
-func fmrStr(f *FMR, children []*Node, nl string) (string, error) {
+func (n *Node) fmrStr(f *FMR, children []*Node, nl string) (string, error) {
 	if f == nil {
 		return "", nil
 	}
@@ -72,7 +73,7 @@ func fmrStr(f *FMR, children []*Node, nl string) (string, error) {
 		if len(f.Args) != 1 {
 			return "", fmt.Errorf("the length of Args of nf.I should be one")
 		}
-		s, err := semStr(f.Args[0], children, nl)
+		s, err := n.semStr(f.Args[0], children, nl)
 		if err != nil {
 			return "", err
 		}
@@ -81,7 +82,7 @@ func fmrStr(f *FMR, children []*Node, nl string) (string, error) {
 
 	var args []string
 	for _, arg := range f.Args {
-		s, err := semStr(arg, children, nl)
+		s, err := n.semStr(arg, children, nl)
 		if err != nil {
 			return "", err
 		}
@@ -90,7 +91,7 @@ func fmrStr(f *FMR, children []*Node, nl string) (string, error) {
 	return fmt.Sprintf("%s(%s)", f.Fn, strings.Join(args, ", ")), nil
 }
 
-func semStr(arg *Arg, nodes []*Node, nl string) (string, error) {
+func (n *Node) semStr(arg *Arg, nodes []*Node, nl string) (string, error) {
 	if arg == nil {
 		return "", fmt.Errorf("arg is nil")
 	}
@@ -112,7 +113,7 @@ func semStr(arg *Arg, nodes []*Node, nl string) (string, error) {
 		return "", fmt.Errorf("arg.Value: %+v is not float", arg.Value)
 	case "func":
 		if fmr, ok := arg.Value.(*FMR); ok {
-			return fmrStr(fmr, nodes, nl)
+			return n.fmrStr(fmr, nodes, nl)
 		}
 		return "", fmt.Errorf("arg.Value: %+v is not func", arg.Value)
 	case "index":
@@ -134,6 +135,23 @@ func semStr(arg *Arg, nodes []*Node, nl string) (string, error) {
 			return "", err
 		}
 		return s, nil
+	case "context":
+		attrs := []map[string]interface{}{}
+		for _, node := range nodes {
+			ni, err := node.Eval()
+			if err != nil {
+				ni = node.OriginalText()
+			}
+			attrs = append(attrs, map[string]interface{}{node.Value.Term.Value: ni})
+		}
+		ret := map[string]interface{}{
+			"type":  n.Term().Value,
+			"text":  n.OriginalText(),
+			"pos":   n.Pos(),
+			"attrs": attrs,
+		}
+		s, _ := json.Marshal(ret)
+		return string(s), nil
 	default:
 		return "", fmt.Errorf("arg.Type: %s invalid", arg.Type)
 	}

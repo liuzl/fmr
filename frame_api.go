@@ -23,7 +23,8 @@ func (g *Grammar) FrameFMR(text string) ([]string, error) {
 			}
 			children = append(children, slots[0].Trees[0])
 		}
-		str, err := fmrStr(f, children, "")
+		n := &Node{}
+		str, err := n.fmrStr(f, children, "")
 		if err != nil {
 			return nil, err
 		}
