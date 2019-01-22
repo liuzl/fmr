@@ -95,6 +95,7 @@ func (n *Node) semEval(arg *Arg, nodes []*Node) (interface{}, error) {
 		ret := map[string]interface{}{
 			"type":  n.Term().Value,
 			"text":  n.OriginalText(),
+			"pos":   n.Pos(),
 			"attrs": attrs,
 		}
 		return ret, nil
