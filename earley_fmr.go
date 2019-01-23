@@ -17,7 +17,7 @@ func (n *Node) Pos() *Pos {
 
 // Term returns the root Term of tree node
 func (n *Node) Term() *Term {
-	if n.Value == nil || n.Value.Rb == nil || len(n.Value.Rb.Terms) < 1 {
+	if n.Value == nil { //|| n.Value.Rb == nil || len(n.Value.Rb.Terms) < 1 {
 		return nil
 	}
 	if n.Value.Term.Value == GammaRule {
@@ -142,7 +142,7 @@ func (n *Node) semStr(arg *Arg, nodes []*Node, nl string) (string, error) {
 			if err != nil {
 				ni = node.OriginalText()
 			}
-			attrs = append(attrs, map[string]interface{}{node.Value.Term.Value: ni})
+			attrs = append(attrs, map[string]interface{}{node.Term().Value: ni})
 		}
 		ret := map[string]interface{}{
 			"type":  n.Term().Value,
