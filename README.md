@@ -35,3 +35,4 @@ Early semantic parsers used highly domain-specific meaning representation langua
 * [Introduction to semantic parsing](https://web.stanford.edu/class/cs224u/materials/cs224u-2016-intro-semparse.pdf), Bill MacCartney, 2016
 * [Bringing machine learning and compositional semantics together](https://web.stanford.edu/~cgpotts/manuscripts/liang-potts-semantics.pdf), Percy Liang and Christopher Potts, 2014
 * [SippyCup: A semantic parsing tutorial](https://github.com/wcmac/sippycup), Bill MacCartney, 2015
+* [Semantic parsing in your browser](https://www.cs.toronto.edu/~muuo/writing/semantic-parsing-in-your-browser/), Muuo Wambua, 2018
