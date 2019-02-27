@@ -30,6 +30,33 @@ Early semantic parsers used highly domain-specific meaning representation langua
 * Information extraction
 * Machine translation
 
+## What can FMR do, a glance overview
+```js
+// semantic parsing
+"五与5.8的和的平方的1.5次方与two的和减去261.712" =>
+nf.math.sub(
+  nf.math.sum(
+    nf.math.pow(
+      nf.math.pow(
+        nf.math.sum(
+          5,
+          nf.math.to_number("5.8")
+        ),
+        2
+      ),
+      nf.math.to_number("1.5")
+    ),
+    2
+  ),
+  nf.math.to_number("261.712")
+); // denotation: 1000
+
+// slot filling
+"从上海到天津的机票" => nf.flight("上海", "天津");
+"到重庆，明天，从北京" => nf.flight("北京", "重庆");
+"到上海去" => nf.flight(null, "上海");
+```
+
 ## References
 * [Semantic Parsing: Past, Present, and Future](http://yoavartzi.com/sp14/slides/mooney.sp14.pdf), Raymond J. Mooney, 2014
 * [Introduction to semantic parsing](https://web.stanford.edu/class/cs224u/materials/cs224u-2016-intro-semparse.pdf), Bill MacCartney, 2016
