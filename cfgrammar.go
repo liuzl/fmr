@@ -3,6 +3,7 @@ package fmr
 import (
 	"fmt"
 	"io/ioutil"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"unicode"
@@ -18,6 +19,7 @@ type parser struct {
 	current *position
 	info    map[int]*position
 	fname   string
+	dir     string
 }
 
 type position struct {
@@ -37,30 +39,38 @@ func GrammarFromFile(file string) (*Grammar, error) {
 	if err != nil {
 		return nil, err
 	}
-	return grammarFromString(string(b), file, map[string]int{file: 1})
-}
-
-func grammarFromFile(file string, files map[string]int) (*Grammar, error) {
-	if files[file] >= 2 {
-		return nil, nil
-	}
-	b, err := ioutil.ReadFile(file)
+	dir, err := filepath.Abs(filepath.Dir(file))
 	if err != nil {
 		return nil, err
 	}
-	return grammarFromString(string(b), file, files)
+	return grammarFromString(string(b), file, dir, map[string]int{file: 1})
+}
+
+func grammarFromFile(ifile string, files map[string]int) (*Grammar, error) {
+	if files[ifile] >= 2 {
+		return nil, nil
+	}
+	b, err := ioutil.ReadFile(ifile)
+	if err != nil {
+		return nil, err
+	}
+	dir, err := filepath.Abs(filepath.Dir(ifile))
+	if err != nil {
+		return nil, err
+	}
+	return grammarFromString(string(b), ifile, dir, files)
 }
 
 // GrammarFromString constructs the Contex-Free Grammar from string d with name
 func GrammarFromString(d, name string) (*Grammar, error) {
-	return grammarFromString(d, name, make(map[string]int))
+	return grammarFromString(d, name, ".", make(map[string]int))
 }
 
-func grammarFromString(d, name string, files map[string]int) (*Grammar, error) {
+func grammarFromString(d, name, dir string, files map[string]int) (*Grammar, error) {
 	if files[name] >= 2 {
 		return nil, nil
 	}
-	p := &parser{fname: name, input: d, info: make(map[int]*position)}
+	p := &parser{fname: name, dir: dir, input: d, info: make(map[int]*position)}
 	if Debug {
 		fmt.Println("loading ", name, files)
 	}
@@ -355,6 +365,7 @@ func (p *parser) grammar(files map[string]int) (*Grammar, error) {
 		if err != nil {
 			return nil, err
 		}
+		ifile = filepath.Join(p.dir, ifile)
 		files[ifile]++
 		ig, err := grammarFromFile(ifile, files)
 		if err != nil {
