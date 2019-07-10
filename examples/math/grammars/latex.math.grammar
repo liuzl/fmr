@@ -1,0 +1,53 @@
+<Exp> = <AddExp> {nf.I($1)};
+
+<AddExp> = <AddExp> "+" <MulExp> {nf.math.sum($1,$3)}
+         | <AddExp> "-" <MulExp> {nf.math.sub($1,$3)}
+         | <MulExp> {nf.I($1)}
+         ;
+
+<MulExp> = <MulExp> "*" <ExpExp> {nf.math.mul($1,$3)}
+         | <MulExp> "×" <ExpExp> {nf.math.mul($1,$3)}
+         | <MulExp> "\\times" <ExpExp> {nf.math.mul($1,$3)}
+         | <MulExp> <ExpExp>     {nf.math.mul($1,$2)}
+         | <MulExp> "/" <ExpExp> {nf.math.div($1,$3)}
+         | <MulExp> "÷" <ExpExp> {nf.math.div($1,$3)}
+         | "\\frac" "{" <Exp> "}" "{" <Exp> "}" {nf.math.div($3,$6)}
+         | <ExpExp> {nf.I($1)}
+         ;
+
+<ExpExp> = <PriExp> "^" <ExpExp>  {nf.math.pow($1,$3)}
+         | <PriExp> "**" <ExpExp> {nf.math.pow($1,$3)}
+         | "\\sqrt" "{" <Exp> "}" {nf.math.pow($3,0.5)}
+         | <PriExp> {nf.I($1)}
+         ;
+
+<SignExp> = "+" <PriExp> {nf.I($2)}
+          ;
+
+<PriExp> = "\(" <Exp> ")" {nf.I($2)}
+         | "{" <Exp> "}" {nf.I($2)}
+         | "|" <Exp> "|" {nf.math.abs($2)}
+         | <numeric> {nf.math.to_number($1)}
+         | <letters> {nf.math.expression($1)}
+         ;
+
+<VerbExp> = <Exp> "=" <Exp> {vf.be.eq($1,$3)}
+          | <Exp> "\\neq" <Exp> {vf.be.neq($1,$3)}
+          | <Exp> "≠" <Exp> {vf.be.neq($1,$3)}
+          | <Exp> ">" <Exp> {vf.be.gt($1,$3)}
+          | <Exp> "≥" <Exp> {vf.be.geq($1,$3)}
+          | <Exp> "\\geq" <Exp> {vf.be.geq($1,$3)}
+          | <Exp> "<" <Exp> {vf.be.lt($1,$3)}
+          | <Exp> "≤" <Exp> {vf.be.leq($1,$3)}
+          | <Exp> "\\leq" <Exp> {vf.be.leq($1,$3)}
+          | <Exp> "\\ " <letters> <Exp> {nf.math.op($3,$1,$4)}
+          ;
+
+<Func> = "f"|"g";
+
+<Exp> = <Func> "\(" <Exp> ")" {nf.math.func($1,$3)};
+
+
+<start> = <VerbExp> {nf.I($1)}
+        | <Exp> {nf.I($1)}
+        ;

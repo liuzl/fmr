@@ -1,0 +1,29 @@
+#include "math.en.grammar"
+#include "math.zh.grammar"
+
+<Exp> = <AddExp> {nf.I($1)};
+
+<AddExp> = <AddExp> "+" <MulExp> {nf.math.sum($1,$3)}
+         | <AddExp> "-" <MulExp> {nf.math.sub($1,$3)}
+         | <MulExp> {nf.I($1)}
+         ;
+
+<MulExp> = <MulExp> "*" <ExpExp> {nf.math.mul($1,$3)}
+         | <MulExp> "×" <ExpExp> {nf.math.mul($1,$3)}
+         | <MulExp> "/" <ExpExp> {nf.math.div($1,$3)}
+         | <MulExp> "÷" <ExpExp> {nf.math.div($1,$3)}
+         | <ExpExp> {nf.I($1)}
+         ;
+
+<ExpExp> = <PriExp> "^" <ExpExp>  {nf.math.pow($1,$3)}
+         | <PriExp> "**" <ExpExp> {nf.math.pow($1,$3)}
+         | <PriExp> {nf.I($1)}
+         ;
+
+<PriExp> = "\(" <Exp> ")" {nf.I($2)}
+         | "+" <PriExp> {nf.I($2)}
+         | "-" <PriExp> {nf.math.neg($2)}
+         | <number> {nf.I($1)}
+         | <letters> {nf.math.expression($1)}
+         ;
+

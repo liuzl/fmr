@@ -1,0 +1,98 @@
+<unit> = "zero"  {nf.I(0)}
+       | "one"   {nf.I(1)}
+       | "two"   {nf.I(2)}
+       | "three" {nf.I(3)}
+       | "four"  {nf.I(4)}
+       | "five"  {nf.I(5)}
+       | "six"   {nf.I(6)}
+       | "seven" {nf.I(7)}
+       | "eight" {nf.I(8)}
+       | "nine"  {nf.I(9)}
+       ;
+
+<numbers> = <unit>           {nf.I($1)}
+          | <unit> <numbers> {nf.util.concat($1,$2)}
+          ;
+
+<ten> = "ten"       {nf.I(10)}
+      | "eleven"    {nf.I(11)}
+      | "twelve"    {nf.I(12)}
+      | "thirteen"  {nf.I(13)}
+      | "fourteen"  {nf.I(14)}
+      | "fifteen"   {nf.I(15)}
+      | "sixteen"   {nf.I(16)}
+      | "seventeen" {nf.I(17)}
+      | "eighteen"  {nf.I(18)}
+      | "nineteen"  {nf.I(19)}
+      ;
+
+<tens> = "twenty"  {nf.I(20)}
+       | "thirty"  {nf.I(30)}
+       | "forty"   {nf.I(40)}
+       | "fifty"   {nf.I(50)}
+       | "sixty"   {nf.I(60)}
+       | "seventy" {nf.I(70)}
+       | "eighty"  {nf.I(80)}
+       | "ninety"  {nf.I(90)}
+       ;
+
+<e1> = <unit> {nf.I($1)}
+     | <ten>  {nf.I($1)}
+     | <tens> {nf.I($1)}
+     | <tens> <unit>     {nf.math.sum($1,$2)}
+     | <tens> "-" <unit> {nf.math.sum($1,$3)}
+     ;
+
+<e2>  = "hundred"  {nf.I(100)};
+<e3>  = "thousand" {nf.I(1000)};
+<e6>  = "million"  {nf.I(1000000)};
+<e9>  = "billion"  {nf.I(1000000000)};
+<e12> = "trillion" {nf.I(1000000000000)};
+
+<e2s> = <e1> {nf.I($1)}
+      | <e2> {nf.I($1)}
+      | <e1> <e2> {nf.math.mul($1,$2)}
+      | <e1> <e2> <e1>       {nf.math.sum(nf.math.mul($1,$2),$3)}
+      | <e1> <e2> "and" <e1> {nf.math.sum(nf.math.mul($1,$2),$4)}
+      ;
+
+<e3s> = <e2s> {nf.I($1)}
+      | <e3>  {nf.I($1)}
+      | <e2s> <e3> {nf.math.mul($1,$2)}
+      | <e2s> <e3> <e2s> {nf.math.sum(nf.math.mul($1,$2),$3)}
+      | <e2s> <e3> "and" <e2s> {nf.math.sum(nf.math.mul($1,$2),$4)}
+      ;
+
+<e6s> = <e3s> {nf.I($1)}
+      | <e6>  {nf.I($1)}
+      | <e3s> <e6> {nf.math.mul($1,$2)}
+      | <e3s> <e6> <e3s> {nf.math.sum(nf.math.mul($1,$2),$3)}
+      | <e3s> <e6> "and" <e3s> {nf.math.sum(nf.math.mul($1,$2),$4)}
+      ;
+
+<e9s> = <e6s> {nf.I($1)}
+      | <e9>  {nf.I($1)}
+      | <e6s> <e9> {nf.math.mul($1,$2)}
+      | <e6s> <e9> <e6s> {nf.math.sum(nf.math.mul($1,$2),$3)}
+      | <e6s> <e9> "and" <e6s> {nf.math.sum(nf.math.mul($1,$2),$4)}
+      ;
+
+<e12s> = <e9s>  {nf.I($1)}
+       | <e12>  {nf.I($1)}
+       | <e9s> <e12> {nf.math.mul($1,$2)}
+       | <e9s> <e12> <e9s> {nf.math.sum(nf.math.mul($1,$2),$3)}
+       | <e9s> <e12> "and" <e9s> {nf.math.sum(nf.math.mul($1,$2),$4)}
+       ;
+
+<en_decimal> = "point" <numbers> {nf.math.decimal($2)};
+
+<en_number> = <e12s> {nf.I($1)};
+
+<number> = <en_number> {nf.I($1)}
+         | <en_decimal> {nf.I($1)}
+         | <en_number> <en_decimal> {nf.math.sum($1,$2)}
+         | <en_number> "and" <en_decimal> {nf.math.sum($1,$3)}
+         ;
+
+//<number> = <number> <e3> {nf.math.mul($1,$2)};
+//<number> = <number> <e6> {nf.math.mul($1,$2)};
