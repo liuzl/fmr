@@ -31,8 +31,6 @@ github.com/liuzl/dict v0.0.0-20180720023830-2cdb4749152d h1:pAN7QPdrG4eo+6ggl8ZP
 github.com/liuzl/dict v0.0.0-20180720023830-2cdb4749152d/go.mod h1:UXlqqhJaw28ned67lp11D9ZBDoFfFBCLhfQVcFjTn4w=
 github.com/liuzl/filestore v0.0.0-20180524083855-72874e76a47c h1:6VT4UtPIQ3YvLnZLRLPK57dtwDbpfR8KFUf+o660dfI=
 github.com/liuzl/filestore v0.0.0-20180524083855-72874e76a47c/go.mod h1:aMgfSMkON/7fp+l9vv8w0xq870iSPVrNs7IqEu3xu5Q=
-github.com/liuzl/fmr v0.1.0 h1:mCjAooObzx3Hnl4NtxAkTdOuDNUkCTbaWjVo2wlMklw=
-github.com/liuzl/fmr v0.1.0/go.mod h1:/rW53e7F6ybkMGvXrRvE2T9PDUODm7YAzunlNYsHZgc=
 github.com/liuzl/goutil v0.0.0-20190215100315-4dfc4931403a h1:v+vRnomNnozEF+pep9AiHMlq6AHlnBJjH4zt1O33HV8=
 github.com/liuzl/goutil v0.0.0-20190215100315-4dfc4931403a/go.mod h1:bs5NOyZVxtkxzxw2wWhglhguMUE7PesJQ3TcaFNxWcU=
 github.com/liuzl/ling v0.0.0-20190129005517-86df2f994ffd h1:KCF2ByjUazIP8Gb4OcKgcUPgV/jgGvKrhp6LfPcI/E4=
