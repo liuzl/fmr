@@ -27,6 +27,7 @@ require (
 	github.com/rs/zerolog v1.17.2 // indirect
 	github.com/stretchr/testify v1.4.0 // indirect
 	github.com/syndtr/goleveldb v1.0.0 // indirect
+	github.com/xlab/treeprint v0.0.0-20181112141820-a009c3971eca
 	golang.org/x/text v0.3.2 // indirect
 	gopkg.in/VividCortex/ewma.v1 v1.1.1 // indirect
 	gopkg.in/cheggaaa/pb.v2 v2.0.7 // indirect
