@@ -143,8 +143,7 @@ func (p *Parse) buildTreesHelper(children *[]*Node, state *TableState,
 			cld := []*Node{subTree}
 			cld = append(cld, *children...)
 			// now try all options
-			for _, node := range p.buildTreesHelper(&cld, state,
-				termIndex-1, st.Start) {
+			for _, node := range p.buildTreesHelper(&cld, state, termIndex-1, st.Start) {
 				outputs = append(outputs, node)
 			}
 		}
