@@ -84,19 +84,19 @@ func (n *Node) semEval(arg *Arg, nodes []*Node) (interface{}, error) {
 		}
 		return s, nil
 	case "context":
-		attrs := []map[string]interface{}{}
+		subnodes := []map[string]interface{}{}
 		for _, node := range nodes {
 			ni, err := node.Eval()
 			if err != nil {
 				ni = node.OriginalText()
 			}
-			attrs = append(attrs, map[string]interface{}{node.Term().Value: ni})
+			subnodes = append(subnodes, map[string]interface{}{node.Term().Value: ni})
 		}
 		ret := map[string]interface{}{
 			"type":  n.Term().Value,
 			"text":  n.OriginalText(),
 			"pos":   n.Pos(),
-			"attrs": attrs,
+			"nodes": subnodes,
 		}
 		return ret, nil
 	default:
