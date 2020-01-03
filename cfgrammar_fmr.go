@@ -56,6 +56,10 @@ func (p *parser) funcArgs() (args []*Arg, err error) {
 	for {
 		p.ws()
 		switch r = p.peek(); {
+		case r == '@':
+			if arg, err = p.contextArg(); err != nil {
+				return
+			}
 		case r == '$':
 			if arg, err = p.idxArg(); err != nil {
 				return
@@ -99,13 +103,16 @@ func (p *parser) funcArgs() (args []*Arg, err error) {
 	return
 }
 
-func (p *parser) idxArg() (arg *Arg, err error) {
-	if err = p.eat('$'); err != nil {
+func (p *parser) contextArg() (arg *Arg, err error) {
+	if err = p.eat('@'); err != nil {
 		return
 	}
-	if p.peek() == '@' {
-		p.eat('@')
-		arg = &Arg{"context", "@"}
+	arg = &Arg{"context", "@"}
+	return
+}
+
+func (p *parser) idxArg() (arg *Arg, err error) {
+	if err = p.eat('$'); err != nil {
 		return
 	}
 	var idx int
