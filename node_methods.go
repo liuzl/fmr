@@ -60,6 +60,7 @@ func (n *Node) Tree() map[string]interface{} {
 		"type": n.Term().Value,
 		"text": n.OriginalText(),
 		"pos":  n.Pos(),
+		//"fmr":  n.F(),
 	}
 	if n.Value.Rb == nil || n.Value.Rb.F == nil {
 		return ret
