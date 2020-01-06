@@ -1,6 +1,8 @@
 package fmr
 
 import (
+	"strings"
+
 	"github.com/liuzl/goutil"
 )
 
@@ -51,14 +53,21 @@ func (n *Node) Tree() map[string]interface{} {
 	if n.Value.Term.Value == GammaRule {
 		return n.Children[0].Tree()
 	}
+	if n.p == nil {
+		return nil
+	}
+	ret := map[string]interface{}{
+		"type": n.Term().Value,
+		"text": n.OriginalText(),
+		"pos":  n.Pos(),
+	}
 	if n.Value.Rb == nil || n.Value.Rb.F == nil {
-		if n.p == nil {
-			return nil
-		}
-		return map[string]interface{}{
-			"type": n.Term().Value,
-			"text": n.OriginalText(),
-			"pos":  n.Pos(),
+		return ret
+	}
+	if len(n.Children) == 1 {
+		s := n.Children[0].Value.Term.Value
+		if strings.HasPrefix(s, "g_t_") || strings.HasPrefix(s, "l_t_") {
+			return ret
 		}
 	}
 
@@ -66,10 +75,6 @@ func (n *Node) Tree() map[string]interface{} {
 	for _, node := range n.Children {
 		subnodes = append(subnodes, node.Tree())
 	}
-	return map[string]interface{}{
-		"type":  n.Term().Value,
-		"text":  n.OriginalText(),
-		"pos":   n.Pos(),
-		"nodes": subnodes,
-	}
+	ret["nodes"] = subnodes
+	return ret
 }
