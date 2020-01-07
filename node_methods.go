@@ -1,6 +1,8 @@
 package fmr
 
 import (
+	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/liuzl/goutil"
@@ -78,4 +80,33 @@ func (n *Node) Tree() map[string]interface{} {
 	}
 	ret["nodes"] = subnodes
 	return ret
+}
+
+// Bracketed returns the labeled bracket notation of Node
+func (n *Node) Bracketed() string {
+	if n.Value.Term.Value == GammaRule {
+		return n.Children[0].Bracketed()
+	}
+	if n.p == nil {
+		return ""
+	}
+	var b strings.Builder
+	fmt.Fprintf(&b, "[%s ", n.Term().Value)
+	if n.Value.Rb == nil || n.Value.Rb.F == nil {
+		fmt.Fprintf(&b, "%s]", strconv.Quote(n.OriginalText()))
+		return b.String()
+	}
+	if len(n.Children) == 1 {
+		s := n.Children[0].Value.Term.Value
+		if strings.HasPrefix(s, "g_t_") || strings.HasPrefix(s, "l_t_") {
+			fmt.Fprintf(&b, "%s]", strconv.Quote(n.OriginalText()))
+			return b.String()
+		}
+	}
+	subnodes := []string{}
+	for _, node := range n.Children {
+		subnodes = append(subnodes, node.Bracketed())
+	}
+	fmt.Fprintf(&b, "%s]", strings.Join(subnodes, " "))
+	return b.String()
 }
