@@ -1,12 +1,15 @@
 package fmr
 
 import (
+	"flag"
 	"fmt"
 	"strings"
 	"sync"
 
 	"github.com/liuzl/ling"
 )
+
+var apiTagger = flag.String("api_tagger", "", "http address of api tagger")
 
 var nlp *ling.Pipeline
 var once sync.Once
@@ -23,6 +26,16 @@ func NLP() *ling.Pipeline {
 			panic(err)
 		}
 		if err = nlp.AddTagger(tagger); err != nil {
+			panic(err)
+		}
+		if *apiTagger == "" {
+			return
+		}
+		var tagger1 *ling.ApiTagger
+		if tagger1, err = ling.NewApiTagger(*apiTagger); err != nil {
+			panic(err)
+		}
+		if err = nlp.AddTagger(tagger1); err != nil {
 			panic(err)
 		}
 	})
