@@ -3,11 +3,14 @@ module github.com/liuzl/fmr
 go 1.13
 
 require (
+	crawler.club/dl v0.0.0-20180802230048-83d6f23785a0 // indirect
 	github.com/adamzy/cedar-go v0.0.0-20170805034717-80a9c64b256d // indirect
+	github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394 // indirect
 	github.com/cheggaaa/pb v2.0.7+incompatible // indirect
 	github.com/crawlerclub/x v0.1.0 // indirect
 	github.com/eknkc/basex v1.0.0 // indirect
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
+	github.com/juju/errors v0.0.0-20190930114154-d42613fe1ab9 // indirect
 	github.com/justinas/alice v1.2.0 // indirect
 	github.com/liuzl/cedar-go v0.0.0-20170805034717-80a9c64b256d // indirect
 	github.com/liuzl/d v0.0.0-20190728125141-612d8f3fb02f // indirect
@@ -15,7 +18,7 @@ require (
 	github.com/liuzl/dict v0.0.0-20180720023830-2cdb4749152d
 	github.com/liuzl/filestore v0.0.0-20180524083855-72874e76a47c // indirect
 	github.com/liuzl/goutil v0.0.0-20190215100315-4dfc4931403a
-	github.com/liuzl/ling v0.0.0-20190129005517-86df2f994ffd
+	github.com/liuzl/ling v0.0.0-20200109014052-4e8894eac43b
 	github.com/liuzl/segment v0.0.0-20160915185041-762005e7a34f // indirect
 	github.com/liuzl/store v0.0.0-20190530065605-e2dbcd3c77fc // indirect
 	github.com/liuzl/tokenizer v0.0.0-20181128060327-56c1056833c1 // indirect
@@ -25,8 +28,10 @@ require (
 	github.com/mitchellh/hashstructure v1.0.0
 	github.com/robertkrimen/otto v0.0.0-20180617131154-15f95af6e78d
 	github.com/rs/zerolog v1.17.2 // indirect
+	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca // indirect
 	github.com/stretchr/testify v1.4.0 // indirect
 	github.com/syndtr/goleveldb v1.0.0 // indirect
+	github.com/torden/go-strutil v0.1.5 // indirect
 	github.com/xlab/treeprint v0.0.0-20181112141820-a009c3971eca
 	golang.org/x/text v0.3.2 // indirect
 	gopkg.in/VividCortex/ewma.v1 v1.1.1 // indirect
