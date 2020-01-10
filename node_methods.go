@@ -92,17 +92,24 @@ func (n *Node) Bracketed() string {
 	}
 	var b strings.Builder
 	fmt.Fprintf(&b, "[%s ", n.Term().Value)
-	if n.Value.Rb == nil || n.Value.Rb.F == nil {
+
+	allTerminal := true
+	for _, node := range n.Children {
+		if node.Value.Term.Type == Terminal {
+			continue
+		}
+		s := node.Value.Term.Value
+		if strings.HasPrefix(s, "g_t_") || strings.HasPrefix(s, "l_t_") {
+			continue
+		}
+		allTerminal = false
+		break
+	}
+	if allTerminal {
 		fmt.Fprintf(&b, "%s]", strconv.Quote(n.OriginalText()))
 		return b.String()
 	}
-	if len(n.Children) == 1 {
-		s := n.Children[0].Value.Term.Value
-		if strings.HasPrefix(s, "g_t_") || strings.HasPrefix(s, "l_t_") {
-			fmt.Fprintf(&b, "%s]", strconv.Quote(n.OriginalText()))
-			return b.String()
-		}
-	}
+
 	subnodes := []string{}
 	for _, node := range n.Children {
 		subnodes = append(subnodes, node.Bracketed())

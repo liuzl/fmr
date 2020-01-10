@@ -50,7 +50,12 @@ func (g *Grammar) localGrammar(d *ling.Document) (*Grammar, error) {
 		if !ok {
 			continue
 		}
-		terms := []*Term{{Value: span.String(), Type: Terminal}}
+		//terms := []*Term{{Value: span.String(), Type: Terminal}}
+		var terms []*Term
+		for i := span.Start; i < span.End; i++ {
+			terms = append(terms,
+				&Term{Value: span.Doc.Tokens[i].Text, Type: Terminal})
+		}
 		for k, values := range m {
 			rb := &RuleBody{terms, nil}
 			switch values.(type) {
@@ -79,8 +84,10 @@ func (g *Grammar) localGrammar(d *ling.Document) (*Grammar, error) {
 	if len(l.Rules) == 0 {
 		return nil, nil
 	}
-	if err := l.refine("l"); err != nil {
-		return nil, err
-	}
+	/*
+		if err := l.refine("l"); err != nil {
+			return nil, err
+		}
+	*/
 	return l, nil
 }
