@@ -101,10 +101,12 @@ func (n *Node) semStr(arg *Arg, nodes []*Node, nl string) (string, error) {
 			subnodes = append(subnodes, map[string]interface{}{node.Term().Value: ni})
 		}
 		ret := map[string]interface{}{
-			"type":  n.Term().Value,
 			"text":  n.OriginalText(),
 			"pos":   n.Pos(),
 			"nodes": subnodes,
+		}
+		if n.Term().Type != Terminal {
+			ret["type"] = n.Term().Value
 		}
 		s, _ := json.Marshal(ret)
 		return string(s), nil
