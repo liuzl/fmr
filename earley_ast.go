@@ -25,6 +25,9 @@ func (p *Parse) Boundary(finalState *TableState) *Pos {
 	}
 	start := p.columns[finalState.Start+1].token.StartByte
 	end := p.columns[finalState.End].token.EndByte
+	if end < start { //TODO
+		end = start
+	}
 	return &Pos{start, end}
 }
 
