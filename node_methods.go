@@ -67,11 +67,21 @@ func (n *Node) Tree() map[string]interface{} {
 	if n.Value.Rb == nil || n.Value.Rb.F == nil {
 		return ret
 	}
-	if len(n.Children) == 1 {
-		s := n.Children[0].Value.Term.Value
-		if strings.HasPrefix(s, "g_t_") || strings.HasPrefix(s, "l_t_") {
-			return ret
+
+	allTerminal := true
+	for _, node := range n.Children {
+		if node.Value.Term.Type == Terminal {
+			continue
 		}
+		s := node.Value.Term.Value
+		if strings.HasPrefix(s, "g_t_") || strings.HasPrefix(s, "l_t_") {
+			continue
+		}
+		allTerminal = false
+		break
+	}
+	if allTerminal {
+		return ret
 	}
 
 	subnodes := []interface{}{}
