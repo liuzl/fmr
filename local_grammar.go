@@ -64,10 +64,8 @@ func (g *Grammar) localGrammar(d *ling.Document) (*Grammar, error) {
 				for _, v := range values.([]string) {
 					args = append(args, &Arg{"string", v})
 				}
-				list := &FMR{"fmr.list", args}
-				rb.F = &FMR{
-					"fmr.entity",
-					[]*Arg{{"string", k}, {"func", list}},
+				rb.F = &FMR{"fmr.entity",
+					[]*Arg{{"string", k}, {"func", &FMR{"fmr.list", args}}},
 				}
 			}
 			hash, err := hashstructure.Hash(rb, nil)
