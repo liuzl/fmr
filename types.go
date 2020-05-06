@@ -51,14 +51,14 @@ type Slot struct {
 	Trees []*Node
 }
 
-// A SlotFilling is a frame consists of Slots
-type SlotFilling struct {
-	Fillings map[uint64][]*Slot
+// A Frame is a frame consists of Slots
+type Frame struct {
+	Slots    map[uint64][]*Slot
 	Complete bool
 }
 
-func (s *SlotFilling) String() string {
-	return fmt.Sprintf("Complete:%+v, %+v", s.Complete, s.Fillings)
+func (f *Frame) String() string {
+	return fmt.Sprintf("Complete:%+v, %+v", f.Complete, f.Slots)
 }
 
 // A Rule stores a set of production rules of Name
