@@ -3,13 +3,17 @@ package fmr
 import (
 	"flag"
 	"fmt"
+	"net/url"
 	"strings"
 	"sync"
 
 	"github.com/liuzl/ling"
 )
 
-var apiTagger = flag.String("api_tagger", "", "http address of api tagger")
+var (
+	apiTagger = flag.String("api_tagger", "", "http address of api tagger")
+	ctxTagger = flag.String("ctx_tagger", "", "http address of context tagger")
+)
 
 var nlp *ling.Pipeline
 var once sync.Once
@@ -44,7 +48,13 @@ func NLP() *ling.Pipeline {
 
 // EarleyParse parses text for rule <start> at beginning
 func (g *Grammar) EarleyParse(text string, starts ...string) (*Parse, error) {
-	tokens, l, err := g.process(text)
+	return g.EarleyParseWithContext("", text, starts...)
+}
+
+// EarleyParseWithContext with context information
+func (g *Grammar) EarleyParseWithContext(
+	context, text string, starts ...string) (*Parse, error) {
+	tokens, l, err := g.process(context, text)
 	if err != nil {
 		return nil, err
 	}
@@ -52,14 +62,24 @@ func (g *Grammar) EarleyParse(text string, starts ...string) (*Parse, error) {
 }
 
 // EarleyParseAny parses text for rule <start> at any position
-func (g *Grammar) EarleyParseAny(text string, starts ...string) (*Parse, error) {
-	tokens, l, err := g.process(text)
+func (g *Grammar) EarleyParseAny(
+	text string, starts ...string) (*Parse, error) {
+
+	return g.EarleyParseAnyWithContext("", text, starts...)
+}
+
+//EarleyParseAnyWithContext with context information
+func (g *Grammar) EarleyParseAnyWithContext(
+	context, text string, starts ...string) (*Parse, error) {
+
+	tokens, l, err := g.process(context, text)
 	if err != nil {
 		return nil, err
 	}
 	var p *Parse
 	for i := 0; i < len(tokens); i++ {
-		if p, err = g.earleyParse(true, text, tokens[i:], l, starts...); err != nil {
+		if p, err = g.earleyParse(
+			true, text, tokens[i:], l, starts...); err != nil {
 			return nil, err
 		}
 		if p.finalStates != nil {
@@ -70,8 +90,15 @@ func (g *Grammar) EarleyParseAny(text string, starts ...string) (*Parse, error) 
 }
 
 // EarleyParseMaxAll extracts all submatches in text for rule <start>
-func (g *Grammar) EarleyParseMaxAll(text string, starts ...string) ([]*Parse, error) {
-	tokens, l, err := g.process(text)
+func (g *Grammar) EarleyParseMaxAll(
+	text string, starts ...string) ([]*Parse, error) {
+	return g.EarleyParseMaxAllWithContext("", text, starts...)
+}
+
+// EarleyParseMaxAllWithContext with context information
+func (g *Grammar) EarleyParseMaxAllWithContext(
+	context, text string, starts ...string) ([]*Parse, error) {
+	tokens, l, err := g.process(context, text)
 	if err != nil {
 		return nil, err
 	}
@@ -98,8 +125,15 @@ func (g *Grammar) EarleyParseMaxAll(text string, starts ...string) ([]*Parse, er
 }
 
 // EarleyParseAll extracts all submatches in text for rule <start>
-func (g *Grammar) EarleyParseAll(text string, starts ...string) ([]*Parse, error) {
-	tokens, l, err := g.process(text)
+func (g *Grammar) EarleyParseAll(
+	text string, starts ...string) ([]*Parse, error) {
+	return g.EarleyParseAllWithContext("", text, starts...)
+}
+
+// EarleyParseAllWithContext with context information
+func (g *Grammar) EarleyParseAllWithContext(
+	context, text string, starts ...string) ([]*Parse, error) {
+	tokens, l, err := g.process(context, text)
 	if err != nil {
 		return nil, err
 	}
@@ -145,13 +179,31 @@ func (g *Grammar) earleyParse(maxFlag bool, text string,
 	return parse, nil
 }
 
-func (g *Grammar) process(text string) ([]*ling.Token, *Grammar, error) {
+func (g *Grammar) process(c, text string) ([]*ling.Token, *Grammar, error) {
 	if text = strings.TrimSpace(text); text == "" {
 		return nil, nil, fmt.Errorf("text is empty")
 	}
 	d := ling.NewDocument(text)
-	if err := NLP().Annotate(d); err != nil {
-		return nil, nil, err
+	if c == "" {
+		if err := NLP().Annotate(d); err != nil {
+			return nil, nil, err
+		}
+	} else {
+		if *ctxTagger == "" {
+			return nil, nil, fmt.Errorf("ctxTagger should be supplied")
+		}
+		vurl, err := url.ParseRequestURI(*ctxTagger)
+		if err != nil {
+			return nil, nil, err
+		}
+		vurl.Query().Set("context", c)
+		tagger, err := ling.NewAPITagger(vurl.String())
+		if err != nil {
+			return nil, nil, err
+		}
+		if err = NLP().AnnotatePro(d, tagger); err != nil {
+			return nil, nil, err
+		}
 	}
 	var ret []*ling.Token
 	for _, token := range d.Tokens {
