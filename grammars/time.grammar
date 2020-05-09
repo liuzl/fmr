@@ -1,0 +1,39 @@
+#include "math.zh.grammar"
+
+<year> = <number> "年" {nf.datetime.year($1)}
+//       | <numbers> "年" {nf.datetime.year($1)}
+       ;
+<month> = <number> "月" {nf.datetime.month($1)};
+<day> = <number> "日" {nf.datetime.month($1)}
+      | <number> "号" {nf.datetime.month($1)};
+
+
+<date> = <year> <month> <day>
+       | <month> <day>
+       | <year> <month>
+       | <year> {nf.I($1)}
+       | <month> {nf.I($1)}
+       | <day> {nf.I($1)}
+       ;
+
+<time> = <date>; // tagger里面也会根据正则打标一些
+
+<before> = <time> "前"         {nf.sql.where("<", $1)}
+         | <time> "之前"       {nf.sql.where("<", $1)}
+         | <number> "前"       {nf.sql.where("<", $1)}
+         | <number> "之前"     {nf.sql.where("<", $1)}
+         | <time> "及之前"     {nf.sql.where("<=", $1)}
+         | <time> "及其之前"   {nf.sql.where("<=", $1)}
+         | <number> "及之前"   {nf.sql.where("<=", $1)}
+         | <number> "及其之前" {nf.sql.where("<=", $1)}
+         ;
+
+<after> = <time> "后"         {nf.sql.where(">", $1)}
+        | <time> "之后"       {nf.sql.where(">", $1)}
+        | <number> "后"       {nf.sql.where(">", $1)}
+        | <number> "之后"     {nf.sql.where(">", $1)}
+        | <time> "及之后"     {nf.sql.where(">=", $1)}
+        | <time> "及其之后"   {nf.sql.where(">=", $1)}
+        | <number> "及之后"   {nf.sql.where(">=", $1)}
+        | <number> "及其之后" {nf.sql.where(">=", $1)}
+        ;

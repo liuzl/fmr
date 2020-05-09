@@ -1,0 +1,12 @@
+/*
+ * Author: liang@zliu.org
+ */
+
+#include "math.zh.grammar"
+
+<limit_prefix> = "前";
+<limit_suffix> = "个";
+
+<limit> = <limit_prefix> <number> {nf.sql.limit($2)}
+        | <number> <limit_suffix> {nf.sql.limit($1)}
+        ;

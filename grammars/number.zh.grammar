@@ -1,0 +1,102 @@
+<cn_unit> = "一" {nf.I(1)}
+          | "二" {nf.I(2)}
+          | "三" {nf.I(3)}
+          | "四" {nf.I(4)}
+          | "五" {nf.I(5)}
+          | "六" {nf.I(6)}
+          | "七" {nf.I(7)}
+          | "八" {nf.I(8)}
+          | "九" {nf.I(9)}
+          | "壹" {nf.I(1)}
+          | "贰" {nf.I(2)}
+          | "叁" {nf.I(3)}
+          | "肆" {nf.I(4)}
+          | "伍" {nf.I(5)}
+          | "陆" {nf.I(6)}
+          | "柒" {nf.I(7)}
+          | "捌" {nf.I(8)}
+          | "玖" {nf.I(9)}
+          | "两" {nf.I(2)}
+          | "俩" {nf.I(2)}
+          | "仨" {nf.I(3)}
+          ;
+
+<cn_zero> = "零" {nf.I(0)}
+          | "〇" {nf.I(0)}
+          ;
+
+
+<cn_digit> = <cn_unit> {nf.I($1)} | <cn_zero> {nf.I($1)} | <digits> {nf.I($1)};
+
+<numbers> = <cn_digit> {nf.I($1)}
+          | <cn_digit> <numbers> {nf.util.concat($1, $2)}
+          ;
+
+<cn_e1> = "十" {nf.I(10)}
+        | "拾" {nf.I(10)}
+        ;
+
+<cn_e2> = "百" {nf.I(100)}
+        | "佰" {nf.I(100)}
+        ;
+
+<cn_e3> = "千" {nf.I(1000)}
+        | "仟" {nf.I(1000)}
+        ;
+
+<cn_e4> = "万" {nf.I(10000)};
+
+<cn_e8> = "亿"   {nf.I(100000000)}
+        | "万万" {nf.I(100000000)}
+        ;
+
+<cn_e1s> = <cn_e1>                     {nf.I($1)}
+         | <cn_e1> <cn_unit>           {nf.math.sum($1,$2)}
+         | <cn_unit> <cn_e1>           {nf.math.mul($1, $2)}
+         | <cn_unit> <cn_e1> <cn_unit> {nf.math.sum(nf.math.mul($1, $2), $3)}
+         | <cn_unit>                   {nf.I($1)}
+         | <cn_zero>                   {nf.I($1)}
+         ;
+
+<cn_e2s> = <cn_unit> <cn_e2>                    {nf.math.mul($1, $2)}
+         | <cn_unit> <cn_e2> <cn_unit>          {nf.math.sum(nf.math.mul($1, $2), nf.math.mul(10,$3))}
+         | <cn_unit> <cn_e2> <cn_e1s>           {nf.math.sum(nf.math.mul($1, $2), $3)}
+         | <cn_unit> <cn_e2> <cn_zero> <cn_e1s> {nf.math.sum(nf.math.mul($1, $2), $4)}
+         | <cn_e1s>                             {nf.I($1)}
+         ;
+
+<cn_e3s> = <cn_unit> <cn_e3>                    {nf.math.mul($1, $2)}
+         | <cn_unit> <cn_e3> <cn_unit>          {nf.math.sum(nf.math.mul($1, $2), nf.math.mul(100,$3))}
+         | <cn_unit> <cn_e3> <cn_e2s>           {nf.math.sum(nf.math.mul($1, $2), $3)}
+         | <cn_unit> <cn_e3> <cn_zero> <cn_e2s> {nf.math.sum(nf.math.mul($1, $2), $4)}
+         | <cn_e2s>                             {nf.I($1)}
+         ;
+
+<cn_e4s> = <cn_e3s> <cn_e4>                    {nf.math.mul($1, $2)}
+         | <cn_e3s> <cn_e4> <cn_unit>          {nf.math.sum(nf.math.mul($1, $2), nf.math.mul(1000,$3))}
+         | <cn_e3s> <cn_e4> <cn_e3s>           {nf.math.sum(nf.math.mul($1, $2), $3)}
+         | <cn_e3s> <cn_e4> <cn_zero> <cn_e3s> {nf.math.sum(nf.math.mul($1, $2), $4)}
+         | <cn_e3s>                            {nf.I($1)}
+         | <numeric> <cn_e4>                   {nf.math.mul($1, $2)}
+         ;
+
+<cn_e8s> = <cn_e4s> <cn_e8>                    {nf.math.mul($1, $2)}
+         | <cn_e4s> <cn_e8> <cn_unit>          {nf.math.sum(nf.math.mul($1, $2), nf.math.mul(10000000,$3))}
+         | <cn_e4s> <cn_e8> <cn_e4s>           {nf.math.sum(nf.math.mul($1, $2), $3)}
+         | <cn_e4s> <cn_e8> <cn_zero> <cn_e4s> {nf.math.sum(nf.math.mul($1, $2), $4)}
+         | <cn_e4s>                            {nf.I($1)}
+         | <numeric> <cn_e8>                   {nf.math.mul($1, $2)}
+         ;
+
+<cn_decimal> = "点" <numbers> {nf.math.decimal($2)};
+
+<number> = <cn_e8s>              {nf.I($1)}
+         | <cn_decimal>          {nf.I($1)}
+         | <cn_e8s> <cn_decimal> {nf.math.sum($1,$2)}
+         ;
+
+<number> = <cn_e2> {nf.I($1)}
+         | <cn_e3> {nf.I($1)}
+         | <cn_e4> {nf.I($1)}
+         | <cn_e8> {nf.I($1)}
+         ;

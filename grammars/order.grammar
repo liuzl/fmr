@@ -1,0 +1,15 @@
+/*
+ * Author: liang@zliu.org
+ */
+
+// order by clause
+
+<asc> = "从近到远" | "从少到多" | "从小到大" | "从慢到快" | "升序" | "排名最低"
+      | "最小" | "最少" | "最慢";
+<desc> = "从远到近" | "从多到少" | "从大到小" | "从快到慢" | "降序" | "排名最高"
+       | "最大" | "最多" | "最快";
+<order_prefix> = "按" | "获得" | "获得的" | "给出" | "根据" | "按照" | "依据";
+
+<iorder> = <order_prefix> (any) <asc> {nf.sql.order($2,"asc")}
+        | <order_prefix> (any) <desc> {nf.sql.order($2,"desc")}
+        ;
