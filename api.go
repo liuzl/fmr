@@ -31,8 +31,8 @@ func NLP() *ling.Pipeline {
 		if *apiTagger == "" {
 			return
 		}
-		var tagger1 *ling.ApiTagger
-		if tagger1, err = ling.NewApiTagger(*apiTagger); err != nil {
+		var tagger1 *ling.APITagger
+		if tagger1, err = ling.NewAPITagger(*apiTagger); err != nil {
 			panic(err)
 		}
 		if err = nlp.AddTagger(tagger1); err != nil {
