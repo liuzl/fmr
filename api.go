@@ -179,12 +179,13 @@ func (g *Grammar) earleyParse(maxFlag bool, text string,
 	return parse, nil
 }
 
-func (g *Grammar) process(c, text string) ([]*ling.Token, *Grammar, error) {
+func (g *Grammar) process(
+	context, text string) ([]*ling.Token, *Grammar, error) {
 	if text = strings.TrimSpace(text); text == "" {
 		return nil, nil, fmt.Errorf("text is empty")
 	}
 	d := ling.NewDocument(text)
-	if c == "" {
+	if context == "" {
 		if err := NLP().Annotate(d); err != nil {
 			return nil, nil, err
 		}
@@ -196,7 +197,9 @@ func (g *Grammar) process(c, text string) ([]*ling.Token, *Grammar, error) {
 		if err != nil {
 			return nil, nil, err
 		}
-		vurl.Query().Set("context", c)
+		c := vurl.Query()
+		c.Set("context", context)
+		vurl.RawQuery = c.Encode()
 		tagger, err := ling.NewAPITagger(vurl.String())
 		if err != nil {
 			return nil, nil, err
