@@ -59,9 +59,9 @@ func (g *Grammar) localGrammar(d *ling.Document) (*Grammar, error) {
 		for k, values := range m {
 			rb := &RuleBody{terms, nil}
 			switch values.(type) {
-			case []string:
+			case []interface{}:
 				args := []*Arg{}
-				for _, v := range values.([]string) {
+				for _, v := range values.([]interface{}) {
 					args = append(args, &Arg{"string", v})
 				}
 				rb.F = &FMR{"fmr.entity",
