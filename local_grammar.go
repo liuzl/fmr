@@ -67,6 +67,8 @@ func (g *Grammar) localGrammar(d *ling.Document) (*Grammar, error) {
 				rb.F = &FMR{"fmr.entity",
 					[]*Arg{{"string", k}, {"func", &FMR{"fmr.list", args}}},
 				}
+				rb.F = &FMR{"fmr.list",
+					[]*Arg{{"string", span.String()}, {"func", rb.F}}}
 			}
 			hash, err := hashstructure.Hash(rb, nil)
 			if err != nil {
