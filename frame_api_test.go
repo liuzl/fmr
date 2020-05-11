@@ -23,6 +23,7 @@ func TestMatchFrames(t *testing.T) {
 	}
 }
 
+// go test -test.run MatchFrames2 -v --ctx_tagger="http://127.0.0.1:5002/api"
 func TestMatchFrames2(t *testing.T) {
 	cases := []string{
 		`获得亚军次数降序排前5的都是哪些羽毛球运动员？`,
@@ -33,7 +34,7 @@ func TestMatchFrames2(t *testing.T) {
 		t.Error(err)
 	}
 	for _, c := range cases {
-		fmrs, err := g.FrameFMR(c)
+		fmrs, err := g.FrameFMRWithContext("比赛", c)
 		if err != nil {
 			t.Error(err)
 		}

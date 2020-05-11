@@ -6,7 +6,12 @@ import (
 
 // FrameFMR parses NL text to FMR
 func (g *Grammar) FrameFMR(text string) ([]string, error) {
-	frames, err := g.MatchFrames(text)
+	return g.FrameFMRWithContext("", text)
+}
+
+// FrameFMRWithContext parses NL text to FMR
+func (g *Grammar) FrameFMRWithContext(context, text string) ([]string, error) {
+	frames, err := g.MatchFramesWithContext(context, text)
 	if err != nil {
 		return nil, err
 	}
@@ -35,11 +40,17 @@ func (g *Grammar) FrameFMR(text string) ([]string, error) {
 
 // MatchFrames returns the matched frames for NL text
 func (g *Grammar) MatchFrames(text string) (map[RbKey]*Frame, error) {
+	return g.MatchFramesWithContext("", text)
+}
+
+// MatchFramesWithContext returns the matched frames for NL text
+func (g *Grammar) MatchFramesWithContext(
+	context, text string) (map[RbKey]*Frame, error) {
 	frames, starts, err := g.getCandidates(text)
 	if err != nil {
 		return nil, err
 	}
-	ps, err := g.EarleyParseAll(text, starts...)
+	ps, err := g.EarleyParseAllWithContext(context, text, starts...)
 	if err != nil {
 		return nil, err
 	}
