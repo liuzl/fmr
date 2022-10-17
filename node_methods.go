@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/liuzl/goutil"
+	"zliu.org/goutil"
 )
 
 // Pos returns the corresponding pos of Node n in original text

@@ -4,7 +4,7 @@ import (
 	//"fmt"
 	"testing"
 
-	"github.com/liuzl/goutil"
+	"zliu.org/goutil"
 )
 
 var tests = []string{

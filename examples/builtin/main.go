@@ -11,8 +11,8 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/liuzl/fmr"
-	"github.com/liuzl/goutil"
 	"github.com/robertkrimen/otto"
+	"zliu.org/goutil"
 )
 
 var (

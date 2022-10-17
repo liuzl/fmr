@@ -3,7 +3,7 @@ package fmr
 import (
 	"fmt"
 
-	"github.com/liuzl/goutil"
+	"zliu.org/goutil"
 )
 
 var builtinFuncs = make(map[string]interface{})

@@ -1,8 +1,8 @@
 package fmr
 
 import (
-	"github.com/liuzl/goutil"
 	"github.com/liuzl/ling"
+	"zliu.org/goutil"
 )
 
 func (g *Grammar) regexpTag(d *ling.Document) {

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/liuzl/goutil"
+	"zliu.org/goutil"
 )
 
 func TestList(t *testing.T) {

@@ -3,7 +3,7 @@ package fmr
 import (
 	"fmt"
 
-	"github.com/liuzl/goutil"
+	"zliu.org/goutil"
 )
 
 func (p *parser) regex(g *Grammar) (*Term, error) {

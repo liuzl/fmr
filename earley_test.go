@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/liuzl/goutil"
+	"zliu.org/goutil"
 )
 
 func TestEarleyParse(t *testing.T) {
